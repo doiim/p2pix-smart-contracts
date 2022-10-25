@@ -5,6 +5,7 @@ contract P2PIX {
 
     event DepositAdded(address indexed seller, bytes32 depositID, address token, uint256 amount);
     event DepositClosed(address indexed seller, bytes32 depositID);
+    event DepositWithdrawn(address indexed seller, bytes32 depositID, uint256 amount);
     event LockAdded(address indexed buyer, bytes32 lockID, uint256 amount);
     event LockReleased(address indexed buyer, bytes32 lockId);
 
@@ -58,15 +59,16 @@ contract P2PIX {
         uint256 amount,
         string calldata pixTarget
     ) public returns (bytes32 depositID){
+        depositID = keccak256(abi.encodePacked(pixTarget, amount));
+        require(!mapDeposits[depositID].valid, 'P2PIX: Deposit already exist and it is still valid');
         // TODO Prevent seller to use same depositID
         // TODO Transfer tokens to this address
         Deposit memory d = Deposit(msg.sender, token, amount, true, pixTarget);
-        depositID = keccak256(abi.encodePacked(pixTarget, amount));
         mapDeposits[depositID] = d;
         emit DepositAdded(msg.sender, depositID, token, amount);
     }
 
-    // Relayer interage adicionando um “lock” na ordem de venda.
+    // Relayer interaje adicionando um “lock” na ordem de venda.
     // O lock precisa incluir address do comprador + address do relayer + reembolso/premio relayer + valor.
     // **Só poder ter um lock em aberto para cada (ordem de venda, valor)**.
     // Só pode fazer lock de ordens que não estão invalidadas(Passo 5).
@@ -151,7 +153,9 @@ contract P2PIX {
         unlockExpired(depositID);
         // TODO Transfer remaining tokens back to the seller
         // Withdraw remaining tokens from mapDeposit[depositID]
+        uint256 amount = mapDeposits[depositID].remaining;
         mapDeposits[depositID].remaining = 0;
+        emit DepositWithdrawn(msg.sender, depositID, amount);
     }
 
 }
