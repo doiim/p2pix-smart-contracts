@@ -6,8 +6,9 @@ contract P2PIX {
     event DepositAdded(address indexed seller, bytes32 depositID, address token, uint256 amount);
     event DepositClosed(address indexed seller, bytes32 depositID);
     event DepositWithdrawn(address indexed seller, bytes32 depositID, uint256 amount);
-    event LockAdded(address indexed buyer, bytes32 lockID, uint256 amount);
+    event LockAdded(address indexed buyer, bytes32 indexed lockID, bytes32 depositID, uint256 amount);
     event LockReleased(address indexed buyer, bytes32 lockId);
+    event LockReturned(address indexed buyer, bytes32 lockId);
 
     struct Deposit {
         address seller;
@@ -23,22 +24,19 @@ contract P2PIX {
         address relayerAddress;         // Relayer address that facilitated this transaction
         uint256 relayerPremium;         // Amount to be paid for relayer
         uint256 amount;                 // Amount to be transfered to buyer
-        uint256 expirationBlock;        // IF not paid until this block will be expired
-        bool paid;
+        uint256 expirationBlock;        // If not paid at this block will be expired
     }
 
     // Default blocks that lock will hold tokens
-    uint256 internal defaultLockBlocks;
+    uint256 public defaultLockBlocks;
     // List of valid Bacen signature addresses
     mapping(address => bool) public validBacenSigners;
 
     // Seller list of deposits
     mapping(bytes32 => Deposit) mapDeposits;
-    mapping(bytes32 => bytes32[]) activeDepositLocks;
-    mapping(bytes32 => uint16) activeLocksPerDeposit;
-    // ***** ESTA PARTE É A MAIS CRÍTICA VISTO QUE É NECESSÁRIO FORMAS DE TRAVAR DEPOSITOS *****
-    // ************ PORÉM SEM A NECESSIDADE DE PERCORRER GRANDES ARRAYS ************************
+    // List of Locks
     mapping(bytes32 => Lock) mapLocks;
+    // List of Pix transactions already signed
     mapping(bytes32 => bool) usedTransactions;
 
     modifier onlySeller(bytes32 depositID) {
@@ -68,6 +66,12 @@ contract P2PIX {
         emit DepositAdded(msg.sender, depositID, token, amount);
     }
 
+    // Vendedor pode invalidar da ordem de venda impedindo novos locks na mesma (isso não afeta nenhum lock que esteja ativo).
+    function cancelDeposit(bytes32 depositID) public onlySeller(depositID) {
+        mapDeposits[depositID].valid = false;
+        emit DepositClosed(mapDeposits[depositID].seller, depositID);
+    }
+
     // Relayer interaje adicionando um “lock” na ordem de venda.
     // O lock precisa incluir address do comprador + address do relayer + reembolso/premio relayer + valor.
     // **Só poder ter um lock em aberto para cada (ordem de venda, valor)**.
@@ -79,8 +83,10 @@ contract P2PIX {
         address targetAddress,
         address relayerAddress,
         uint256 relayerPremium,
-        uint256 amount
+        uint256 amount,
+        bytes32[] calldata expiredLocks
     ) public returns (bytes32 lockID){
+        unlockExpired(expiredLocks);
         Deposit storage d = mapDeposits[depositID];
         require(d.valid, "P2PIX: Deposit not valid anymore");
         require(d.remaining > amount, "P2PIX: Not enough remaining");
@@ -89,12 +95,17 @@ contract P2PIX {
             mapLocks[lockID].expirationBlock < block.number,
             "P2PIX: Another lock with same ID is not expired yet"
         );
-        Lock memory l = Lock(depositID, targetAddress, relayerAddress, relayerPremium, amount, block.number+defaultLockBlocks, false);
+        Lock memory l = Lock(
+            depositID,
+            targetAddress,
+            relayerAddress,
+            relayerPremium,
+            amount,
+            block.number+defaultLockBlocks
+        );
         mapLocks[lockID] = l;
-        activeDepositLocks[depositID][activeLocksPerDeposit[depositID]] = lockID;
-        activeLocksPerDeposit[depositID]++;
         d.remaining -= amount;
-        emit LockAdded(targetAddress, lockID, amount);
+        emit LockAdded(targetAddress, lockID, depositID, amount);
     }
 
     // Relayer interage com o smart contract, colocando no calldata o comprovante do PIX realizado.
@@ -117,40 +128,32 @@ contract P2PIX {
         require(!usedTransactions[message], "Transaction already used to unlock payment.");
         address signer = ecrecover(message, v, r, s);
         require(validBacenSigners[signer], "Signer is not a valid signer.");
-        // TODO Transfer token to target
-        l.paid = true;
+        // TODO Transfer token to l.target
+        // TODO Transfer relayer fees to relayer
+        l.amount = 0;
         usedTransactions[message] = true;
-        activeLocksPerDeposit[l.depositID] = unlockExpired(l.depositID);
         emit LockReleased(l.targetAddress, lockID);
     }
 
     // Unlock expired locks
-    function unlockExpired(bytes32 depositID) internal returns(uint16 locksLength){
-        bytes32[] storage locks = activeDepositLocks[depositID];
-        uint16 locksPreviousLength = activeLocksPerDeposit[depositID];
-        locksLength = 0;
-        for (uint16 i = 0; i < locksPreviousLength; i++){
-            Lock memory l = mapLocks[locks[i]];
-            if (l.expirationBlock > block.number && !l.paid) {
-                locks[locksLength] = locks[i];
-                locksLength++;
-            } else if (l.expirationBlock < block.number && !l.paid) {
-                mapDeposits[depositID].remaining += l.amount;
-            }
+    function unlockExpired(bytes32[] calldata lockIDs) internal {
+        uint256 locksSize = lockIDs.length;
+        for (uint16 i = 0; i < locksSize; i++){
+            Lock storage l = mapLocks[lockIDs[i]];
+            require(l.expirationBlock < block.number && l.amount > 0, "P2PIX: Lock not expired or already paid");
+            mapDeposits[l.depositID].remaining += l.amount;
+            l.amount = 0;
+            emit LockReturned(l.targetAddress, lockIDs[i]);
         }
-        return locksLength;
-    }
-
-    // Vendedor pode invalidar da ordem de venda impedindo novos locks na mesma (isso não afeta nenhum lock que esteja ativo).
-    function cancelDeposit(bytes32 depositID) public onlySeller(depositID) {
-        mapDeposits[depositID].valid = false;
-        emit DepositClosed(mapDeposits[depositID].seller, depositID);
     }
 
     // Após os locks expirarem, vendedor pode interagir c/ o contrato e recuperar os tokens de um depósito específico.
-    function withdraw(bytes32 depositID) public onlySeller(depositID) {
-        // Unlock expired locks at depositID
-        unlockExpired(depositID);
+    function withdraw(
+        bytes32 depositID,
+        bytes32[] calldata expiredLocks
+    ) public onlySeller(depositID) {
+        unlockExpired(expiredLocks);
+        if (mapDeposits[depositID].valid) cancelDeposit(depositID);
         // TODO Transfer remaining tokens back to the seller
         // Withdraw remaining tokens from mapDeposit[depositID]
         uint256 amount = mapDeposits[depositID].remaining;

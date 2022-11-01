@@ -63,7 +63,7 @@ describe("P2PIX deposit test", function () {
     })
 
     it("Should allow withdraw the deposit", async function () {
-        const transaction = await p2pix.withdraw(depositID);
+        const transaction = await p2pix.withdraw(depositID, []);
         await expect(transaction).to.emit(p2pix, 'DepositWithdrawn').withArgs(
             owner.address,
             depositID,
