@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract P2PIX {
 
-    event DepositAdded(address indexed seller, bytes32 depositID, address token, uint256 amount);
+    event DepositAdded(address indexed seller, bytes32 depositID, address token, uint256 price, uint256 amount);
     event DepositClosed(address indexed seller, bytes32 depositID);
     event DepositWithdrawn(address indexed seller, bytes32 depositID, uint256 amount);
+    event DepositPriceChanged(bytes32 indexed depositID, uint256 price);
     event LockAdded(address indexed buyer, bytes32 indexed lockID, bytes32 depositID, uint256 amount);
     event LockReleased(address indexed buyer, bytes32 lockId);
     event LockReturned(address indexed buyer, bytes32 lockId);
@@ -14,6 +17,7 @@ contract P2PIX {
         address seller;
         address token;          // ERC20 stable token address
         uint256 remaining;      // Remaining tokens available
+        uint256 price;          // Price in R$ per token
         bool valid;             // Could be invalidated by the seller
         string pixTarget;       // The PIX account for the seller receive transactions
     }
@@ -23,7 +27,8 @@ contract P2PIX {
         address targetAddress;          // Where goes the tokens when validated
         address relayerAddress;         // Relayer address that facilitated this transaction
         uint256 relayerPremium;         // Amount to be paid for relayer
-        uint256 amount;                 // Amount to be transfered to buyer
+        uint256 amount;                 // Amount to be tranfered via PIX
+        uint256 locked;                 // Amount locked in tokens from deposit
         uint256 expirationBlock;        // If not paid at this block will be expired
     }
 
@@ -55,15 +60,16 @@ contract P2PIX {
     function deposit(
         address token,
         uint256 amount,
+        uint256 price,
         string calldata pixTarget
     ) public returns (bytes32 depositID){
         depositID = keccak256(abi.encodePacked(pixTarget, amount));
         require(!mapDeposits[depositID].valid, 'P2PIX: Deposit already exist and it is still valid');
-        // TODO Prevent seller to use same depositID
-        // TODO Transfer tokens to this address
-        Deposit memory d = Deposit(msg.sender, token, amount, true, pixTarget);
+        IERC20 t = IERC20(token);
+        t.transferFrom(msg.sender, address(this), amount);
+        Deposit memory d = Deposit(msg.sender, token, amount, price, true, pixTarget);
         mapDeposits[depositID] = d;
-        emit DepositAdded(msg.sender, depositID, token, amount);
+        emit DepositAdded(msg.sender, depositID, token, price, amount);
     }
 
     // Vendedor pode invalidar da ordem de venda impedindo novos locks na mesma (isso não afeta nenhum lock que esteja ativo).
@@ -89,7 +95,7 @@ contract P2PIX {
         unlockExpired(expiredLocks);
         Deposit storage d = mapDeposits[depositID];
         require(d.valid, "P2PIX: Deposit not valid anymore");
-        require(d.remaining > amount, "P2PIX: Not enough remaining");
+        require(d.remaining > amount/d.price, "P2PIX: Not enough remaining");
         lockID = keccak256(abi.encodePacked(depositID, amount, targetAddress));
         require(
             mapLocks[lockID].expirationBlock < block.number,
@@ -101,6 +107,7 @@ contract P2PIX {
             relayerAddress,
             relayerPremium,
             amount,
+            amount/d.price,
             block.number+defaultLockBlocks
         );
         mapLocks[lockID] = l;
@@ -120,6 +127,7 @@ contract P2PIX {
         // TODO Check if lockID exists and is enabled
         // TODO **Prevenir que um Pix não relacionado ao APP seja usado pois tem o mesmo destino
         Lock storage l = mapLocks[lockID];
+        Deposit storage d = mapDeposits[l.depositID];
         bytes32 message = keccak256(abi.encodePacked(
             mapDeposits[l.depositID].pixTarget,
             l.amount,
@@ -128,11 +136,19 @@ contract P2PIX {
         require(!usedTransactions[message], "Transaction already used to unlock payment.");
         address signer = ecrecover(message, v, r, s);
         require(validBacenSigners[signer], "Signer is not a valid signer.");
-        // TODO Transfer token to l.target
-        // TODO Transfer relayer fees to relayer
+        IERC20 t = IERC20(d.token);
+        t.transfer(l.targetAddress, l.locked-l.relayerPremium);
+        if (l.relayerPremium > 0) t.transfer(l.relayerAddress, l.relayerPremium);
         l.amount = 0;
         usedTransactions[message] = true;
         emit LockReleased(l.targetAddress, lockID);
+    }
+
+    // Change price for deposit amount
+    function changeDepositPrice(bytes32 depositID, uint256 price) public {
+        Deposit storage d = mapDeposits[depositID];
+        d.price = price;
+        emit DepositPriceChanged(depositID, price);
     }
 
     // Unlock expired locks
@@ -153,11 +169,13 @@ contract P2PIX {
         bytes32[] calldata expiredLocks
     ) public onlySeller(depositID) {
         unlockExpired(expiredLocks);
-        if (mapDeposits[depositID].valid) cancelDeposit(depositID);
-        // TODO Transfer remaining tokens back to the seller
+        Deposit storage d = mapDeposits[depositID];
+        if (d.valid) cancelDeposit(depositID);
+        IERC20 token = IERC20(d.token);
+        token.transfer(d.seller, d.remaining);
         // Withdraw remaining tokens from mapDeposit[depositID]
-        uint256 amount = mapDeposits[depositID].remaining;
-        mapDeposits[depositID].remaining = 0;
+        uint256 amount = d.remaining;
+        d.remaining = 0;
         emit DepositWithdrawn(msg.sender, depositID, amount);
     }
 
