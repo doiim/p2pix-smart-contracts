@@ -22,6 +22,29 @@ Then use a Contract instance to interact directly with it:
 const p2pixContract = new ethers.Contract(address, P2PIXArtifact.abi, signer);
 ```
 
+## Deploying local environment
+
+Clone the repo and install dependencies:
+```
+git clone https://github.com/doiim/p2pix-smart-contracts.git
+cd p2pix-smart-contract
+npm install
+```
+
+On the first teminal use the following command and import some wallets to your Metamask and connect to the network pointed:
+```
+npx hardhat node
+```
+
+On the second teminal run following commands:
+```
+npx hardhat run --network localhost scripts/1-deploy-p2pix.js
+npx hardhat run --network localhost scripts/2-deploy-mockToken.js
+```
+
+The second script transfer 2M tokens to the firrs wallet of the node.
+To use the P2Pix smart contract first transfer some of the tokens to other wallets.
+
 ## Testing
 
 To run tests, clone this repo, install dependencies and run Hardhat tests.
