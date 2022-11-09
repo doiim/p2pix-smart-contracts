@@ -40,15 +40,15 @@ describe("P2PIX deposit test", function () {
         transaction = await p2pix.deposit(
             erc20.address,
             ethers.utils.parseEther('1000'),
-            ethers.utils.parseEther('0.99'),
-            'SELLER PIX KEY'
+            'SELLER PIX KEY',
+            {value:ethers.utils.parseEther('0.1')}
         );
         depositID = ethers.utils.solidityKeccak256(['string', 'uint256'], ['SELLER PIX KEY', ethers.utils.parseEther('1000')])
         await expect(transaction).to.emit(p2pix, 'DepositAdded').withArgs(
             owner.address,
             depositID,
             erc20.address,
-            ethers.utils.parseEther('0.99'),
+            ethers.utils.parseEther('0.1'),
             ethers.utils.parseEther('1000')
         )
     })
@@ -57,8 +57,8 @@ describe("P2PIX deposit test", function () {
         await expect(p2pix.deposit(
             erc20.address,
             ethers.utils.parseEther('1000'),
-            ethers.utils.parseEther('0.99'),
-            'SELLER PIX KEY'
+            'SELLER PIX KEY',
+            {value:ethers.utils.parseEther('0.1')}
         ))
         .to.be.revertedWith('P2PIX: Deposit already exist and it is still valid');
     })
@@ -83,15 +83,15 @@ describe("P2PIX deposit test", function () {
         transaction = await p2pix.deposit(
             erc20.address,
             ethers.utils.parseEther('1000'),
-            ethers.utils.parseEther('0.99'),
-            'SELLER PIX KEY'
+            'SELLER PIX KEY',
+            {value:ethers.utils.parseEther('0.1')}
         );
         depositID = ethers.utils.solidityKeccak256(['string', 'uint256'], ['SELLER PIX KEY', ethers.utils.parseEther('1000')])
         await expect(transaction).to.emit(p2pix, 'DepositAdded').withArgs(
             owner.address,
             depositID,
             erc20.address,
-            ethers.utils.parseEther('0.99'),
+            ethers.utils.parseEther('0.1'),
             ethers.utils.parseEther('1000')
         )
     })

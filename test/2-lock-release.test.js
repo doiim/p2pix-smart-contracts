@@ -41,15 +41,15 @@ describe("P2PIX lock/release test", function () {
         transaction = await p2pix.deposit(
             erc20.address,
             ethers.utils.parseEther('1000'),
-            ethers.utils.parseEther('0.99'),
-            'SELLER PIX KEY'
+            'SELLER PIX KEY',
+            {value:ethers.utils.parseEther('0.1')}
         );
         depositID = ethers.utils.solidityKeccak256(['string', 'uint256'], ['SELLER PIX KEY', ethers.utils.parseEther('1000')])
         await expect(transaction).to.emit(p2pix, 'DepositAdded').withArgs(
             owner.address,
             depositID,
             erc20.address,
-            ethers.utils.parseEther('0.99'),
+            ethers.utils.parseEther('0.1'),
             ethers.utils.parseEther('1000')
         )
         console.log('GAS USED:', (await transaction.wait()).cumulativeGasUsed.toString())
@@ -73,8 +73,7 @@ describe("P2PIX lock/release test", function () {
             wallet3.address,
             lockID,
             depositID,
-            ethers.utils.parseEther('100'),
-            "101010101010101010101"
+            ethers.utils.parseEther('100')
         )
         console.log('GAS USED:', (await transaction.wait()).cumulativeGasUsed.toString())
     })
@@ -113,7 +112,7 @@ describe("P2PIX lock/release test", function () {
             lockID
         )
         console.log('GAS USED:', (await transaction.wait()).cumulativeGasUsed.toString())
-        expect(await erc20.balanceOf(wallet3.address)).to.equal("101010101010101010101");
+        expect(await erc20.balanceOf(wallet3.address)).to.equal(ethers.utils.parseEther('100'));
     })
 
     it("Should allow recreate same lock", async function () {
@@ -135,7 +134,6 @@ describe("P2PIX lock/release test", function () {
             lockID,
             depositID,
             ethers.utils.parseEther('100'),
-            "101010101010101010101"
         )
     })
 
@@ -167,7 +165,7 @@ describe("P2PIX lock/release test", function () {
             sig.s,
             sig.v
         )
-        expect(await erc20.balanceOf(wallet3.address)).to.equal("202020202020202020202");
+        expect(await erc20.balanceOf(wallet3.address)).to.equal(ethers.utils.parseEther('200'));
     })
     
     it("Should prevent release again the lock", async function () {
@@ -195,7 +193,7 @@ describe("P2PIX lock/release test", function () {
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
-            ethers.utils.parseEther('800'),
+            ethers.utils.parseEther('900'),
             []
         )).to.be.revertedWith('P2PIX: Not enough token remaining on deposit');
     })
@@ -218,8 +216,7 @@ describe("P2PIX lock/release test", function () {
             wallet3.address,
             lockID,
             depositID,
-            ethers.utils.parseEther('100'),
-            "101010101010101010101"
+            ethers.utils.parseEther('100')
         )
     })
 
