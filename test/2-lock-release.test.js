@@ -6,7 +6,7 @@ describe("P2PIX lock/release test", function () {
     let owner, wallet2, wallet3, wallet4;
     let p2pix; // Contract instance
     let erc20; // Token instance
-    let depositID, lockID;
+    let lockID;
 
     it("Will deploy contracts", async function () {
 
@@ -44,10 +44,9 @@ describe("P2PIX lock/release test", function () {
             'SELLER PIX KEY',
             {value:ethers.utils.parseEther('0.1')}
         );
-        depositID = ethers.utils.solidityKeccak256(['string', 'uint256'], ['SELLER PIX KEY', ethers.utils.parseEther('1000')])
         await expect(transaction).to.emit(p2pix, 'DepositAdded').withArgs(
             owner.address,
-            depositID,
+            0,
             erc20.address,
             ethers.utils.parseEther('0.1'),
             ethers.utils.parseEther('1000')
@@ -57,22 +56,22 @@ describe("P2PIX lock/release test", function () {
 
     it("Should allow create a new lock", async function () {
         transaction = await p2pix.connect(wallet3).lock(
-            depositID,
+            0,
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
             ethers.utils.parseEther('100'),
             []
         )
-        lockID = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [
-            depositID,
+        lockID = ethers.utils.solidityKeccak256(['uint256', 'uint256', 'address'], [
+            0,
             ethers.utils.parseEther('100'),
             wallet3.address
         ])
         await expect(transaction).to.emit(p2pix, 'LockAdded').withArgs(
             wallet3.address,
             lockID,
-            depositID,
+            0,
             ethers.utils.parseEther('100')
         )
         console.log('GAS USED:', (await transaction.wait()).cumulativeGasUsed.toString())
@@ -117,29 +116,29 @@ describe("P2PIX lock/release test", function () {
 
     it("Should allow recreate same lock", async function () {
         transaction = await p2pix.connect(wallet3).lock(
-            depositID,
+            0,
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
             ethers.utils.parseEther('100'),
             []
         )
-        lockID = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [
-            depositID,
+        lockID = ethers.utils.solidityKeccak256(['uint256', 'uint256', 'address'], [
+            0,
             ethers.utils.parseEther('100'),
             wallet3.address
         ])
         await expect(transaction).to.emit(p2pix, 'LockAdded').withArgs(
             wallet3.address,
             lockID,
-            depositID,
+            0,
             ethers.utils.parseEther('100'),
         )
     })
 
     it("Should prevent create again same lock", async function () {
         await expect(p2pix.connect(wallet3).lock(
-            depositID,
+            0,
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
@@ -187,9 +186,9 @@ describe("P2PIX lock/release test", function () {
         )).to.be.revertedWith('P2PIX: Lock already released or returned');
     })
 
-    it("Should prevent create a 800 lock", async function () {
+    it("Should prevent create a 900 lock", async function () {
         await expect(p2pix.connect(wallet3).lock(
-            depositID,
+            0,
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
@@ -200,22 +199,22 @@ describe("P2PIX lock/release test", function () {
 
     it("Should allow recreate same lock again", async function () {
         transaction = await p2pix.connect(wallet3).lock(
-            depositID,
+            0,
             wallet3.address,
             ethers.constants.AddressZero,
             '0',
             ethers.utils.parseEther('100'),
             []
         )
-        lockID = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [
-            depositID,
+        lockID = ethers.utils.solidityKeccak256(['uint256', 'uint256', 'address'], [
+            0,
             ethers.utils.parseEther('100'),
             wallet3.address
         ])
         await expect(transaction).to.emit(p2pix, 'LockAdded').withArgs(
             wallet3.address,
             lockID,
-            depositID,
+            0,
             ethers.utils.parseEther('100')
         )
     })

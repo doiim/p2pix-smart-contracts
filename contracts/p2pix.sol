@@ -3,13 +3,16 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract P2PIX is Ownable {
 
-    event DepositAdded(address indexed seller, bytes32 depositID, address token, uint256 premium, uint256 amount);
-    event DepositClosed(address indexed seller, bytes32 depositID);
-    event DepositWithdrawn(address indexed seller, bytes32 depositID, uint256 amount);
-    event LockAdded(address indexed buyer, bytes32 indexed lockID, bytes32 depositID, uint256 amount);
+    using Counters for Counters.Counter;
+
+    event DepositAdded(address indexed seller, uint256 depositID, address token, uint256 premium, uint256 amount);
+    event DepositClosed(address indexed seller, uint256 depositID);
+    event DepositWithdrawn(address indexed seller, uint256 depositID, uint256 amount);
+    event LockAdded(address indexed buyer, bytes32 indexed lockID, uint256 depositID, uint256 amount);
     event LockReleased(address indexed buyer, bytes32 lockId);
     event LockReturned(address indexed buyer, bytes32 lockId);
     // Events
@@ -25,7 +28,7 @@ contract P2PIX is Ownable {
     }
 
     struct Lock {
-        bytes32 depositID;
+        uint256 depositID;
         address targetAddress;          // Where goes the tokens when validated
         address relayerAddress;         // Relayer address that facilitated this transaction
         uint256 relayerPremium;         // Amount to be paid for relayer
@@ -33,19 +36,20 @@ contract P2PIX is Ownable {
         uint256 expirationBlock;        // If not paid at this block will be expired
     }
 
+    Counters.Counter public depositCount;
     // Default blocks that lock will hold tokens
     uint256 public defaultLockBlocks;
     // List of valid Bacen signature addresses
     mapping(address => bool) public validBacenSigners;
 
     // Seller list of deposits
-    mapping(bytes32 => Deposit) mapDeposits;
+    mapping(uint256 => Deposit) mapDeposits;
     // List of Locks
     mapping(bytes32 => Lock) mapLocks;
     // List of Pix transactions already signed
     mapping(bytes32 => bool) usedTransactions;
 
-    modifier onlySeller(bytes32 depositID) {
+    modifier onlySeller(uint256 depositID) {
         require(mapDeposits[depositID].seller == msg.sender, "P2PIX: Only seller could call this function.");
         _;
     }
@@ -62,18 +66,19 @@ contract P2PIX is Ownable {
         address token,
         uint256 amount,
         string calldata pixTarget
-    ) public payable returns (bytes32 depositID){
-        depositID = keccak256(abi.encodePacked(pixTarget, amount));
+    ) public payable returns (uint256 depositID){
+        depositID = depositCount.current();
         require(!mapDeposits[depositID].valid, 'P2PIX: Deposit already exist and it is still valid');
         IERC20 t = IERC20(token);
         t.transferFrom(msg.sender, address(this), amount);
         Deposit memory d = Deposit(msg.sender, token, amount, msg.value, true, pixTarget);
         mapDeposits[depositID] = d;
+        depositCount.increment();
         emit DepositAdded(msg.sender, depositID, token, msg.value, amount);
     }
 
     // Vendedor pode invalidar da ordem de venda impedindo novos locks na mesma (isso não afeta nenhum lock que esteja ativo).
-    function cancelDeposit(bytes32 depositID) public onlySeller(depositID) {
+    function cancelDeposit(uint256 depositID) public onlySeller(depositID) {
         mapDeposits[depositID].valid = false;
         emit DepositClosed(mapDeposits[depositID].seller, depositID);
     }
@@ -85,7 +90,7 @@ contract P2PIX is Ownable {
     // Essa etapa pode ser feita pelo vendedor conjuntamente com a parte 1.
     // Retorna um LockID.
     function lock(
-        bytes32 depositID,
+        uint256 depositID,
         address targetAddress,
         address relayerAddress,
         uint256 relayerPremium,
@@ -159,7 +164,7 @@ contract P2PIX is Ownable {
 
     // Após os locks expirarem, vendedor pode interagir c/ o contrato e recuperar os tokens de um depósito específico.
     function withdraw(
-        bytes32 depositID,
+        uint256 depositID,
         bytes32[] calldata expiredLocks
     ) public onlySeller(depositID) {
         unlockExpired(expiredLocks);
