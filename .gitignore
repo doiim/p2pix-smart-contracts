@@ -1,9 +1,28 @@
-node_modules
-.env
-coverage
-coverage.json
-
-#Hardhat files
-cache
-artifacts/build-info
+# directories
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+# **/artifacts
 artifacts/@openzeppelin
+artifacts/build-info
+**/build
+**/ref
+**/cache
+**/coverage
+**/.coverage_artifacts
+**/.coverage_cache
+**/.coverage_contracts
+**/dist
+**/node_modules
+
+# files
+*.env
+*.log
+.pnp.*
+coverage.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
