@@ -2,26 +2,84 @@
   "name": "p2pix-smart-contracts",
   "version": "1.0.0",
   "description": "Repository for P2Pix EVM contracts to be imported by the project.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/doiim/p2pix-smart-contracts.git"
-  },
+  "homepage": "https://github.com/doiim/p2pix-smart-contracts#readme",
   "author": "Filipe Soccol (doiim)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/doiim/p2pix-smart-contracts/issues"
   },
-  "homepage": "https://github.com/doiim/p2pix-smart-contracts#readme",
-  "devDependencies": {
-    "@nomiclabs/hardhat-waffle": "^2.0.3",
-    "chai": "^4.3.6",
-    "hardhat": "^2.12.0"
+  "scripts": {
+    "clean": "shx rm -rf ./artifacts ./cache ./coverage ./src/types ./coverage.json && yarn typechain",
+    "commit": "git-cz",
+    "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
+    "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
+    "test": "hardhat test",
+    "deploy1:localhost": "hardhat run scripts/1-deploy-p2pix.ts --network localhost",
+    "deploy2:localhost": "hardhat run scripts/2-deploy-mockToken.ts --network localhost",
+    "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && yarn typechain",
+    "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
+    "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
+    "lint:ts": "eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
+    "_postinstall": "husky install",
+    "postpublish": "pinst --enable",
+    "prepublishOnly": "pinst --disable",
+    "prettier": "prettier --config ./.prettierrc.yaml --write \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
+    "prettier:check": "prettier --check --config ./.prettierrc.yaml \"**/*.{js,json,md,sol,ts,yaml,yml}\""
   },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.7.3"
+  "devDependencies": {
+    "@commitlint/cli": "^17.2.0",
+    "@commitlint/config-conventional": "^17.2.0",
+    "@ethersproject/abi": "^5.7.0",
+    "@ethersproject/abstract-signer": "^5.7.0",
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/bytes": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
+    "@nomicfoundation/hardhat-network-helpers": "1.0.6",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.1",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@trivago/prettier-plugin-sort-imports": "^3.4.0",
+    "@typechain/ethers-v5": "^10.1.1",
+    "@typechain/hardhat": "^6.1.4",
+    "@types/chai": "^4.3.3",
+    "@types/fs-extra": "^9.0.13",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "chai": "^4.3.6",
+    "commitizen": "^4.2.5",
+    "cross-env": "^7.0.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.26.0",
+    "eslint-config-prettier": "^8.5.0",
+    "ethers": "^5.7.2",
+    "fs-extra": "^10.1.0",
+    "hardhat": "^2.12.2",
+    "hardhat-gas-reporter": "^1.0.9",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "lodash": "^4.17.21",
+    "mocha": "^10.1.0",
+    "pinst": "^3.0.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-solidity": "^1.0.0-rc.1",
+    "shx": "^0.3.4",
+    "solhint": "^3.3.7",
+    "solhint-plugin-prettier": "^0.0.5",
+    "solidity-coverage": "^0.8.2",
+    "ts-generator": "^0.1.1",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.1",
+    "typescript": "^4.8.4"
+  },
+  "files": [
+    "/contracts"
+  ],
+  "packageManager": "yarn@3.2.1",
+  "publishConfig": {
+    "access": "public"
   }
 }

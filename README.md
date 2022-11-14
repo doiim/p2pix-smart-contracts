@@ -1,68 +1,78 @@
 # p2pix-smart-contracts
 
-Repository for P2Pix EVM contracts to be imported by the project.
+**Repository for P2Pix EVM contracts to be imported by the project.**
 
-## Installation
+## Usage
 
-Import the repository on your app to allow use the artifacts for Ethers.
+### Pre Requisites
 
+Before installing, create a `.env` file and set a BIP-39 compatible mnemonic and other env criteria as in `.env.example`.
+
+### Install
+
+```sh
+$ yarn install
 ```
-npm install --save git+https://github.com/doiim/p2pix-smart-contracts.git
+
+### Compile
+
+```sh
+$ yarn compile
 ```
+
+**_NOTE:_** TypeChain artifacts generated at compile time.
+
+### Test
+
+```sh
+$ yarn test
+```
+
+### Report Gas
+
+```sh
+$ REPORT_GAS=true yarn test
+```
+
+**_NOTE_:** Gas usage per unit test and average gas per method call.
+
+### Clean
+
+Delete the smart contract artifacts and cache:
+
+```sh
+$ yarn clean
+```
+
+## Importing artifacts
 
 To import artifacts on the project use the following:
 
-```
+```ts
 import P2PIXArtifact from 'p2pix-smart-contracts/artifacts/contracts/p2pix.sol/P2PIX.json'
 ```
 
 To grab deployment addresses you can just grab from deploys folder:
-```
+
+```ts
 import localhostDeploys from 'p2pix-smart-contracts/deploys/localhost.json'
 ```
 
-The default deploy addresses for localhost is the following:
-| Contract | Address | 
-|-|-|
-|p2pix|`0x5FbDB2315678afecb367f032d93F642f64180aa3`|
-|token|`0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512`|
 
-Then use a Contract instance to interact directly with it:
+## Deploying to local environment
 
-```
-const p2pixContract = new ethers.Contract(address, P2PIXArtifact.abi, signer);
+On the first teminal, use the following command and import some wallets to your Metamask, then connect to the network pointed:
+
+```sh
+yarn hardhat node
 ```
 
-## Deploying local environment
+On the second teminal, run the following commands:
 
-Clone the repo and install dependencies:
-```
-git clone https://github.com/doiim/p2pix-smart-contracts.git
-cd p2pix-smart-contract
-npm install
+```sh
+yarn deploy1:localhost
+yarn deploy2:localhost
 ```
 
-On the first teminal use the following command and import some wallets to your Metamask and connect to the network pointed:
-```
-npx hardhat node
-```
-
-On the second teminal run following commands:
-```
-npx hardhat run --network localhost scripts/1-deploy-p2pix.js
-npx hardhat run --network localhost scripts/2-deploy-mockToken.js
-```
-
-The second script transfer 2M tokens to the firrs wallet of the node.
+**_NOTE_:** The second script transfers 2M tokens to the first wallet of the node.
 To use the P2Pix smart contract first transfer some of the tokens to other wallets.
-
-## Testing
-
-To run tests, clone this repo, install dependencies and run Hardhat tests.
-
-```
-git clone https://github.com/doiim/p2pix-smart-contracts.git
-cd p2pix-smart-contract
-npm install
-npx hardhat test
-```
