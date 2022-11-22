@@ -22,8 +22,7 @@
 				"tintinweb.vscode-inline-bookmarks",
 				"tintinweb.solidity-visual-auditor",
 				"tintinweb.solidity-metrics",
-				"tintinweb.graphviz-interactive-preview",
-				"JuanBlanco.solidity"
+				"tintinweb.graphviz-interactive-preview"
 			]
 		}
 	},
