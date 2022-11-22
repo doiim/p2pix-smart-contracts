@@ -18,7 +18,12 @@
 				"extensions.ignoreRecommendations": true
 			},
 			"extensions": [
-				"NomicFoundation.hardhat-solidity"
+				"NomicFoundation.hardhat-solidity",
+				"tintinweb.vscode-inline-bookmarks",
+				"tintinweb.solidity-visual-auditor",
+				"tintinweb.solidity-metrics",
+				"tintinweb.graphviz-interactive-preview",
+				"JuanBlanco.solidity"
 			]
 		}
 	},
