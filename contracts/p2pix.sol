@@ -1,112 +1,108 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity 0.8.9;
 
-import "./@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./@openzeppelin/contracts/access/Ownable.sol";
-import "./@openzeppelin/contracts/utils/Counters.sol";
+///         ______         __        
+/// .-----.|__    |.-----.|__|.--.--.
+/// |  _  ||    __||  _  ||  ||_   _|
+/// |   __||______||   __||__||__.__|
+/// |__|           |__|              
+///
 
-contract P2PIX is Ownable {
+import { Owned } from "./lib/auth/Owned.sol";
+import { Counters } from "./lib/utils/Counters.sol";
+import { ERC20, SafeTransferLib } from "./lib/utils/SafeTransferLib.sol";
+import { ReentrancyGuard } from "./lib/utils/ReentrancyGuard.sol";
+import { EventAndErrors } from "./EventAndErrors.sol";
+import { DataTypes as DT } from "./DataTypes.sol";
+
+contract P2PIX is 
+    EventAndErrors, 
+    Owned(msg.sender),
+    ReentrancyGuard 
+{
+    // solhint-disable use-forbidden-name
+    // solhint-disable no-inline-assembly
+
     using Counters for Counters.Counter;
+    using DT for DT.Deposit;
+    using DT for DT.Lock;
 
-    event DepositAdded(
-        address indexed seller,
-        uint256 depositID,
-        address token,
-        uint256 premium,
-        uint256 amount
-    );
-    event DepositClosed(
-        address indexed seller,
-        uint256 depositID
-    );
-    event DepositWithdrawn(
-        address indexed seller,
-        uint256 depositID,
-        uint256 amount
-    );
-    event LockAdded(
-        address indexed buyer,
-        bytes32 indexed lockID,
-        uint256 depositID,
-        uint256 amount
-    );
-    event LockReleased(address indexed buyer, bytes32 lockId);
-    event LockReturned(address indexed buyer, bytes32 lockId);
-    // Events
-    event PremiumsWithdrawn(address owner, uint256 amount);
-
-    struct Deposit {
-        address seller;
-        address token; // ERC20 stable token address
-        uint256 remaining; // Remaining tokens available
-        uint256 premium; // Premium paid in ETH for priority
-        bool valid; // Could be invalidated by the seller
-        string pixTarget; // The PIX account for the seller receive transactions
-    }
-
-    struct Lock {
-        uint256 depositID;
-        address targetAddress; // Where goes the tokens when validated
-        address relayerAddress; // Relayer address that facilitated this transaction
-        uint256 relayerPremium; // Amount to be paid for relayer
-        uint256 amount; // Amount to be tranfered via PIX
-        uint256 expirationBlock; // If not paid at this block will be expired
-    }
+    /// ███ Storage ████████████████████████████████████████████████████████████
 
     Counters.Counter public depositCount;
-    // Default blocks that lock will hold tokens
+    
+    /// @dev Default blocks that lock will hold tokens.
     uint256 public defaultLockBlocks;
-    // List of valid Bacen signature addresses
-    mapping(address => bool) public validBacenSigners;
 
-    // Seller list of deposits
-    mapping(uint256 => Deposit) mapDeposits;
-    // List of Locks
-    mapping(bytes32 => Lock) mapLocks;
-    // List of Pix transactions already signed
-    mapping(bytes32 => bool) usedTransactions;
 
-    modifier onlySeller(uint256 depositID) {
-        require(
-            mapDeposits[depositID].seller == msg.sender,
-            "P2PIX: Only seller could call this function."
-        );
-        _;
-    }
+    /// @dev List of valid Bacen signature addresses
+    mapping(uint256 => bool) public validBacenSigners;
+    /// @dev Seller list of deposits
+    mapping(uint256 => DT.Deposit) public mapDeposits;
+    /// @dev List of Locks.
+    mapping(bytes32 => DT.Lock) public mapLocks;
+    /// @dev List of Pix transactions already signed.
+    mapping(bytes32 => bool) private usedTransactions;
+
+    /// ███ Constructor ████████████████████████████████████████████████████████
 
     constructor(
         uint256 defaultBlocks,
         address[] memory validSigners
-    ) Ownable() {
-        defaultLockBlocks = defaultBlocks;
-        for (uint8 i = 0; i < validSigners.length; i++) {
-            validBacenSigners[validSigners[i]] = true;
+    ) payable {
+        assembly {
+            sstore(defaultLockBlocks.slot, defaultBlocks)
+        }
+        unchecked {
+            uint256 i;
+            uint256 len = validSigners.length;
+            for (i; i < len; ) {
+                uint256 key = _castAddrToKey(validSigners[i]);
+                validBacenSigners[key] = true;
+                ++i;
+            }
         }
     }
+
+    /// ███ Public FX ██████████████████████████████████████████████████████████
 
     // Vendedor precisa mandar token para o smart contract + chave PIX destino. Retorna um DepositID.
     function deposit(
         address token,
         uint256 amount,
         string calldata pixTarget
-    ) public payable returns (uint256 depositID) {
-        depositID = depositCount.current();
-        require(
-            !mapDeposits[depositID].valid,
-            "P2PIX: Deposit already exist and it is still valid"
-        );
-        IERC20 t = IERC20(token);
-        t.transferFrom(msg.sender, address(this), amount);
-        Deposit memory d = Deposit(
-            msg.sender,
-            token,
-            amount,
-            msg.value,
-            true,
-            pixTarget
-        );
+    ) 
+        public 
+        payable 
+        returns (uint256 depositID) 
+    {
+        (depositID) = _encodeDepositID();
+        ERC20 t = ERC20(token);
+        
+        DT.Deposit memory d = 
+            DT.Deposit({
+                remaining: amount,
+                premium: msg.value,
+                pixTarget: pixTarget,
+                seller: msg.sender,
+                token: token,
+                valid: true
+            });
+        
+        setReentrancyGuard();
+
         mapDeposits[depositID] = d;
         depositCount.increment();
+
+        SafeTransferLib.safeTransferFrom(
+            t,
+            msg.sender,
+            address(this),
+            amount
+        );
+        
+        clearReentrancyGuard();
+
         emit DepositAdded(
             msg.sender,
             depositID,
@@ -116,10 +112,12 @@ contract P2PIX is Ownable {
         );
     }
 
-    // Vendedor pode invalidar da ordem de venda impedindo novos locks na mesma (isso não afeta nenhum lock que esteja ativo).
+    // Vendedor pode invalidar da ordem de venda impedindo novos
+    // locks na mesma (isso não afeta nenhum lock que esteja ativo).
     function cancelDeposit(
         uint256 depositID
-    ) public onlySeller(depositID) {
+    ) public {
+        _onlySeller(depositID);
         mapDeposits[depositID].valid = false;
         emit DepositClosed(
             mapDeposits[depositID].seller,
@@ -134,64 +132,80 @@ contract P2PIX is Ownable {
     // Essa etapa pode ser feita pelo vendedor conjuntamente com a parte 1.
     // Retorna um LockID.
     function lock(
-        uint256 depositID,
-        address targetAddress,
-        address relayerAddress,
-        uint256 relayerPremium,
-        uint256 amount,
+        uint256 _depositID,
+        address _targetAddress,
+        address _relayerAddress,
+        uint256 _relayerPremium,
+        uint256 _amount,
         bytes32[] calldata expiredLocks
-    ) public returns (bytes32 lockID) {
+    ) 
+        public 
+        nonReentrant
+        returns (bytes32 lockID) 
+    {
         unlockExpired(expiredLocks);
-        Deposit storage d = mapDeposits[depositID];
-        require(d.valid, "P2PIX: Deposit not valid anymore");
-        require(
-            d.remaining >= amount,
-            "P2PIX: Not enough token remaining on deposit"
-        );
-        lockID = keccak256(
-            abi.encodePacked(depositID, amount, targetAddress)
-        );
-        require(
-            mapLocks[lockID].expirationBlock < block.number,
-            "P2PIX: Another lock with same ID is not expired yet"
-        );
-        Lock memory l = Lock(
-            depositID,
-            targetAddress,
-            relayerAddress,
-            relayerPremium,
-            amount,
-            block.number + defaultLockBlocks
-        );
+        DT.Deposit storage d = 
+            mapDeposits[_depositID];
+        
+        if(!d.valid) 
+            revert InvalidDeposit();
+        if(d.remaining < _amount) 
+            revert NotEnoughTokens();
+        (lockID) = 
+            _encodeLockID(
+                _depositID, 
+                _amount, 
+                _targetAddress
+            ); 
+        
+        DT.Lock memory l = 
+            DT.Lock
+            ({
+                depositID: _depositID,
+                relayerPremium: _relayerPremium,
+                amount: _amount,
+                expirationBlock: (block.number + defaultLockBlocks),
+                targetAddress: _targetAddress,
+                relayerAddress: _relayerAddress
+            });
+        
         mapLocks[lockID] = l;
-        d.remaining -= amount;
+        d.remaining -= _amount;
+        
         emit LockAdded(
-            targetAddress,
+            _targetAddress,
             lockID,
-            depositID,
-            amount
+            _depositID,
+            _amount
         );
     }
 
     // Relayer interage com o smart contract, colocando no calldata o comprovante do PIX realizado.
-    // Smart contract valida o comprovante, manda os tokens para o endereço do pagador, e reembolsa o custo do gás para o endereço do relayer especificado na parte (2).
+    // Smart contract valida o comprovante, manda os tokens para o endereço do pagador,
+    // e reembolsa o custo do gás para o endereço do relayer especificado na parte (2).
     function release(
         bytes32 lockID,
         uint256 pixTimestamp,
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) public {
+    ) 
+        public 
+        nonReentrant
+    {
         // TODO **Prevenir que um Pix não relacionado ao APP seja usado pois tem o mesmo destino
-        Lock storage l = mapLocks[lockID];
-        require(
-            l.expirationBlock > block.number && l.amount > 0,
-            "P2PIX: Lock already released or returned"
-        );
-        Deposit storage d = mapDeposits[l.depositID];
+        DT.Lock storage l = mapLocks[lockID];
+
+        if( 
+            l.expirationBlock <= block.number 
+            && l.amount <= 0
+        ) revert 
+            AlreadyReleased();
+
+        DT.Deposit storage d = mapDeposits[l.depositID];
         bytes32 message = keccak256(
             abi.encodePacked(
-                mapDeposits[l.depositID].pixTarget,
+                d.pixTarget,
                 l.amount,
                 pixTimestamp
             )
@@ -202,43 +216,94 @@ contract P2PIX is Ownable {
                 message
             )
         );
-        require(
-            !usedTransactions[message],
-            "P2PIX: Transaction already used to unlock payment"
-        );
-        address signer = ecrecover(messageDigest, v, r, s);
-        require(
-            validBacenSigners[signer],
-            "P2PIX: Signer is not a valid signer"
-        );
-        IERC20 t = IERC20(d.token);
-        t.transfer(
-            l.targetAddress,
-            l.amount - l.relayerPremium
-        );
-        if (l.relayerPremium > 0)
-            t.transfer(l.relayerAddress, l.relayerPremium);
+
+        if(
+            usedTransactions[message] 
+                == true
+        ) revert
+            TxAlreadyUsed();
+
+            uint256 signer = _castAddrToKey(
+                ecrecover(
+                        messageDigest, 
+                        v, 
+                        r, 
+                        s
+            ));
+
+        if(!validBacenSigners[signer]) 
+            revert InvalidSigner();
+
+        ERC20 t = ERC20(d.token);
+
+        // We cache values before zeroing them out.
+        uint256 totalAmount = (l.amount - l.relayerPremium);
+
         l.amount = 0;
         l.expirationBlock = 0;
         usedTransactions[message] = true;
-        emit LockReleased(l.targetAddress, lockID);
+
+        SafeTransferLib.safeTransfer(
+            t, 
+            l.targetAddress, 
+            totalAmount
+        );
+
+        if (l.relayerPremium != 0) {
+            SafeTransferLib.safeTransfer(
+                t, 
+                l.relayerAddress, 
+                l.relayerPremium
+            );
+        }
+
+        emit LockReleased(
+            l.targetAddress, 
+            lockID
+        );
     }
+
 
     // Unlock expired locks
     function unlockExpired(
         bytes32[] calldata lockIDs
     ) public {
-        uint256 locksSize = lockIDs.length;
-        for (uint16 i = 0; i < locksSize; i++) {
-            Lock storage l = mapLocks[lockIDs[i]];
-            require(
-                l.expirationBlock < block.number &&
-                    l.amount > 0,
-                "P2PIX: Lock not expired or already released"
-            );
-            mapDeposits[l.depositID].remaining += l.amount;
+        uint256 i;
+        uint256 locksSize =
+            lockIDs.length;
+            
+        for (i; i < locksSize;) 
+        {
+            DT.Lock storage l = mapLocks[lockIDs[i]];
+
+            _notExpired(l);
+
+            mapDeposits[l.depositID].remaining 
+                += l.amount;
             l.amount = 0;
-            emit LockReturned(l.targetAddress, lockIDs[i]);
+            
+            emit LockReturned(
+                l.targetAddress, 
+                lockIDs[i]
+            );
+            
+            unchecked {
+                ++i;
+            }
+        }
+
+        assembly {
+            if lt(i, locksSize) {
+                // LoopOverflow()
+                mstore(
+                    0x00, 
+                    0xdfb035c9
+                )
+                revert(
+                    0x1c, 
+                    0x04
+                )
+            }
         }
     }
 
@@ -246,22 +311,145 @@ contract P2PIX is Ownable {
     function withdraw(
         uint256 depositID,
         bytes32[] calldata expiredLocks
-    ) public onlySeller(depositID) {
+    )   
+        public 
+        nonReentrant
+    {
+        _onlySeller(depositID);
         unlockExpired(expiredLocks);
-        Deposit storage d = mapDeposits[depositID];
-        if (d.valid) cancelDeposit(depositID);
-        IERC20 token = IERC20(d.token);
+        
+        DT.Deposit storage d = 
+            mapDeposits[depositID];
+        
+        if (d.valid == true) { 
+            cancelDeposit(depositID); 
+        }
+        
+        ERC20 token = ERC20(d.token);
+
         // Withdraw remaining tokens from mapDeposit[depositID]
-        token.transfer(d.seller, d.remaining);
         uint256 amount = d.remaining;
         d.remaining = 0;
-        emit DepositWithdrawn(msg.sender, depositID, amount);
+
+        // safeTransfer tokens to seller
+        SafeTransferLib.safeTransfer(
+            token, 
+            d.seller, 
+            amount
+        );
+
+        emit DepositWithdrawn(
+            msg.sender, 
+            depositID, 
+            amount
+        );
     }
+
+    /// ███ Owner Only █████████████████████████████████████████████████████████
 
     // O dono do contrato pode sacar os premiums pagos
     function withdrawPremiums() external onlyOwner {
-        uint256 balance = address(this).balance;
-        payable(msg.sender).transfer(balance);
-        emit PremiumsWithdrawn(msg.sender, balance);
+        uint256 balance = 
+            address(this).balance;
+        SafeTransferLib.safeTransferETH(
+            msg.sender, 
+            balance
+        );
+        emit PremiumsWithdrawn(
+            msg.sender, 
+            balance
+        );
+    }
+
+    /// ███ Helper FX ██████████████████████████████████████████████████████████
+
+    function _onlySeller(uint256 _depositID) 
+        private 
+        view 
+    {
+        if (
+            mapDeposits[_depositID].seller 
+            != msg.sender
+        ) revert 
+            OnlySeller();
+    }
+
+    function _notExpired(DT.Lock storage _l) 
+        private 
+        view
+    {
+        // Custom Error Solidity Impl
+        if 
+        (
+            _l.expirationBlock >= block.number || 
+            _l.amount <= 0
+        ) revert 
+            NotExpired();
+
+        // Custom Error Yul Impl
+        // assembly {
+        //     if iszero(iszero(
+        //             or(
+        //                 or(
+        //                     lt(number(), sload(add(_l.slot, 3))),
+        //                     eq(sload(add(_l.slot, 3)), number())
+        //                 ),
+        //                 iszero(sload(add(_l.slot, 2)))
+        //     )))
+        //     {
+        //         mstore(0x00, 0xd0404f85)
+        //         revert(0x1c, 0x04)
+        //     }
+        // }
+        
+        // Require Error Solidity Impl
+        // require(
+        //         _l.expirationBlock < block.number &&
+        //             _l.amount > 0,
+        //         "P2PIX: Lock not expired or already released"
+        //     );
+    }
+
+    function _encodeDepositID() 
+    internal 
+    view 
+    returns (uint256 _depositID)
+    {
+        (_depositID) = depositCount.current();
+        if (
+            mapDeposits[_depositID].valid 
+            == true
+        ) revert 
+            DepositAlreadyExists();
+    }
+
+    function _encodeLockID(
+        uint256 _depositID, 
+        uint256 _amount, 
+        address _targetAddress) 
+        private 
+        view
+        returns (bytes32 _lockID)
+    {
+        _lockID = keccak256(
+            abi.encodePacked(_depositID, _amount, _targetAddress)
+        );
+        if (
+            mapLocks[_lockID].expirationBlock 
+            >= block.number
+        ) revert
+            NotExpired();
+    }
+
+    function _castAddrToKey(address _addr) 
+    public 
+    pure
+    returns (uint256 _key) 
+    {
+        _key = uint256(
+            uint160(
+                address(
+                    _addr
+        ))) << 12;
     }
 }
