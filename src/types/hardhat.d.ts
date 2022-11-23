@@ -13,55 +13,64 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
-      name: "Ownable",
+      name: "EventAndErrors",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Ownable__factory>;
+    ): Promise<Contracts.EventAndErrors__factory>;
+    getContractFactory(
+      name: "Owned",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Owned__factory>;
+    getContractFactory(
+      name: "MockToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockToken__factory>;
     getContractFactory(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20__factory>;
     getContractFactory(
-      name: "IERC20Metadata",
+      name: "Counters",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20Metadata__factory>;
+    ): Promise<Contracts.Counters__factory>;
     getContractFactory(
-      name: "IERC20",
+      name: "ReentrancyGuard",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC20__factory>;
-    getContractFactory(
-      name: "MockToken",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockToken__factory>;
+    ): Promise<Contracts.ReentrancyGuard__factory>;
     getContractFactory(
       name: "P2PIX",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.P2PIX__factory>;
 
     getContractAt(
-      name: "Ownable",
+      name: "EventAndErrors",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.Ownable>;
+    ): Promise<Contracts.EventAndErrors>;
+    getContractAt(
+      name: "Owned",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Owned>;
+    getContractAt(
+      name: "MockToken",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockToken>;
     getContractAt(
       name: "ERC20",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC20>;
     getContractAt(
-      name: "IERC20Metadata",
+      name: "Counters",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IERC20Metadata>;
+    ): Promise<Contracts.Counters>;
     getContractAt(
-      name: "IERC20",
+      name: "ReentrancyGuard",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.IERC20>;
-    getContractAt(
-      name: "MockToken",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MockToken>;
+    ): Promise<Contracts.ReentrancyGuard>;
     getContractAt(
       name: "P2PIX",
       address: string,

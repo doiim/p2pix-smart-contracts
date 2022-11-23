@@ -30,38 +30,46 @@ import type {
 
 export interface P2PIXInterface extends utils.Interface {
   functions: {
+    "_castAddrToKey(address)": FunctionFragment;
     "cancelDeposit(uint256)": FunctionFragment;
     "defaultLockBlocks()": FunctionFragment;
     "deposit(address,uint256,string)": FunctionFragment;
     "depositCount()": FunctionFragment;
     "lock(uint256,address,address,uint256,uint256,bytes32[])": FunctionFragment;
+    "mapDeposits(uint256)": FunctionFragment;
+    "mapLocks(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
     "release(bytes32,uint256,bytes32,bytes32,uint8)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
+    "setOwner(address)": FunctionFragment;
     "unlockExpired(bytes32[])": FunctionFragment;
-    "validBacenSigners(address)": FunctionFragment;
+    "validBacenSigners(uint256)": FunctionFragment;
     "withdraw(uint256,bytes32[])": FunctionFragment;
     "withdrawPremiums()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "_castAddrToKey"
       | "cancelDeposit"
       | "defaultLockBlocks"
       | "deposit"
       | "depositCount"
       | "lock"
+      | "mapDeposits"
+      | "mapLocks"
       | "owner"
       | "release"
-      | "renounceOwnership"
-      | "transferOwnership"
+      | "setOwner"
       | "unlockExpired"
       | "validBacenSigners"
       | "withdraw"
       | "withdrawPremiums"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "_castAddrToKey",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(
     functionFragment: "cancelDeposit",
     values: [PromiseOrValue<BigNumberish>]
@@ -93,6 +101,14 @@ export interface P2PIXInterface extends utils.Interface {
       PromiseOrValue<BytesLike>[]
     ]
   ): string;
+  encodeFunctionData(
+    functionFragment: "mapDeposits",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mapLocks",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "release",
@@ -105,11 +121,7 @@ export interface P2PIXInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
+    functionFragment: "setOwner",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -118,7 +130,7 @@ export interface P2PIXInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "validBacenSigners",
-    values: [PromiseOrValue<string>]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "withdraw",
@@ -129,6 +141,10 @@ export interface P2PIXInterface extends utils.Interface {
     values?: undefined
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "_castAddrToKey",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "cancelDeposit",
     data: BytesLike
@@ -143,16 +159,14 @@ export interface P2PIXInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "mapDeposits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "mapLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "release", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "unlockExpired",
     data: BytesLike
@@ -174,7 +188,7 @@ export interface P2PIXInterface extends utils.Interface {
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
     "LockReleased(address,bytes32)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
+    "OwnerUpdated(address,address)": EventFragment;
     "PremiumsWithdrawn(address,uint256)": EventFragment;
   };
 
@@ -184,7 +198,7 @@ export interface P2PIXInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LockAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReleased"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PremiumsWithdrawn"): EventFragment;
 }
 
@@ -261,17 +275,16 @@ export type LockReturnedEvent = TypedEvent<
 
 export type LockReturnedEventFilter = TypedEventFilter<LockReturnedEvent>;
 
-export interface OwnershipTransferredEventObject {
-  previousOwner: string;
+export interface OwnerUpdatedEventObject {
+  user: string;
   newOwner: string;
 }
-export type OwnershipTransferredEvent = TypedEvent<
+export type OwnerUpdatedEvent = TypedEvent<
   [string, string],
-  OwnershipTransferredEventObject
+  OwnerUpdatedEventObject
 >;
 
-export type OwnershipTransferredEventFilter =
-  TypedEventFilter<OwnershipTransferredEvent>;
+export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
 
 export interface PremiumsWithdrawnEventObject {
   owner: string;
@@ -312,6 +325,11 @@ export interface P2PIX extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    _castAddrToKey(
+      _addr: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { _key: BigNumber }>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -328,17 +346,45 @@ export interface P2PIX extends BaseContract {
 
     depositCount(
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { _value: BigNumber }>;
+    ): Promise<[BigNumber] & { _val: BigNumber }>;
 
     lock(
-      depositID: PromiseOrValue<BigNumberish>,
-      targetAddress: PromiseOrValue<string>,
-      relayerAddress: PromiseOrValue<string>,
-      relayerPremium: PromiseOrValue<BigNumberish>,
-      amount: PromiseOrValue<BigNumberish>,
+      _depositID: PromiseOrValue<BigNumberish>,
+      _targetAddress: PromiseOrValue<string>,
+      _relayerAddress: PromiseOrValue<string>,
+      _relayerPremium: PromiseOrValue<BigNumberish>,
+      _amount: PromiseOrValue<BigNumberish>,
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    mapDeposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, string, string, string, boolean] & {
+        remaining: BigNumber;
+        premium: BigNumber;
+        pixTarget: string;
+        seller: string;
+        token: string;
+        valid: boolean;
+      }
+    >;
+
+    mapLocks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+        depositID: BigNumber;
+        relayerPremium: BigNumber;
+        amount: BigNumber;
+        expirationBlock: BigNumber;
+        targetAddress: string;
+        relayerAddress: string;
+      }
+    >;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
@@ -351,11 +397,7 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    transferOwnership(
+    setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -366,7 +408,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<ContractTransaction>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<string>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -380,6 +422,11 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  _castAddrToKey(
+    _addr: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   cancelDeposit(
     depositID: PromiseOrValue<BigNumberish>,
@@ -398,14 +445,42 @@ export interface P2PIX extends BaseContract {
   depositCount(overrides?: CallOverrides): Promise<BigNumber>;
 
   lock(
-    depositID: PromiseOrValue<BigNumberish>,
-    targetAddress: PromiseOrValue<string>,
-    relayerAddress: PromiseOrValue<string>,
-    relayerPremium: PromiseOrValue<BigNumberish>,
-    amount: PromiseOrValue<BigNumberish>,
+    _depositID: PromiseOrValue<BigNumberish>,
+    _targetAddress: PromiseOrValue<string>,
+    _relayerAddress: PromiseOrValue<string>,
+    _relayerPremium: PromiseOrValue<BigNumberish>,
+    _amount: PromiseOrValue<BigNumberish>,
     expiredLocks: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  mapDeposits(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, string, string, string, boolean] & {
+      remaining: BigNumber;
+      premium: BigNumber;
+      pixTarget: string;
+      seller: string;
+      token: string;
+      valid: boolean;
+    }
+  >;
+
+  mapLocks(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+      depositID: BigNumber;
+      relayerPremium: BigNumber;
+      amount: BigNumber;
+      expirationBlock: BigNumber;
+      targetAddress: string;
+      relayerAddress: string;
+    }
+  >;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -418,11 +493,7 @@ export interface P2PIX extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  renounceOwnership(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  transferOwnership(
+  setOwner(
     newOwner: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -433,7 +504,7 @@ export interface P2PIX extends BaseContract {
   ): Promise<ContractTransaction>;
 
   validBacenSigners(
-    arg0: PromiseOrValue<string>,
+    arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -448,6 +519,11 @@ export interface P2PIX extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    _castAddrToKey(
+      _addr: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -465,14 +541,42 @@ export interface P2PIX extends BaseContract {
     depositCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     lock(
-      depositID: PromiseOrValue<BigNumberish>,
-      targetAddress: PromiseOrValue<string>,
-      relayerAddress: PromiseOrValue<string>,
-      relayerPremium: PromiseOrValue<BigNumberish>,
-      amount: PromiseOrValue<BigNumberish>,
+      _depositID: PromiseOrValue<BigNumberish>,
+      _targetAddress: PromiseOrValue<string>,
+      _relayerAddress: PromiseOrValue<string>,
+      _relayerPremium: PromiseOrValue<BigNumberish>,
+      _amount: PromiseOrValue<BigNumberish>,
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<string>;
+
+    mapDeposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, string, string, string, boolean] & {
+        remaining: BigNumber;
+        premium: BigNumber;
+        pixTarget: string;
+        seller: string;
+        token: string;
+        valid: boolean;
+      }
+    >;
+
+    mapLocks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+        depositID: BigNumber;
+        relayerPremium: BigNumber;
+        amount: BigNumber;
+        expirationBlock: BigNumber;
+        targetAddress: string;
+        relayerAddress: string;
+      }
+    >;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -485,9 +589,7 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    transferOwnership(
+    setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -498,7 +600,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<void>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<string>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -578,14 +680,14 @@ export interface P2PIX extends BaseContract {
       lockId?: null
     ): LockReturnedEventFilter;
 
-    "OwnershipTransferred(address,address)"(
-      previousOwner?: PromiseOrValue<string> | null,
+    "OwnerUpdated(address,address)"(
+      user?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
-    OwnershipTransferred(
-      previousOwner?: PromiseOrValue<string> | null,
+    ): OwnerUpdatedEventFilter;
+    OwnerUpdated(
+      user?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
-    ): OwnershipTransferredEventFilter;
+    ): OwnerUpdatedEventFilter;
 
     "PremiumsWithdrawn(address,uint256)"(
       owner?: null,
@@ -598,6 +700,11 @@ export interface P2PIX extends BaseContract {
   };
 
   estimateGas: {
+    _castAddrToKey(
+      _addr: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -615,13 +722,23 @@ export interface P2PIX extends BaseContract {
     depositCount(overrides?: CallOverrides): Promise<BigNumber>;
 
     lock(
-      depositID: PromiseOrValue<BigNumberish>,
-      targetAddress: PromiseOrValue<string>,
-      relayerAddress: PromiseOrValue<string>,
-      relayerPremium: PromiseOrValue<BigNumberish>,
-      amount: PromiseOrValue<BigNumberish>,
+      _depositID: PromiseOrValue<BigNumberish>,
+      _targetAddress: PromiseOrValue<string>,
+      _relayerAddress: PromiseOrValue<string>,
+      _relayerPremium: PromiseOrValue<BigNumberish>,
+      _amount: PromiseOrValue<BigNumberish>,
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    mapDeposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    mapLocks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -635,11 +752,7 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    transferOwnership(
+    setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -650,7 +763,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<string>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -666,6 +779,11 @@ export interface P2PIX extends BaseContract {
   };
 
   populateTransaction: {
+    _castAddrToKey(
+      _addr: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -683,13 +801,23 @@ export interface P2PIX extends BaseContract {
     depositCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lock(
-      depositID: PromiseOrValue<BigNumberish>,
-      targetAddress: PromiseOrValue<string>,
-      relayerAddress: PromiseOrValue<string>,
-      relayerPremium: PromiseOrValue<BigNumberish>,
-      amount: PromiseOrValue<BigNumberish>,
+      _depositID: PromiseOrValue<BigNumberish>,
+      _targetAddress: PromiseOrValue<string>,
+      _relayerAddress: PromiseOrValue<string>,
+      _relayerPremium: PromiseOrValue<BigNumberish>,
+      _amount: PromiseOrValue<BigNumberish>,
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    mapDeposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    mapLocks(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -703,11 +831,7 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    renounceOwnership(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    transferOwnership(
+    setOwner(
       newOwner: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -718,7 +842,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<string>,
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

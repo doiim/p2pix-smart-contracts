@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
+import { P2PixErrors } from "./utils/errors";
 
 import { MockToken, P2PIX } from "../src/types";
 
@@ -37,15 +38,19 @@ describe("P2PIX deposit test", () => {
     ]);
     await p2pix.deployed();
 
+    const ownerKey = await p2pix._castAddrToKey(owner.address);
+    const wallet2key = await p2pix._castAddrToKey(wallet2.address);
+    const wallet3key = await p2pix._castAddrToKey(wallet3.address);
+
     // Verify values at deployment
     expect(
-      await p2pix.validBacenSigners(owner.address),
+      await p2pix.validBacenSigners(ownerKey),
     ).to.equal(true);
     expect(
-      await p2pix.validBacenSigners(wallet2.address),
+      await p2pix.validBacenSigners(wallet2key),
     ).to.equal(true);
     expect(
-      await p2pix.validBacenSigners(wallet3.address),
+      await p2pix.validBacenSigners(wallet3key),
     ).to.equal(false);
   });
 
@@ -189,9 +194,7 @@ describe("P2PIX deposit test", () => {
           ethers.utils.parseEther("100"),
           [],
         ),
-    ).to.be.revertedWith(
-      "P2PIX: Another lock with same ID is not expired yet",
-    );
+    ).to.be.revertedWithCustomError(p2pix, P2PixErrors.NotExpired);
   });
 
   it("Should release the locked amount to the buyer", async () => {
@@ -234,9 +237,7 @@ describe("P2PIX deposit test", () => {
       p2pix
         .connect(wallet3)
         .release(lockID, endtoendID, sig.r, sig.s, sig.v),
-    ).to.be.revertedWith(
-      "P2PIX: Lock already released or returned",
-    );
+    ).to.be.revertedWithCustomError(p2pix, P2PixErrors.AlreadyReleased);
   });
 
   it("Should prevent create a 900 lock", async () => {
@@ -251,9 +252,8 @@ describe("P2PIX deposit test", () => {
           ethers.utils.parseEther("900"),
           [],
         ),
-    ).to.be.revertedWith(
-      "P2PIX: Not enough token remaining on deposit",
-    );
+    ).to.be.revertedWithCustomError(
+      p2pix, P2PixErrors.NotEnoughTokens);
   });
 
   it("Should allow recreate same lock again", async () => {
@@ -284,9 +284,9 @@ describe("P2PIX deposit test", () => {
   it("Should allow unlock expired lock", async () => {
     await expect(
       p2pix.unlockExpired([lockID]),
-    ).to.be.revertedWith(
-      "P2PIX: Lock not expired or already released",
-    );
+    ).to.be.revertedWithCustomError(
+      p2pix, P2PixErrors.NotExpired);
+    
     await network.provider.send("evm_mine");
     await network.provider.send("evm_mine");
     await network.provider.send("evm_mine");
@@ -299,8 +299,7 @@ describe("P2PIX deposit test", () => {
   it("Should prevent unlock again", async () => {
     await expect(
       p2pix.unlockExpired([lockID]),
-    ).to.be.revertedWith(
-      "P2PIX: Lock not expired or already released",
-    );
+    ).to.be.revertedWithCustomError(
+      p2pix, P2PixErrors.NotExpired);
   });
 });

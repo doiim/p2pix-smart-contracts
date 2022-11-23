@@ -36,12 +36,15 @@ describe("P2PIX deposit test", () => {
     ]);
     await p2pix.deployed();
 
+    const ownerKey = await p2pix._castAddrToKey(owner.address);
+    const wallet2Key = await p2pix._castAddrToKey(wallet2.address);
+    
     // Verify values at deployment
     expect(
-      await p2pix.validBacenSigners(owner.address),
+      await p2pix.callStatic.validBacenSigners(ownerKey),
     ).to.equal(true);
     expect(
-      await p2pix.validBacenSigners(wallet2.address),
+      await p2pix.validBacenSigners(wallet2Key),
     ).to.equal(true);
   });
 
