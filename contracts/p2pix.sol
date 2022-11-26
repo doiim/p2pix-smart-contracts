@@ -66,26 +66,30 @@ contract P2PIX is
 
     /// ███ Public FX ██████████████████████████████████████████████████████████
 
-    // Vendedor precisa mandar token para o smart contract + chave PIX destino. Retorna um DepositID.
+    /// @notice Creates a deposit order based on a seller's 
+    /// offer of an amount of ERC20 tokens.
+    /// @dev Seller needs to send his tokens to the P2PIX smart contract.
+    /// @param _pixTarget Pix key destination provided by the offer's seller.
+    /// @return depositID The `uint256` return value provided 
+    /// as the deposit identifier. 
+    /// @dev Function sighash: 0xbfe07da6.
     function deposit(
-        address token,
-        uint256 amount,
-        string calldata pixTarget
+        address _token,
+        uint256 _amount,
+        string calldata _pixTarget
     ) 
         public 
-        payable 
         returns (uint256 depositID) 
     {
         (depositID) = _encodeDepositID();
-        ERC20 t = ERC20(token);
+        ERC20 t = ERC20(_token);
         
         DT.Deposit memory d = 
             DT.Deposit({
-                remaining: amount,
-                premium: msg.value,
-                pixTarget: pixTarget,
+                remaining: _amount,
+                pixTarget: _pixTarget,
                 seller: msg.sender,
-                token: token,
+                token: _token,
                 valid: true
             });
         
@@ -98,7 +102,7 @@ contract P2PIX is
             t,
             msg.sender,
             address(this),
-            amount
+            _amount
         );
         
         clearReentrancyGuard();
@@ -106,14 +110,16 @@ contract P2PIX is
         emit DepositAdded(
             msg.sender,
             depositID,
-            token,
-            msg.value,
-            amount
+            _token,
+            _amount
         );
     }
 
-    // Vendedor pode invalidar da ordem de venda impedindo novos
-    // locks na mesma (isso não afeta nenhum lock que esteja ativo).
+    /// @notice Enables seller to invalidate future 
+    /// locks made to his/her token offering order.
+    /// @dev This function does not affect any ongoing active locks.
+    /// @dev Function sighash: 0x72fada5c.
+    
     function cancelDeposit(
         uint256 depositID
     ) public {
@@ -125,12 +131,20 @@ contract P2PIX is
         );
     }
 
-    // Relayer interaje adicionando um “lock” na ordem de venda.
-    // O lock precisa incluir address do comprador + address do relayer + reembolso/premio relayer + valor.
-    // **Só poder ter um lock em aberto para cada (ordem de venda, valor)**.
-    // Só pode fazer lock de ordens que não estão invalidadas(Passo 5).
-    // Essa etapa pode ser feita pelo vendedor conjuntamente com a parte 1.
-    // Retorna um LockID.
+    /// @notice Public method designed to lock an remaining amount of 
+    /// the deposit order of a seller.     
+    /// @dev This method can be performed by either an order's seller,
+    /// relayer, or buyer.
+    /// @dev There can only exist a lock per each `_amount` partitioned 
+    /// from the total `remaining` value.
+    /// @dev Locks can only be performed in valid orders.
+    /// @param _targetAddress The address of the buyer of a `_depositID`.
+    /// @param _relayerAddress The relayer's address.
+    /// @param _relayerPremium The refund/premium owed to a relayer.
+    /// @param expiredLocks An array of `bytes32` identifiers to be 
+    /// provided so to unexpire locks using this transaction gas push. 
+    /// @return lockID The `bytes32` value returned as the lock identifier.
+    /// @dev Function sighash: 0x03aaf306.
     function lock(
         uint256 _depositID,
         address _targetAddress,
@@ -180,9 +194,11 @@ contract P2PIX is
         );
     }
 
-    // Relayer interage com o smart contract, colocando no calldata o comprovante do PIX realizado.
-    // Smart contract valida o comprovante, manda os tokens para o endereço do pagador,
-    // e reembolsa o custo do gás para o endereço do relayer especificado na parte (2).
+    /// @notice Lock release method that liquidate lock 
+    // orders and distributes relayer fees.
+    /// @dev This method can be called by either an 
+    /// order's seller, relayer, or buyer.
+    /// @dev Function sighash: 0x4e1389ed.
     function release(
         bytes32 lockID,
         uint256 pixTimestamp,
@@ -193,12 +209,13 @@ contract P2PIX is
         public 
         nonReentrant
     {
-        // TODO **Prevenir que um Pix não relacionado ao APP seja usado pois tem o mesmo destino
+        /// @todo Prevent a PIX non-related to the app from 
+        /// getting targeted, due to both sharing the same destination. 
         DT.Lock storage l = mapLocks[lockID];
 
         if( 
-            l.expirationBlock <= block.number 
-            && l.amount <= 0
+            l.expirationBlock <= block.number || 
+            l.amount <= 0
         ) revert 
             AlreadyReleased();
 
@@ -243,7 +260,7 @@ contract P2PIX is
         l.expirationBlock = 0;
         usedTransactions[message] = true;
 
-        SafeTransferLib.safeTransfer(
+        SafeTransferLib.safeTransfer(   
             t, 
             l.targetAddress, 
             totalAmount
@@ -264,7 +281,10 @@ contract P2PIX is
     }
 
 
-    // Unlock expired locks
+    /// @notice Unlocks expired locks.
+    /// @dev Triggered in the callgraph by both `lock` and `withdraw` functions.
+    /// @dev This method can also have any public actor as its `tx.origin`.
+    /// @dev Function sighash: 0x8e2749d6.
     function unlockExpired(
         bytes32[] calldata lockIDs
     ) public {
@@ -307,7 +327,10 @@ contract P2PIX is
         }
     }
 
-    // Após os locks expirarem, vendedor pode interagir c/ o contrato e recuperar os tokens de um depósito específico.
+    /// @notice Seller's expired deposit fund sweeper.
+    /// @dev A seller may use this method to recover 
+    /// tokens from expired deposits.
+    /// @dev Function sighash: 0x36317972.
     function withdraw(
         uint256 depositID,
         bytes32[] calldata expiredLocks
@@ -347,22 +370,29 @@ contract P2PIX is
 
     /// ███ Owner Only █████████████████████████████████████████████████████████
 
-    // O dono do contrato pode sacar os premiums pagos
-    function withdrawPremiums() external onlyOwner {
+    /// @dev Contract's balance withdraw method. 
+    /// @dev Function sighash: 0x5fd8c710.
+    function withdrawBalance() external onlyOwner {
         uint256 balance = 
             address(this).balance;
         SafeTransferLib.safeTransferETH(
             msg.sender, 
             balance
         );
-        emit PremiumsWithdrawn(
+        emit FundsWithdrawn(
             msg.sender, 
             balance
         );
     }
 
     /// ███ Helper FX ██████████████████████████████████████████████████████████
+    
+    // solhint-disable-next-line no-empty-blocks
+    receive() external payable {}
 
+    /// @notice Access control private view method that 
+    /// performs auth check on an deposit's seller.
+    /// @dev Function sighash: 0x4125a4d9.
     function _onlySeller(uint256 _depositID) 
         private 
         view 
@@ -374,6 +404,10 @@ contract P2PIX is
             OnlySeller();
     }
 
+    /// @notice Private view auxiliar logic that reverts 
+    /// on a not expired lock passed as argument of the function.
+    /// @dev Called exclusively by the `unlockExpired` method.
+    /// @dev Function sighash: 0x74e2a0bb.
     function _notExpired(DT.Lock storage _l) 
         private 
         view
@@ -385,31 +419,35 @@ contract P2PIX is
             _l.amount <= 0
         ) revert 
             NotExpired();
-
-        // Custom Error Yul Impl
-        // assembly {
-        //     if iszero(iszero(
-        //             or(
-        //                 or(
-        //                     lt(number(), sload(add(_l.slot, 3))),
-        //                     eq(sload(add(_l.slot, 3)), number())
-        //                 ),
-        //                 iszero(sload(add(_l.slot, 2)))
-        //     )))
-        //     {
-        //         mstore(0x00, 0xd0404f85)
-        //         revert(0x1c, 0x04)
-        //     }
-        // }
+/*         
+    // Custom Error Yul Impl
+        assembly {
+            if iszero(iszero(
+                    or(
+                        or(
+                            lt(number(), sload(add(_l.slot, 3))),
+                            eq(sload(add(_l.slot, 3)), number())
+                        ),
+                        iszero(sload(add(_l.slot, 2)))
+            )))
+            {
+                mstore(0x00, 0xd0404f85)
+                revert(0x1c, 0x04)
+            }
+        }
         
-        // Require Error Solidity Impl
-        // require(
-        //         _l.expirationBlock < block.number &&
-        //             _l.amount > 0,
-        //         "P2PIX: Lock not expired or already released"
-        //     );
+    // Require Error Solidity Impl
+        require(
+                _l.expirationBlock < block.number &&
+                    _l.amount > 0,
+                "P2PIX: Lock not expired or already released"
+            ); 
+*/
     }
 
+    /// @notice Internal view auxiliar logic that returns a new valid `_depositID`.
+    /// @dev It reverts on an already valid counter (`uint256`) value.
+    /// @dev Function sighash: 0xdb51d697.
     function _encodeDepositID() 
     internal 
     view 
@@ -423,6 +461,12 @@ contract P2PIX is
             DepositAlreadyExists();
     }
 
+    /// @notice Private view auxiliar logic that encodes/returns 
+    /// the `bytes32` identifier of an lock.
+    /// @dev reverts on a not expired lock with the same ID passed 
+    /// as argument of the function.
+    /// @dev Called exclusively by the `lock` method.
+    /// @dev Function sighash: 0x3fc5fb52.
     function _encodeLockID(
         uint256 _depositID, 
         uint256 _amount, 
@@ -441,6 +485,9 @@ contract P2PIX is
             NotExpired();
     }
 
+    /// @notice Public method that handles `address` 
+    /// to `uint256` safe type casting.
+    /// @dev Function sighash: 0x4b2ae980.
     function _castAddrToKey(address _addr) 
     public 
     pure

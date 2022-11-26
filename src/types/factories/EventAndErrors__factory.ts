@@ -79,12 +79,6 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "premium",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
         name: "amount",
         type: "uint256",
       },
@@ -134,6 +128,25 @@ const _abi = [
       },
     ],
     name: "DepositWithdrawn",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "FundsWithdrawn",
     type: "event",
   },
   {
@@ -203,25 +216,6 @@ const _abi = [
       },
     ],
     name: "LockReturned",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "PremiumsWithdrawn",
     type: "event",
   },
 ];

@@ -65,7 +65,7 @@ describe("P2PIX deposit test", () => {
       erc20.address,
       ethers.utils.parseEther("1000"),
       "SELLER PIX KEY",
-      { value: ethers.utils.parseEther("0.1") },
+      // { value: ethers.utils.parseEther("0.1") },
     );
     await expect(transaction)
       .to.emit(p2pix, "DepositAdded")
@@ -73,7 +73,7 @@ describe("P2PIX deposit test", () => {
         owner.address,
         0,
         erc20.address,
-        ethers.utils.parseEther("0.1"),
+        // ethers.utils.parseEther("0.1"),
         ethers.utils.parseEther("1000"),
       );
   });
@@ -83,7 +83,7 @@ describe("P2PIX deposit test", () => {
       erc20.address,
       ethers.utils.parseEther("1000"),
       "SELLER PIX KEY",
-      { value: ethers.utils.parseEther("0.1") },
+      // { value: ethers.utils.parseEther("0.1") },
     );
     await expect(transaction)
       .to.emit(p2pix, "DepositAdded")
@@ -91,7 +91,7 @@ describe("P2PIX deposit test", () => {
         owner.address,
         1,
         erc20.address,
-        ethers.utils.parseEther("0.1"),
+        // ethers.utils.parseEther("0.1"),
         ethers.utils.parseEther("1000"),
       );
   });

@@ -16,33 +16,32 @@ export interface EventAndErrorsInterface extends utils.Interface {
   functions: {};
 
   events: {
-    "DepositAdded(address,uint256,address,uint256,uint256)": EventFragment;
+    "DepositAdded(address,uint256,address,uint256)": EventFragment;
     "DepositClosed(address,uint256)": EventFragment;
     "DepositWithdrawn(address,uint256,uint256)": EventFragment;
+    "FundsWithdrawn(address,uint256)": EventFragment;
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
     "LockReleased(address,bytes32)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
-    "PremiumsWithdrawn(address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DepositAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositWithdrawn"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReleased"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PremiumsWithdrawn"): EventFragment;
 }
 
 export interface DepositAddedEventObject {
   seller: string;
   depositID: BigNumber;
   token: string;
-  premium: BigNumber;
   amount: BigNumber;
 }
 export type DepositAddedEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, BigNumber],
+  [string, BigNumber, string, BigNumber],
   DepositAddedEventObject
 >;
 
@@ -71,6 +70,17 @@ export type DepositWithdrawnEvent = TypedEvent<
 
 export type DepositWithdrawnEventFilter =
   TypedEventFilter<DepositWithdrawnEvent>;
+
+export interface FundsWithdrawnEventObject {
+  owner: string;
+  amount: BigNumber;
+}
+export type FundsWithdrawnEvent = TypedEvent<
+  [string, BigNumber],
+  FundsWithdrawnEventObject
+>;
+
+export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
 
 export interface LockAddedEventObject {
   buyer: string;
@@ -107,18 +117,6 @@ export type LockReturnedEvent = TypedEvent<
 
 export type LockReturnedEventFilter = TypedEventFilter<LockReturnedEvent>;
 
-export interface PremiumsWithdrawnEventObject {
-  owner: string;
-  amount: BigNumber;
-}
-export type PremiumsWithdrawnEvent = TypedEvent<
-  [string, BigNumber],
-  PremiumsWithdrawnEventObject
->;
-
-export type PremiumsWithdrawnEventFilter =
-  TypedEventFilter<PremiumsWithdrawnEvent>;
-
 export interface EventAndErrors extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -150,18 +148,16 @@ export interface EventAndErrors extends BaseContract {
   callStatic: {};
 
   filters: {
-    "DepositAdded(address,uint256,address,uint256,uint256)"(
+    "DepositAdded(address,uint256,address,uint256)"(
       seller?: PromiseOrValue<string> | null,
       depositID?: null,
       token?: null,
-      premium?: null,
       amount?: null
     ): DepositAddedEventFilter;
     DepositAdded(
       seller?: PromiseOrValue<string> | null,
       depositID?: null,
       token?: null,
-      premium?: null,
       amount?: null
     ): DepositAddedEventFilter;
 
@@ -184,6 +180,12 @@ export interface EventAndErrors extends BaseContract {
       depositID?: null,
       amount?: null
     ): DepositWithdrawnEventFilter;
+
+    "FundsWithdrawn(address,uint256)"(
+      owner?: null,
+      amount?: null
+    ): FundsWithdrawnEventFilter;
+    FundsWithdrawn(owner?: null, amount?: null): FundsWithdrawnEventFilter;
 
     "LockAdded(address,bytes32,uint256,uint256)"(
       buyer?: PromiseOrValue<string> | null,
@@ -215,15 +217,6 @@ export interface EventAndErrors extends BaseContract {
       buyer?: PromiseOrValue<string> | null,
       lockId?: null
     ): LockReturnedEventFilter;
-
-    "PremiumsWithdrawn(address,uint256)"(
-      owner?: null,
-      amount?: null
-    ): PremiumsWithdrawnEventFilter;
-    PremiumsWithdrawn(
-      owner?: null,
-      amount?: null
-    ): PremiumsWithdrawnEventFilter;
   };
 
   estimateGas: {};
