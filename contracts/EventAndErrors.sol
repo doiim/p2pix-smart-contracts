@@ -9,7 +9,6 @@ interface EventAndErrors {
         address indexed seller,
         uint256 depositID,
         address token,
-        uint256 premium,
         uint256 amount
     );
     event DepositClosed(
@@ -35,7 +34,7 @@ interface EventAndErrors {
         address indexed buyer, 
         bytes32 lockId
     );
-    event PremiumsWithdrawn(
+    event FundsWithdrawn(
         address owner, 
         uint256 amount
     );
@@ -49,6 +48,7 @@ interface EventAndErrors {
     /// @dev 0x85d1f726
     error OnlySeller();
     /// @dev Lock not expired or already released.
+    /// @dev Another lock with same ID is not expired yet.
     /// @dev 0xd0404f85
     error NotExpired();
     /// @dev Loop bounds have overflowed.
@@ -63,7 +63,7 @@ interface EventAndErrors {
     /// @dev Lock already released or returned.
     /// @dev 0x63b4904e
     error AlreadyReleased();
-    /// @dev Transaction already used to unlock payment
+    /// @dev Transaction already used to unlock payment.
     /// @dev 0xf490a6ea
     error TxAlreadyUsed();
     /// @dev Signer is not a valid signer.

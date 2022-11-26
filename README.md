@@ -2,6 +2,28 @@
 
 **Repository for P2Pix EVM contracts to be imported by the project.**
 
+## SM Dependency Tree
+
+```rs
+./contracts/
+├── DataTypes.sol
+├── EventAndErrors.sol
+├── lib
+│   ├── auth
+│   │   └── Owned.sol
+│   ├── mock
+│   │   └── mockToken.sol
+│   ├── tokens
+│   │   └── ERC20.sol
+│   └── utils
+│       ├── Counters.sol
+│       ├── ReentrancyGuard.sol
+│       └── SafeTransferLib.sol
+└── p2pix.sol
+```
+## Callgraph
+![Callgraph](docs/callgraph.svg)
+
 ## Usage
 
 ### Pre Requisites
