@@ -16,7 +16,7 @@
 function _castAddrToKey(address _addr) external pure returns (uint256 _key)
 ```
 
-Public method that handles `address`  to `uint256` safe type casting.
+Public method that handles `address` to `uint256` safe type casting.
 
 *Function sighash: 0x4b2ae980.*
 
@@ -32,13 +32,35 @@ Public method that handles `address`  to `uint256` safe type casting.
 |---|---|---|
 | _key | uint256 | undefined |
 
+### allowedERC20s
+
+```solidity
+function allowedERC20s(contract ERC20) external view returns (bool)
+```
+
+
+
+*Tokens allowed to serve as the underlying amount of a deposit.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract ERC20 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bool | undefined |
+
 ### cancelDeposit
 
 ```solidity
 function cancelDeposit(uint256 depositID) external nonpayable
 ```
 
-Enables seller to invalidate future  locks made to his/her token offering order.
+Enables seller to invalidate future locks made to his/her token offering order.
 
 *This function does not affect any ongoing active locks.Function sighash: 0x72fada5c.*
 
@@ -68,10 +90,10 @@ function defaultLockBlocks() external view returns (uint256)
 ### deposit
 
 ```solidity
-function deposit(address _token, uint256 _amount, string _pixTarget) external nonpayable returns (uint256 depositID)
+function deposit(address _token, uint256 _amount, string _pixTarget, bytes32 allowlistRoot) external nonpayable returns (uint256 depositID)
 ```
 
-Creates a deposit order based on a seller&#39;s  offer of an amount of ERC20 tokens.
+Creates a deposit order based on a seller&#39;s offer of an amount of ERC20 tokens.
 
 *Seller needs to send his tokens to the P2PIX smart contract.Function sighash: 0xbfe07da6.*
 
@@ -82,12 +104,13 @@ Creates a deposit order based on a seller&#39;s  offer of an amount of ERC20 tok
 | _token | address | undefined |
 | _amount | uint256 | undefined |
 | _pixTarget | string | Pix key destination provided by the offer&#39;s seller. |
+| allowlistRoot | bytes32 | Optional allow list merkleRoot update `bytes32` value. |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| depositID | uint256 | The `uint256` return value provided  as the deposit identifier.  |
+| depositID | uint256 | The `uint256` return value provided as the deposit identifier. |
 
 ### depositCount
 
@@ -95,7 +118,7 @@ Creates a deposit order based on a seller&#39;s  offer of an amount of ERC20 tok
 function depositCount() external view returns (uint256 _val)
 ```
 
-███ Storage ████████████████████████████████████████████████████████████
+
 
 
 
@@ -109,23 +132,24 @@ function depositCount() external view returns (uint256 _val)
 ### lock
 
 ```solidity
-function lock(uint256 _depositID, address _targetAddress, address _relayerAddress, uint256 _relayerPremium, uint256 _amount, bytes32[] expiredLocks) external nonpayable returns (bytes32 lockID)
+function lock(uint256 _depositID, address _buyerAddress, address _relayerTarget, uint256 _relayerPremium, uint256 _amount, bytes32[] merkleProof, bytes32[] expiredLocks) external nonpayable returns (bytes32 lockID)
 ```
 
-Public method designed to lock an remaining amount of  the deposit order of a seller.     
+Public method designed to lock an remaining amount of the deposit order of a seller.
 
-*This method can be performed by either an order&#39;s seller, relayer, or buyer.There can only exist a lock per each `_amount` partitioned  from the total `remaining` value.Locks can only be performed in valid orders.Function sighash: 0x03aaf306.*
+*This method can be performed either by:  - An user allowed via the seller&#39;s allowlist; - An user with enough userRecord to lock the wished amount; There can only exist a lock per each `_amount` partitioned from the total `remaining` value.Locks can only be performed in valid orders.Function sighash: 0x03aaf306.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | _depositID | uint256 | undefined |
-| _targetAddress | address | The address of the buyer of a `_depositID`. |
-| _relayerAddress | address | The relayer&#39;s address. |
+| _buyerAddress | address | The address of the buyer of a `_depositID`. |
+| _relayerTarget | address | Target address entitled to the `relayerPremim`. |
 | _relayerPremium | uint256 | The refund/premium owed to a relayer. |
-| _amount | uint256 | undefined |
-| expiredLocks | bytes32[] | An array of `bytes32` identifiers to be  provided so to unexpire locks using this transaction gas push.  |
+| _amount | uint256 | The deposit&#39;s remaining amount wished to be locked. |
+| merkleProof | bytes32[] | This value should be:  - Provided as a pass if the `msg.sender` is in the seller&#39;s allowlist; - Left empty otherwise; |
+| expiredLocks | bytes32[] | An array of `bytes32` identifiers to be provided so to unexpire locks using this transaction gas push. |
 
 #### Returns
 
@@ -162,7 +186,7 @@ function mapDeposits(uint256) external view returns (uint256 remaining, string p
 ### mapLocks
 
 ```solidity
-function mapLocks(bytes32) external view returns (uint256 depositID, uint256 relayerPremium, uint256 amount, uint256 expirationBlock, address targetAddress, address relayerAddress)
+function mapLocks(bytes32) external view returns (uint256 depositID, uint256 relayerPremium, uint256 amount, uint256 expirationBlock, address buyerAddress, address relayerTarget, address relayerAddress)
 ```
 
 
@@ -183,7 +207,8 @@ function mapLocks(bytes32) external view returns (uint256 depositID, uint256 rel
 | relayerPremium | uint256 | undefined |
 | amount | uint256 | undefined |
 | expirationBlock | uint256 | undefined |
-| targetAddress | address | undefined |
+| buyerAddress | address | undefined |
+| relayerTarget | address | undefined |
 | relayerAddress | address | undefined |
 
 ### owner
@@ -206,22 +231,78 @@ function owner() external view returns (address)
 ### release
 
 ```solidity
-function release(bytes32 lockID, uint256 pixTimestamp, bytes32 r, bytes32 s, uint8 v) external nonpayable
+function release(bytes32 lockID, address _relayerTarget, uint256 pixTimestamp, bytes32 r, bytes32 s, uint8 v) external nonpayable
 ```
 
+Lock release method that liquidate lock orders and distributes relayer fees.
 
-
-*This method can be called by either an  order&#39;s seller, relayer, or buyer.Function sighash: 0x4e1389ed.*
+*This method can be called by any public actor  as long the signature provided is valid.`relayerPremium` gets splitted equaly  if `relayerTarget` addresses differ.If the `msg.sender` of this method and `l.relayerAddress` are the same, `msg.sender` accrues both l.amount and l.relayerPremium as userRecord credit.  In case of they differing: - `lock` caller gets accrued with `l.amount` as userRecord credit; - `release` caller gets accrued with `l.relayerPremium` as userRecord credit; Function sighash: 0x4e1389ed.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | lockID | bytes32 | undefined |
+| _relayerTarget | address | Target address entitled to the `relayerPremim`. |
 | pixTimestamp | uint256 | undefined |
 | r | bytes32 | undefined |
 | s | bytes32 | undefined |
 | v | uint8 | undefined |
+
+### reputation
+
+```solidity
+function reputation() external view returns (contract IReputation)
+```
+
+███ Storage ████████████████████████████████████████████████████████████
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | contract IReputation | undefined |
+
+### sellerAllowList
+
+```solidity
+function sellerAllowList(uint256) external view returns (bytes32)
+```
+
+
+
+*Seller casted to key =&gt; Seller&#39;s allowlist merkleroot.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | bytes32 | undefined |
+
+### setDefaultLockBlocks
+
+```solidity
+function setDefaultLockBlocks(uint256 _blocks) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _blocks | uint256 | undefined |
 
 ### setOwner
 
@@ -239,6 +320,72 @@ function setOwner(address newOwner) external nonpayable
 |---|---|---|
 | newOwner | address | undefined |
 
+### setReputation
+
+```solidity
+function setReputation(contract IReputation _reputation) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _reputation | contract IReputation | undefined |
+
+### setRoot
+
+```solidity
+function setRoot(address addr, bytes32 merkleroot) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| addr | address | undefined |
+| merkleroot | bytes32 | undefined |
+
+### setValidSigners
+
+```solidity
+function setValidSigners(address[] _validSigners) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _validSigners | address[] | undefined |
+
+### tokenSettings
+
+```solidity
+function tokenSettings(address[] _tokens, bool[] _states) external nonpayable
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _tokens | address[] | undefined |
+| _states | bool[] | undefined |
+
 ### unlockExpired
 
 ```solidity
@@ -247,13 +394,35 @@ function unlockExpired(bytes32[] lockIDs) external nonpayable
 
 Unlocks expired locks.
 
-*Triggered in the callgraph by both `lock` and `withdraw` functions.This method can also have any public actor as its `tx.origin`.Function sighash: 0x8e2749d6.*
+*Triggered in the callgraph by both `lock` and `withdraw` functions.This method can also have any public actor as its `tx.origin`.For each successfull unexpired lock recovered,  `userRecord[_castAddrToKey(l.relayerAddress)]` is decreased by half of its value.Function sighash: 0x8e2749d6.*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
 | lockIDs | bytes32[] | undefined |
+
+### userRecord
+
+```solidity
+function userRecord(uint256) external view returns (uint256)
+```
+
+
+
+*Stores an relayer&#39;s last computed credit.*
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
 
 ### validBacenSigners
 
@@ -285,7 +454,7 @@ function withdraw(uint256 depositID, bytes32[] expiredLocks) external nonpayable
 
 Seller&#39;s expired deposit fund sweeper.
 
-*A seller may use this method to recover  tokens from expired deposits.Function sighash: 0x36317972.*
+*A seller may use this method to recover tokens from expired deposits.Function sighash: 0x36317972.*
 
 #### Parameters
 
@@ -302,12 +471,29 @@ function withdrawBalance() external nonpayable
 
 
 
-*Contract&#39;s balance withdraw method. Function sighash: 0x5fd8c710.*
+*Contract&#39;s underlying balance withdraw method.Function sighash: 0x5fd8c710.*
 
 
 
 
 ## Events
+
+### AllowedERC20Updated
+
+```solidity
+event AllowedERC20Updated(address indexed token, bool indexed state)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| token `indexed` | address | undefined |
+| state `indexed` | bool | undefined |
 
 ### DepositAdded
 
@@ -399,6 +585,22 @@ event LockAdded(address indexed buyer, bytes32 indexed lockID, uint256 depositID
 | depositID  | uint256 | undefined |
 | amount  | uint256 | undefined |
 
+### LockBlocksUpdated
+
+```solidity
+event LockBlocksUpdated(uint256 blocks)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| blocks  | uint256 | undefined |
+
 ### LockReleased
 
 ```solidity
@@ -450,9 +652,52 @@ event OwnerUpdated(address indexed user, address indexed newOwner)
 | user `indexed` | address | undefined |
 | newOwner `indexed` | address | undefined |
 
+### ReputationUpdated
+
+```solidity
+event ReputationUpdated(address reputation)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| reputation  | address | undefined |
+
+### ValidSignersUpdated
+
+```solidity
+event ValidSignersUpdated(address[] signers)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| signers  | address[] | undefined |
+
 
 
 ## Errors
+
+### AddressDenied
+
+```solidity
+error AddressDenied()
+```
+
+
+
+*Address doesn&#39;t exist in a MerkleTree.Address not allowed as relayer.0x3b8474be*
+
 
 ### AlreadyReleased
 
@@ -463,6 +708,17 @@ error AlreadyReleased()
 
 
 *Lock already released or returned.0x63b4904e*
+
+
+### AmountNotAllowed
+
+```solidity
+error AmountNotAllowed()
+```
+
+
+
+*Wished amount to be locked exceeds the limit allowed.0x1c18f846*
 
 
 ### DepositAlreadyExists
@@ -498,6 +754,17 @@ error InvalidSigner()
 *Signer is not a valid signer.0x815e1d64*
 
 
+### LengthMismatch
+
+```solidity
+error LengthMismatch()
+```
+
+
+
+*Arrays&#39; length don&#39;t match.0xff633a38*
+
+
 ### LoopOverflow
 
 ```solidity
@@ -507,6 +774,17 @@ error LoopOverflow()
 
 
 *Loop bounds have overflowed.0xdfb035c9*
+
+
+### NoTokens
+
+```solidity
+error NoTokens()
+```
+
+
+
+*No tokens array provided as argument.0xdf957883*
 
 
 ### NotEnoughTokens
@@ -539,7 +817,7 @@ error OnlySeller()
 
 
 
-*Only seller could call this function.0x85d1f726*
+*Only seller could call this function.`msg.sender` and the seller differ.0x85d1f726*
 
 
 ### Reentrancy
@@ -551,6 +829,17 @@ error Reentrancy()
 
 
 
+
+
+### TokenDenied
+
+```solidity
+error TokenDenied()
+```
+
+
+
+*Token address not allowed to be deposited.0x1578328e*
 
 
 ### TxAlreadyUsed

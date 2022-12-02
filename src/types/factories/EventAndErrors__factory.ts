@@ -12,7 +12,17 @@ import type {
 const _abi = [
   {
     inputs: [],
+    name: "AddressDenied",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "AlreadyReleased",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "AmountNotAllowed",
     type: "error",
   },
   {
@@ -32,7 +42,17 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "LengthMismatch",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "LoopOverflow",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NoTokens",
     type: "error",
   },
   {
@@ -52,8 +72,32 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "TokenDenied",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "TxAlreadyUsed",
     type: "error",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "state",
+        type: "bool",
+      },
+    ],
+    name: "AllowedERC20Updated",
+    type: "event",
   },
   {
     anonymous: false,
@@ -184,6 +228,19 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "uint256",
+        name: "blocks",
+        type: "uint256",
+      },
+    ],
+    name: "LockBlocksUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "buyer",
@@ -216,6 +273,32 @@ const _abi = [
       },
     ],
     name: "LockReturned",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "reputation",
+        type: "address",
+      },
+    ],
+    name: "ReputationUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "signers",
+        type: "address[]",
+      },
+    ],
+    name: "ValidSignersUpdated",
     type: "event",
   },
 ];

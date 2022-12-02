@@ -3,6 +3,8 @@
 /* eslint-disable */
 import type * as auth from "./auth";
 export type { auth };
+import type * as interfaces from "./interfaces";
+export type { interfaces };
 import type * as mock from "./mock";
 export type { mock };
 import type * as tokens from "./tokens";

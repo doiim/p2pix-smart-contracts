@@ -1,0 +1,30 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IReputation",
+  "sourceName": "contracts/lib/interfaces/IReputation.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_userCredit",
+          "type": "uint256"
+        }
+      ],
+      "name": "limiter",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "_spendLimit",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

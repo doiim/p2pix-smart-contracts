@@ -30,17 +30,26 @@ import type {
 export interface P2PIXInterface extends utils.Interface {
   functions: {
     "_castAddrToKey(address)": FunctionFragment;
+    "allowedERC20s(address)": FunctionFragment;
     "cancelDeposit(uint256)": FunctionFragment;
     "defaultLockBlocks()": FunctionFragment;
-    "deposit(address,uint256,string)": FunctionFragment;
+    "deposit(address,uint256,string,bytes32)": FunctionFragment;
     "depositCount()": FunctionFragment;
-    "lock(uint256,address,address,uint256,uint256,bytes32[])": FunctionFragment;
+    "lock(uint256,address,address,uint256,uint256,bytes32[],bytes32[])": FunctionFragment;
     "mapDeposits(uint256)": FunctionFragment;
     "mapLocks(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
-    "release(bytes32,uint256,bytes32,bytes32,uint8)": FunctionFragment;
+    "release(bytes32,address,uint256,bytes32,bytes32,uint8)": FunctionFragment;
+    "reputation()": FunctionFragment;
+    "sellerAllowList(uint256)": FunctionFragment;
+    "setDefaultLockBlocks(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
+    "setReputation(address)": FunctionFragment;
+    "setRoot(address,bytes32)": FunctionFragment;
+    "setValidSigners(address[])": FunctionFragment;
+    "tokenSettings(address[],bool[])": FunctionFragment;
     "unlockExpired(bytes32[])": FunctionFragment;
+    "userRecord(uint256)": FunctionFragment;
     "validBacenSigners(uint256)": FunctionFragment;
     "withdraw(uint256,bytes32[])": FunctionFragment;
     "withdrawBalance()": FunctionFragment;
@@ -49,6 +58,7 @@ export interface P2PIXInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "_castAddrToKey"
+      | "allowedERC20s"
       | "cancelDeposit"
       | "defaultLockBlocks"
       | "deposit"
@@ -58,8 +68,16 @@ export interface P2PIXInterface extends utils.Interface {
       | "mapLocks"
       | "owner"
       | "release"
+      | "reputation"
+      | "sellerAllowList"
+      | "setDefaultLockBlocks"
       | "setOwner"
+      | "setReputation"
+      | "setRoot"
+      | "setValidSigners"
+      | "tokenSettings"
       | "unlockExpired"
+      | "userRecord"
       | "validBacenSigners"
       | "withdraw"
       | "withdrawBalance"
@@ -67,6 +85,10 @@ export interface P2PIXInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "_castAddrToKey",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "allowedERC20s",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
@@ -82,7 +104,8 @@ export interface P2PIXInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>
+      PromiseOrValue<string>,
+      PromiseOrValue<BytesLike>
     ]
   ): string;
   encodeFunctionData(
@@ -97,6 +120,7 @@ export interface P2PIXInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>[],
       PromiseOrValue<BytesLike>[]
     ]
   ): string;
@@ -113,6 +137,7 @@ export interface P2PIXInterface extends utils.Interface {
     functionFragment: "release",
     values: [
       PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>,
@@ -120,12 +145,44 @@ export interface P2PIXInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "reputation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "sellerAllowList",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDefaultLockBlocks",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setOwner",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setReputation",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRoot",
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setValidSigners",
+    values: [PromiseOrValue<string>[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokenSettings",
+    values: [PromiseOrValue<string>[], PromiseOrValue<boolean>[]]
+  ): string;
+  encodeFunctionData(
     functionFragment: "unlockExpired",
     values: [PromiseOrValue<BytesLike>[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "userRecord",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "validBacenSigners",
@@ -142,6 +199,10 @@ export interface P2PIXInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "_castAddrToKey",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "allowedERC20s",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -165,11 +226,34 @@ export interface P2PIXInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "mapLocks", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "release", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "reputation", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "sellerAllowList",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDefaultLockBlocks",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setReputation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setRoot", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setValidSigners",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenSettings",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "unlockExpired",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "userRecord", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "validBacenSigners",
     data: BytesLike
@@ -181,25 +265,45 @@ export interface P2PIXInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "AllowedERC20Updated(address,bool)": EventFragment;
     "DepositAdded(address,uint256,address,uint256)": EventFragment;
     "DepositClosed(address,uint256)": EventFragment;
     "DepositWithdrawn(address,uint256,uint256)": EventFragment;
     "FundsWithdrawn(address,uint256)": EventFragment;
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
+    "LockBlocksUpdated(uint256)": EventFragment;
     "LockReleased(address,bytes32)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
     "OwnerUpdated(address,address)": EventFragment;
+    "ReputationUpdated(address)": EventFragment;
+    "ValidSignersUpdated(address[])": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AllowedERC20Updated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LockBlocksUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReleased"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
+
+export interface AllowedERC20UpdatedEventObject {
+  token: string;
+  state: boolean;
+}
+export type AllowedERC20UpdatedEvent = TypedEvent<
+  [string, boolean],
+  AllowedERC20UpdatedEventObject
+>;
+
+export type AllowedERC20UpdatedEventFilter =
+  TypedEventFilter<AllowedERC20UpdatedEvent>;
 
 export interface DepositAddedEventObject {
   seller: string;
@@ -262,6 +366,17 @@ export type LockAddedEvent = TypedEvent<
 
 export type LockAddedEventFilter = TypedEventFilter<LockAddedEvent>;
 
+export interface LockBlocksUpdatedEventObject {
+  blocks: BigNumber;
+}
+export type LockBlocksUpdatedEvent = TypedEvent<
+  [BigNumber],
+  LockBlocksUpdatedEventObject
+>;
+
+export type LockBlocksUpdatedEventFilter =
+  TypedEventFilter<LockBlocksUpdatedEvent>;
+
 export interface LockReleasedEventObject {
   buyer: string;
   lockId: string;
@@ -295,6 +410,28 @@ export type OwnerUpdatedEvent = TypedEvent<
 
 export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
 
+export interface ReputationUpdatedEventObject {
+  reputation: string;
+}
+export type ReputationUpdatedEvent = TypedEvent<
+  [string],
+  ReputationUpdatedEventObject
+>;
+
+export type ReputationUpdatedEventFilter =
+  TypedEventFilter<ReputationUpdatedEvent>;
+
+export interface ValidSignersUpdatedEventObject {
+  signers: string[];
+}
+export type ValidSignersUpdatedEvent = TypedEvent<
+  [string[]],
+  ValidSignersUpdatedEventObject
+>;
+
+export type ValidSignersUpdatedEventFilter =
+  TypedEventFilter<ValidSignersUpdatedEvent>;
+
 export interface P2PIX extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
@@ -327,6 +464,11 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber] & { _key: BigNumber }>;
 
+    allowedERC20s(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -338,6 +480,7 @@ export interface P2PIX extends BaseContract {
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
       _pixTarget: PromiseOrValue<string>,
+      allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -347,10 +490,11 @@ export interface P2PIX extends BaseContract {
 
     lock(
       _depositID: PromiseOrValue<BigNumberish>,
-      _targetAddress: PromiseOrValue<string>,
-      _relayerAddress: PromiseOrValue<string>,
+      _buyerAddress: PromiseOrValue<string>,
+      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
+      merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -372,12 +516,13 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
         depositID: BigNumber;
         relayerPremium: BigNumber;
         amount: BigNumber;
         expirationBlock: BigNumber;
-        targetAddress: string;
+        buyerAddress: string;
+        relayerTarget: string;
         relayerAddress: string;
       }
     >;
@@ -386,10 +531,23 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BytesLike>,
+      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BigNumberish>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    reputation(overrides?: CallOverrides): Promise<[string]>;
+
+    sellerAllowList(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    setDefaultLockBlocks(
+      _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -398,10 +556,37 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setReputation(
+      _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setRoot(
+      addr: PromiseOrValue<string>,
+      merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setValidSigners(
+      _validSigners: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    tokenSettings(
+      _tokens: PromiseOrValue<string>[],
+      _states: PromiseOrValue<boolean>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     unlockExpired(
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    userRecord(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     validBacenSigners(
       arg0: PromiseOrValue<BigNumberish>,
@@ -424,6 +609,11 @@ export interface P2PIX extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  allowedERC20s(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   cancelDeposit(
     depositID: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -435,6 +625,7 @@ export interface P2PIX extends BaseContract {
     _token: PromiseOrValue<string>,
     _amount: PromiseOrValue<BigNumberish>,
     _pixTarget: PromiseOrValue<string>,
+    allowlistRoot: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -442,10 +633,11 @@ export interface P2PIX extends BaseContract {
 
   lock(
     _depositID: PromiseOrValue<BigNumberish>,
-    _targetAddress: PromiseOrValue<string>,
-    _relayerAddress: PromiseOrValue<string>,
+    _buyerAddress: PromiseOrValue<string>,
+    _relayerTarget: PromiseOrValue<string>,
     _relayerPremium: PromiseOrValue<BigNumberish>,
     _amount: PromiseOrValue<BigNumberish>,
+    merkleProof: PromiseOrValue<BytesLike>[],
     expiredLocks: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -467,12 +659,13 @@ export interface P2PIX extends BaseContract {
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+    [BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
       depositID: BigNumber;
       relayerPremium: BigNumber;
       amount: BigNumber;
       expirationBlock: BigNumber;
-      targetAddress: string;
+      buyerAddress: string;
+      relayerTarget: string;
       relayerAddress: string;
     }
   >;
@@ -481,10 +674,23 @@ export interface P2PIX extends BaseContract {
 
   release(
     lockID: PromiseOrValue<BytesLike>,
+    _relayerTarget: PromiseOrValue<string>,
     pixTimestamp: PromiseOrValue<BigNumberish>,
     r: PromiseOrValue<BytesLike>,
     s: PromiseOrValue<BytesLike>,
     v: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  reputation(overrides?: CallOverrides): Promise<string>;
+
+  sellerAllowList(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  setDefaultLockBlocks(
+    _blocks: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -493,10 +699,37 @@ export interface P2PIX extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setReputation(
+    _reputation: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setRoot(
+    addr: PromiseOrValue<string>,
+    merkleroot: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setValidSigners(
+    _validSigners: PromiseOrValue<string>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  tokenSettings(
+    _tokens: PromiseOrValue<string>[],
+    _states: PromiseOrValue<boolean>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   unlockExpired(
     lockIDs: PromiseOrValue<BytesLike>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  userRecord(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   validBacenSigners(
     arg0: PromiseOrValue<BigNumberish>,
@@ -519,6 +752,11 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    allowedERC20s(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -530,6 +768,7 @@ export interface P2PIX extends BaseContract {
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
       _pixTarget: PromiseOrValue<string>,
+      allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -537,10 +776,11 @@ export interface P2PIX extends BaseContract {
 
     lock(
       _depositID: PromiseOrValue<BigNumberish>,
-      _targetAddress: PromiseOrValue<string>,
-      _relayerAddress: PromiseOrValue<string>,
+      _buyerAddress: PromiseOrValue<string>,
+      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
+      merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<string>;
@@ -562,12 +802,13 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, BigNumber, string, string] & {
+      [BigNumber, BigNumber, BigNumber, BigNumber, string, string, string] & {
         depositID: BigNumber;
         relayerPremium: BigNumber;
         amount: BigNumber;
         expirationBlock: BigNumber;
-        targetAddress: string;
+        buyerAddress: string;
+        relayerTarget: string;
         relayerAddress: string;
       }
     >;
@@ -576,10 +817,23 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BytesLike>,
+      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BigNumberish>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    reputation(overrides?: CallOverrides): Promise<string>;
+
+    sellerAllowList(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    setDefaultLockBlocks(
+      _blocks: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -588,10 +842,37 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setReputation(
+      _reputation: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRoot(
+      addr: PromiseOrValue<string>,
+      merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setValidSigners(
+      _validSigners: PromiseOrValue<string>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    tokenSettings(
+      _tokens: PromiseOrValue<string>[],
+      _states: PromiseOrValue<boolean>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     unlockExpired(
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<void>;
+
+    userRecord(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     validBacenSigners(
       arg0: PromiseOrValue<BigNumberish>,
@@ -608,6 +889,15 @@ export interface P2PIX extends BaseContract {
   };
 
   filters: {
+    "AllowedERC20Updated(address,bool)"(
+      token?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): AllowedERC20UpdatedEventFilter;
+    AllowedERC20Updated(
+      token?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): AllowedERC20UpdatedEventFilter;
+
     "DepositAdded(address,uint256,address,uint256)"(
       seller?: PromiseOrValue<string> | null,
       depositID?: null,
@@ -660,6 +950,9 @@ export interface P2PIX extends BaseContract {
       amount?: null
     ): LockAddedEventFilter;
 
+    "LockBlocksUpdated(uint256)"(blocks?: null): LockBlocksUpdatedEventFilter;
+    LockBlocksUpdated(blocks?: null): LockBlocksUpdatedEventFilter;
+
     "LockReleased(address,bytes32)"(
       buyer?: PromiseOrValue<string> | null,
       lockId?: null
@@ -686,11 +979,26 @@ export interface P2PIX extends BaseContract {
       user?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
     ): OwnerUpdatedEventFilter;
+
+    "ReputationUpdated(address)"(
+      reputation?: null
+    ): ReputationUpdatedEventFilter;
+    ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
+
+    "ValidSignersUpdated(address[])"(
+      signers?: null
+    ): ValidSignersUpdatedEventFilter;
+    ValidSignersUpdated(signers?: null): ValidSignersUpdatedEventFilter;
   };
 
   estimateGas: {
     _castAddrToKey(
       _addr: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    allowedERC20s(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -705,6 +1013,7 @@ export interface P2PIX extends BaseContract {
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
       _pixTarget: PromiseOrValue<string>,
+      allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -712,10 +1021,11 @@ export interface P2PIX extends BaseContract {
 
     lock(
       _depositID: PromiseOrValue<BigNumberish>,
-      _targetAddress: PromiseOrValue<string>,
-      _relayerAddress: PromiseOrValue<string>,
+      _buyerAddress: PromiseOrValue<string>,
+      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
+      merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -734,10 +1044,23 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BytesLike>,
+      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BigNumberish>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    reputation(overrides?: CallOverrides): Promise<BigNumber>;
+
+    sellerAllowList(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    setDefaultLockBlocks(
+      _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -746,9 +1069,36 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setReputation(
+      _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setRoot(
+      addr: PromiseOrValue<string>,
+      merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setValidSigners(
+      _validSigners: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    tokenSettings(
+      _tokens: PromiseOrValue<string>[],
+      _states: PromiseOrValue<boolean>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     unlockExpired(
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    userRecord(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     validBacenSigners(
@@ -773,6 +1123,11 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    allowedERC20s(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     cancelDeposit(
       depositID: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -784,6 +1139,7 @@ export interface P2PIX extends BaseContract {
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
       _pixTarget: PromiseOrValue<string>,
+      allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -791,10 +1147,11 @@ export interface P2PIX extends BaseContract {
 
     lock(
       _depositID: PromiseOrValue<BigNumberish>,
-      _targetAddress: PromiseOrValue<string>,
-      _relayerAddress: PromiseOrValue<string>,
+      _buyerAddress: PromiseOrValue<string>,
+      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
+      merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
@@ -813,10 +1170,23 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BytesLike>,
+      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BigNumberish>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    reputation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    sellerAllowList(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    setDefaultLockBlocks(
+      _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -825,9 +1195,36 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    setReputation(
+      _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRoot(
+      addr: PromiseOrValue<string>,
+      merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setValidSigners(
+      _validSigners: PromiseOrValue<string>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    tokenSettings(
+      _tokens: PromiseOrValue<string>[],
+      _states: PromiseOrValue<boolean>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     unlockExpired(
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    userRecord(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     validBacenSigners(

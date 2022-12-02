@@ -23,8 +23,11 @@ library DataTypes {
         /// @dev If not paid at this block will be expired.
         uint256 expirationBlock; 
         /// @dev Where the tokens are sent the when order gets validated.
-        address targetAddress;
-        /// @dev Relayer address that facilitated this transaction.
+        address buyerAddress;
+        /// @dev Relayer's target address that receives `relayerPremium` funds.
+        address relayerTarget;
+        /// @dev Relayer address (msg.sender) that facilitated this transaction.
+        /// @dev Reputation points accruer.
         address relayerAddress;
     }
 }

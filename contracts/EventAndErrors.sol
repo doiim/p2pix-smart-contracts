@@ -2,6 +2,7 @@
 pragma solidity 0.8.9;
 
 interface EventAndErrors {
+    // bytes32 constant DEPOSIT_ADDED_SIGNATURE =
 
     /// ███ Events ████████████████████████████████████████████████████████████
 
@@ -26,17 +27,15 @@ interface EventAndErrors {
         uint256 depositID,
         uint256 amount
     );
-    event LockReleased(
-        address indexed buyer, 
-        bytes32 lockId
-    );
-    event LockReturned(
-        address indexed buyer, 
-        bytes32 lockId
-    );
-    event FundsWithdrawn(
-        address owner, 
-        uint256 amount
+    event LockReleased(address indexed buyer, bytes32 lockId);
+    event LockReturned(address indexed buyer, bytes32 lockId);
+    event FundsWithdrawn(address owner, uint256 amount);
+    event ReputationUpdated(address reputation);
+    event LockBlocksUpdated(uint256 blocks);
+    event ValidSignersUpdated(address[] signers);
+    event AllowedERC20Updated(
+        address indexed token,
+        bool indexed state
     );
 
     /// ███ Errors ████████████████████████████████████████████████████████████
@@ -45,6 +44,7 @@ interface EventAndErrors {
     /// @dev 0xc44bd765
     error DepositAlreadyExists();
     /// @dev Only seller could call this function.
+    /// @dev `msg.sender` and the seller differ.
     /// @dev 0x85d1f726
     error OnlySeller();
     /// @dev Lock not expired or already released.
@@ -69,4 +69,20 @@ interface EventAndErrors {
     /// @dev Signer is not a valid signer.
     /// @dev 0x815e1d64
     error InvalidSigner();
+    /// @dev Address doesn't exist in a MerkleTree.
+    /// @dev Address not allowed as relayer.
+    /// @dev 0x3b8474be
+    error AddressDenied();
+    /// @dev Arrays' length don't match.
+    /// @dev 0xff633a38
+    error LengthMismatch();
+    /// @dev No tokens array provided as argument.
+    /// @dev 0xdf957883
+    error NoTokens();
+    /// @dev Token address not allowed to be deposited.
+    /// @dev 0x1578328e
+    error TokenDenied();
+    /// @dev Wished amount to be locked exceeds the limit allowed.
+    /// @dev 0x1c18f846
+    error AmountNotAllowed();
 }

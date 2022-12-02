@@ -11,6 +11,23 @@
 
 ## Events
 
+### AllowedERC20Updated
+
+```solidity
+event AllowedERC20Updated(address indexed token, bool indexed state)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| token `indexed` | address | undefined |
+| state `indexed` | bool | undefined |
+
 ### DepositAdded
 
 ```solidity
@@ -101,6 +118,22 @@ event LockAdded(address indexed buyer, bytes32 indexed lockID, uint256 depositID
 | depositID  | uint256 | undefined |
 | amount  | uint256 | undefined |
 
+### LockBlocksUpdated
+
+```solidity
+event LockBlocksUpdated(uint256 blocks)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| blocks  | uint256 | undefined |
+
 ### LockReleased
 
 ```solidity
@@ -135,9 +168,52 @@ event LockReturned(address indexed buyer, bytes32 lockId)
 | buyer `indexed` | address | undefined |
 | lockId  | bytes32 | undefined |
 
+### ReputationUpdated
+
+```solidity
+event ReputationUpdated(address reputation)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| reputation  | address | undefined |
+
+### ValidSignersUpdated
+
+```solidity
+event ValidSignersUpdated(address[] signers)
+```
+
+
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| signers  | address[] | undefined |
+
 
 
 ## Errors
+
+### AddressDenied
+
+```solidity
+error AddressDenied()
+```
+
+
+
+*Address doesn&#39;t exist in a MerkleTree.Address not allowed as relayer.0x3b8474be*
+
 
 ### AlreadyReleased
 
@@ -148,6 +224,17 @@ error AlreadyReleased()
 
 
 *Lock already released or returned.0x63b4904e*
+
+
+### AmountNotAllowed
+
+```solidity
+error AmountNotAllowed()
+```
+
+
+
+*Wished amount to be locked exceeds the limit allowed.0x1c18f846*
 
 
 ### DepositAlreadyExists
@@ -183,6 +270,17 @@ error InvalidSigner()
 *Signer is not a valid signer.0x815e1d64*
 
 
+### LengthMismatch
+
+```solidity
+error LengthMismatch()
+```
+
+
+
+*Arrays&#39; length don&#39;t match.0xff633a38*
+
+
 ### LoopOverflow
 
 ```solidity
@@ -192,6 +290,17 @@ error LoopOverflow()
 
 
 *Loop bounds have overflowed.0xdfb035c9*
+
+
+### NoTokens
+
+```solidity
+error NoTokens()
+```
+
+
+
+*No tokens array provided as argument.0xdf957883*
 
 
 ### NotEnoughTokens
@@ -224,7 +333,18 @@ error OnlySeller()
 
 
 
-*Only seller could call this function.0x85d1f726*
+*Only seller could call this function.`msg.sender` and the seller differ.0x85d1f726*
+
+
+### TokenDenied
+
+```solidity
+error TokenDenied()
+```
+
+
+
+*Token address not allowed to be deposited.0x1578328e*
 
 
 ### TxAlreadyUsed

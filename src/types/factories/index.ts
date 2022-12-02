@@ -4,3 +4,4 @@
 export * as lib from "./lib";
 export * as p2PixSol from "./p2pix.sol";
 export { EventAndErrors__factory } from "./EventAndErrors__factory";
+export { Reputation__factory } from "./Reputation__factory";

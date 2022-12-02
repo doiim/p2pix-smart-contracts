@@ -16,23 +16,43 @@ export interface EventAndErrorsInterface extends utils.Interface {
   functions: {};
 
   events: {
+    "AllowedERC20Updated(address,bool)": EventFragment;
     "DepositAdded(address,uint256,address,uint256)": EventFragment;
     "DepositClosed(address,uint256)": EventFragment;
     "DepositWithdrawn(address,uint256,uint256)": EventFragment;
     "FundsWithdrawn(address,uint256)": EventFragment;
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
+    "LockBlocksUpdated(uint256)": EventFragment;
     "LockReleased(address,bytes32)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
+    "ReputationUpdated(address)": EventFragment;
+    "ValidSignersUpdated(address[])": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AllowedERC20Updated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LockBlocksUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReleased"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
+
+export interface AllowedERC20UpdatedEventObject {
+  token: string;
+  state: boolean;
+}
+export type AllowedERC20UpdatedEvent = TypedEvent<
+  [string, boolean],
+  AllowedERC20UpdatedEventObject
+>;
+
+export type AllowedERC20UpdatedEventFilter =
+  TypedEventFilter<AllowedERC20UpdatedEvent>;
 
 export interface DepositAddedEventObject {
   seller: string;
@@ -95,6 +115,17 @@ export type LockAddedEvent = TypedEvent<
 
 export type LockAddedEventFilter = TypedEventFilter<LockAddedEvent>;
 
+export interface LockBlocksUpdatedEventObject {
+  blocks: BigNumber;
+}
+export type LockBlocksUpdatedEvent = TypedEvent<
+  [BigNumber],
+  LockBlocksUpdatedEventObject
+>;
+
+export type LockBlocksUpdatedEventFilter =
+  TypedEventFilter<LockBlocksUpdatedEvent>;
+
 export interface LockReleasedEventObject {
   buyer: string;
   lockId: string;
@@ -116,6 +147,28 @@ export type LockReturnedEvent = TypedEvent<
 >;
 
 export type LockReturnedEventFilter = TypedEventFilter<LockReturnedEvent>;
+
+export interface ReputationUpdatedEventObject {
+  reputation: string;
+}
+export type ReputationUpdatedEvent = TypedEvent<
+  [string],
+  ReputationUpdatedEventObject
+>;
+
+export type ReputationUpdatedEventFilter =
+  TypedEventFilter<ReputationUpdatedEvent>;
+
+export interface ValidSignersUpdatedEventObject {
+  signers: string[];
+}
+export type ValidSignersUpdatedEvent = TypedEvent<
+  [string[]],
+  ValidSignersUpdatedEventObject
+>;
+
+export type ValidSignersUpdatedEventFilter =
+  TypedEventFilter<ValidSignersUpdatedEvent>;
 
 export interface EventAndErrors extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -148,6 +201,15 @@ export interface EventAndErrors extends BaseContract {
   callStatic: {};
 
   filters: {
+    "AllowedERC20Updated(address,bool)"(
+      token?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): AllowedERC20UpdatedEventFilter;
+    AllowedERC20Updated(
+      token?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): AllowedERC20UpdatedEventFilter;
+
     "DepositAdded(address,uint256,address,uint256)"(
       seller?: PromiseOrValue<string> | null,
       depositID?: null,
@@ -200,6 +262,9 @@ export interface EventAndErrors extends BaseContract {
       amount?: null
     ): LockAddedEventFilter;
 
+    "LockBlocksUpdated(uint256)"(blocks?: null): LockBlocksUpdatedEventFilter;
+    LockBlocksUpdated(blocks?: null): LockBlocksUpdatedEventFilter;
+
     "LockReleased(address,bytes32)"(
       buyer?: PromiseOrValue<string> | null,
       lockId?: null
@@ -217,6 +282,16 @@ export interface EventAndErrors extends BaseContract {
       buyer?: PromiseOrValue<string> | null,
       lockId?: null
     ): LockReturnedEventFilter;
+
+    "ReputationUpdated(address)"(
+      reputation?: null
+    ): ReputationUpdatedEventFilter;
+    ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
+
+    "ValidSignersUpdated(address[])"(
+      signers?: null
+    ): ValidSignersUpdatedEventFilter;
+    ValidSignersUpdated(signers?: null): ValidSignersUpdatedEventFilter;
   };
 
   estimateGas: {};

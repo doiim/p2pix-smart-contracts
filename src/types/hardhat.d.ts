@@ -21,6 +21,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Owned__factory>;
     getContractFactory(
+      name: "IReputation",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IReputation__factory>;
+    getContractFactory(
       name: "MockToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockToken__factory>;
@@ -40,6 +44,10 @@ declare module "hardhat/types/runtime" {
       name: "P2PIX",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.P2PIX__factory>;
+    getContractFactory(
+      name: "Reputation",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Reputation__factory>;
 
     getContractAt(
       name: "EventAndErrors",
@@ -51,6 +59,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Owned>;
+    getContractAt(
+      name: "IReputation",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IReputation>;
     getContractAt(
       name: "MockToken",
       address: string,
@@ -76,6 +89,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.P2PIX>;
+    getContractAt(
+      name: "Reputation",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Reputation>;
 
     // default types
     getContractFactory(
