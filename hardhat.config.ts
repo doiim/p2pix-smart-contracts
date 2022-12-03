@@ -5,6 +5,8 @@ import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 
+import "hardhat-tracer";
+
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 const mnemonic: string | undefined = process.env.MNEMONIC;
