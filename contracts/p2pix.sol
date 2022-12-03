@@ -150,7 +150,7 @@ contract P2PIX is
     /// from the total `remaining` value.
     /// @dev Locks can only be performed in valid orders.
     /// @param _buyerAddress The address of the buyer of a `_depositID`.
-    /// @param _relayerTarget Target address entitled to the `relayerPremim`.
+    /// @param _relayerTarget Target address entitled to the `relayerPremium`.
     /// @param _relayerPremium The refund/premium owed to a relayer.
     /// @param _amount The deposit's remaining amount wished to be locked.
     /// @param merkleProof This value should be: 
@@ -659,6 +659,11 @@ contract P2PIX is
             returnSize := returndatasize()
             returnValue := mload(0x00)
             _spendLimit := returnValue
+            // reverts if call does not succeed.
+            if iszero(success) {
+                mstore(0x00, 0xe10bf1cc)
+                revert(0x1c, 0x04)
+            }
         }
     }
 

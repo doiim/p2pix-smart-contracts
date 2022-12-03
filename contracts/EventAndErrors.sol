@@ -2,7 +2,6 @@
 pragma solidity 0.8.9;
 
 interface EventAndErrors {
-    // bytes32 constant DEPOSIT_ADDED_SIGNATURE =
 
     /// ███ Events ████████████████████████████████████████████████████████████
 
@@ -85,4 +84,7 @@ interface EventAndErrors {
     /// @dev Wished amount to be locked exceeds the limit allowed.
     /// @dev 0x1c18f846
     error AmountNotAllowed();
+    /// @dev Reverts when success return value returns false.
+    /// @dev 0xe10bf1cc
+    error StaticCallFailed();
 }
