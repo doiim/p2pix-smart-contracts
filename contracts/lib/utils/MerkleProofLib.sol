@@ -2,39 +2,54 @@
 pragma solidity >=0.8.4;
 
 /// @notice Gas optimized verification of proof of inclusion for a leaf in a Merkle tree.
-/// @author Solady 
+/// @author Solady
 /// (https://github.com/vectorized/solady/blob/main/src/utils/MerkleProofLib.sol)
-/// @author Modified from Solmate 
+/// @author Modified from Solmate
 /// (https://github.com/transmissions11/solmate/blob/main/src/utils/MerkleProofLib.sol)
-/// @author Modified from OpenZeppelin 
+/// @author Modified from OpenZeppelin
 /// (https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol)
 library MerkleProofLib {
     /// @dev Returns whether `leaf` exists in the Merkle tree with `root`, given `proof`.
-    function verify(bytes32[] calldata proof, bytes32 root, bytes32 leaf)
-        internal
-        pure
-        returns (bool isValid)
-    {
+    function verify(
+        bytes32[] calldata proof,
+        bytes32 root,
+        bytes32 leaf
+    ) internal pure returns (bool isValid) {
         /// @solidity memory-safe-assembly
         assembly {
             if proof.length {
                 // Left shift by 5 is equivalent to multiplying by 0x20.
-                let end := add(proof.offset, shl(5, proof.length))
+                let end := add(
+                    proof.offset,
+                    shl(5, proof.length)
+                )
                 // Initialize `offset` to the offset of `proof` in the calldata.
                 let offset := proof.offset
                 // Iterate over proof elements to compute root hash.
-                for {} 1 {} {
+                for {
+
+                } 1 {
+
+                } {
                     // Slot of `leaf` in scratch space.
                     // If the condition is true: 0x20, otherwise: 0x00.
-                    let scratch := shl(5, gt(leaf, calldataload(offset)))
+                    let scratch := shl(
+                        5,
+                        gt(leaf, calldataload(offset))
+                    )
                     // Store elements to hash contiguously in scratch space.
                     // Scratch space is 64 bytes (0x00 - 0x3f) and both elements are 32 bytes.
                     mstore(scratch, leaf)
-                    mstore(xor(scratch, 0x20), calldataload(offset))
+                    mstore(
+                        xor(scratch, 0x20),
+                        calldataload(offset)
+                    )
                     // Reuse `leaf` to store the hash to reduce stack operations.
                     leaf := keccak256(0x00, 0x40)
                     offset := add(offset, 0x20)
-                    if iszero(lt(offset, end)) { break }
+                    if iszero(lt(offset, end)) {
+                        break
+                    }
                 }
             }
             isValid := eq(leaf, root)

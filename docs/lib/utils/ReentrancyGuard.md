@@ -1,14 +1,8 @@
 # ReentrancyGuard
 
-*z0r0z.ethModified from Seaport         (https://github.com/ProjectOpenSea/seaport/blob/main/contracts/lib/ReentrancyGuard.sol)Modified from Solmate         (https://github.com/Rari-Capital/solmate/blob/main/src/utils/ReentrancyGuard.sol)*
-
-
+_z0r0z.ethModified from Seaport (https://github.com/ProjectOpenSea/seaport/blob/main/contracts/lib/ReentrancyGuard.sol)Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/ReentrancyGuard.sol)_
 
 Reentrancy protection for smart contracts.
-
-
-
-
 
 ## Errors
 
@@ -17,10 +11,3 @@ Reentrancy protection for smart contracts.
 ```solidity
 error Reentrancy()
 ```
-
-
-
-
-
-
-

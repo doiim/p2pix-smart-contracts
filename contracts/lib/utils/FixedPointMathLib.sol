@@ -4,22 +4,27 @@ pragma solidity >=0.8.4;
 /// @notice Arithmetic library with operations for fixed-point numbers.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/FixedPointMathLib.sol)
 library FixedPointMathLib {
-    
     /*//////////////////////////////////////////////////////////////
                     SIMPLIFIED FIXED POINT OPERATIONS
     //////////////////////////////////////////////////////////////*/
 
     /// @dev The scalar of ETH and most ERC20s.
-    uint256 internal constant WAD = 1e18; 
+    uint256 internal constant WAD = 1e18;
 
-    function mulWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
+    function mulWadDown(
+        uint256 x,
+        uint256 y
+    ) internal pure returns (uint256) {
         // Equivalent to (x * y) / WAD rounded down.
-        return mulDivDown(x, y, WAD); 
+        return mulDivDown(x, y, WAD);
     }
 
-    function divWadDown(uint256 x, uint256 y) internal pure returns (uint256) {
+    function divWadDown(
+        uint256 x,
+        uint256 y
+    ) internal pure returns (uint256) {
         // Equivalent to (x * WAD) / y rounded down.
-        return mulDivDown(x, WAD, y); 
+        return mulDivDown(x, WAD, y);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -36,7 +41,12 @@ library FixedPointMathLib {
             z := mul(x, y)
 
             // Equivalent to require(denominator != 0 && (x == 0 || (x * y) / x == y))
-            if iszero(and(iszero(iszero(denominator)), or(iszero(x), eq(div(z, x), y)))) {
+            if iszero(
+                and(
+                    iszero(iszero(denominator)),
+                    or(iszero(x), eq(div(z, x), y))
+                )
+            ) {
                 revert(0, 0)
             }
 
@@ -49,7 +59,9 @@ library FixedPointMathLib {
                         GENERAL NUMBER UTILITIES
     //////////////////////////////////////////////////////////////*/
 
-    function sqrt(uint256 x) internal pure returns (uint256 z) {
+    function sqrt(
+        uint256 x
+    ) internal pure returns (uint256 z) {
         assembly {
             let y := x // We start y at x, which will help us make our initial estimate.
 
@@ -60,7 +72,9 @@ library FixedPointMathLib {
 
             // We check y >= 2^(k + 8) but shift right by k bits
             // each branch to ensure that if x >= 256, then y >= 256.
-            if iszero(lt(y, 0x10000000000000000000000000000000000)) {
+            if iszero(
+                lt(y, 0x10000000000000000000000000000000000)
+            ) {
                 y := shr(128, y)
                 z := shl(64, z)
             }

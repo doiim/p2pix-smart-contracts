@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity  >=0.8.4;
+pragma solidity >=0.8.4;
 
 /// @notice Reentrancy protection for smart contracts.
 /// @author z0r0z.eth

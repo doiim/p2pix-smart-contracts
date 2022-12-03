@@ -286,7 +286,7 @@
 //       p2pix.unlockExpired([lockID]),
 //     ).to.be.revertedWithCustomError(
 //       p2pix, P2PixErrors.NotExpired);
-    
+
 //     await network.provider.send("evm_mine");
 //     await network.provider.send("evm_mine");
 //     await network.provider.send("evm_mine");

@@ -26,7 +26,9 @@
 ├── p2pix.sol
 └── Reputation.sol
 ```
+
 ## Callgraph
+
 ![Callgraph](docs/callgraph.svg)
 
 ## Usage
@@ -76,15 +78,14 @@ $ yarn clean
 To import artifacts on the project use the following:
 
 ```ts
-import P2PIXArtifact from 'p2pix-smart-contracts/artifacts/contracts/p2pix.sol/P2PIX.json'
+import P2PIXArtifact from "p2pix-smart-contracts/artifacts/contracts/p2pix.sol/P2PIX.json";
 ```
 
 To grab deployment addresses you can just grab from deploys folder:
 
 ```ts
-import localhostDeploys from 'p2pix-smart-contracts/deploys/localhost.json'
+import localhostDeploys from "p2pix-smart-contracts/deploys/localhost.json";
 ```
-
 
 ## Deploying to local environment
 

@@ -1,14 +1,5 @@
 # EventAndErrors
 
-
-
-
-
-
-
-
-
-
 ## Events
 
 ### AllowedERC20Updated
@@ -17,16 +8,12 @@
 event AllowedERC20Updated(address indexed token, bool indexed state)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| token `indexed` | address | undefined |
-| state `indexed` | bool | undefined |
+| Name            | Type    | Description |
+| --------------- | ------- | ----------- |
+| token `indexed` | address | undefined   |
+| state `indexed` | bool    | undefined   |
 
 ### DepositAdded
 
@@ -36,16 +23,14 @@ event DepositAdded(address indexed seller, uint256 depositID, address token, uin
 
 ███ Events ████████████████████████████████████████████████████████████
 
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| seller `indexed` | address | undefined |
-| depositID  | uint256 | undefined |
-| token  | address | undefined |
-| amount  | uint256 | undefined |
+| Name             | Type    | Description |
+| ---------------- | ------- | ----------- |
+| seller `indexed` | address | undefined   |
+| depositID        | uint256 | undefined   |
+| token            | address | undefined   |
+| amount           | uint256 | undefined   |
 
 ### DepositClosed
 
@@ -53,16 +38,12 @@ event DepositAdded(address indexed seller, uint256 depositID, address token, uin
 event DepositClosed(address indexed seller, uint256 depositID)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| seller `indexed` | address | undefined |
-| depositID  | uint256 | undefined |
+| Name             | Type    | Description |
+| ---------------- | ------- | ----------- |
+| seller `indexed` | address | undefined   |
+| depositID        | uint256 | undefined   |
 
 ### DepositWithdrawn
 
@@ -70,17 +51,13 @@ event DepositClosed(address indexed seller, uint256 depositID)
 event DepositWithdrawn(address indexed seller, uint256 depositID, uint256 amount)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| seller `indexed` | address | undefined |
-| depositID  | uint256 | undefined |
-| amount  | uint256 | undefined |
+| Name             | Type    | Description |
+| ---------------- | ------- | ----------- |
+| seller `indexed` | address | undefined   |
+| depositID        | uint256 | undefined   |
+| amount           | uint256 | undefined   |
 
 ### FundsWithdrawn
 
@@ -88,16 +65,12 @@ event DepositWithdrawn(address indexed seller, uint256 depositID, uint256 amount
 event FundsWithdrawn(address owner, uint256 amount)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| owner  | address | undefined |
-| amount  | uint256 | undefined |
+| Name   | Type    | Description |
+| ------ | ------- | ----------- |
+| owner  | address | undefined   |
+| amount | uint256 | undefined   |
 
 ### LockAdded
 
@@ -105,18 +78,14 @@ event FundsWithdrawn(address owner, uint256 amount)
 event LockAdded(address indexed buyer, bytes32 indexed lockID, uint256 depositID, uint256 amount)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| buyer `indexed` | address | undefined |
-| lockID `indexed` | bytes32 | undefined |
-| depositID  | uint256 | undefined |
-| amount  | uint256 | undefined |
+| Name             | Type    | Description |
+| ---------------- | ------- | ----------- |
+| buyer `indexed`  | address | undefined   |
+| lockID `indexed` | bytes32 | undefined   |
+| depositID        | uint256 | undefined   |
+| amount           | uint256 | undefined   |
 
 ### LockBlocksUpdated
 
@@ -124,15 +93,11 @@ event LockAdded(address indexed buyer, bytes32 indexed lockID, uint256 depositID
 event LockBlocksUpdated(uint256 blocks)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| blocks  | uint256 | undefined |
+| Name   | Type    | Description |
+| ------ | ------- | ----------- |
+| blocks | uint256 | undefined   |
 
 ### LockReleased
 
@@ -140,16 +105,12 @@ event LockBlocksUpdated(uint256 blocks)
 event LockReleased(address indexed buyer, bytes32 lockId)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| buyer `indexed` | address | undefined |
-| lockId  | bytes32 | undefined |
+| Name            | Type    | Description |
+| --------------- | ------- | ----------- |
+| buyer `indexed` | address | undefined   |
+| lockId          | bytes32 | undefined   |
 
 ### LockReturned
 
@@ -157,16 +118,12 @@ event LockReleased(address indexed buyer, bytes32 lockId)
 event LockReturned(address indexed buyer, bytes32 lockId)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| buyer `indexed` | address | undefined |
-| lockId  | bytes32 | undefined |
+| Name            | Type    | Description |
+| --------------- | ------- | ----------- |
+| buyer `indexed` | address | undefined   |
+| lockId          | bytes32 | undefined   |
 
 ### ReputationUpdated
 
@@ -174,15 +131,11 @@ event LockReturned(address indexed buyer, bytes32 lockId)
 event ReputationUpdated(address reputation)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| reputation  | address | undefined |
+| Name       | Type    | Description |
+| ---------- | ------- | ----------- |
+| reputation | address | undefined   |
 
 ### ValidSignersUpdated
 
@@ -190,17 +143,11 @@ event ReputationUpdated(address reputation)
 event ValidSignersUpdated(address[] signers)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| signers  | address[] | undefined |
-
-
+| Name    | Type      | Description |
+| ------- | --------- | ----------- |
+| signers | address[] | undefined   |
 
 ## Errors
 
@@ -210,10 +157,7 @@ event ValidSignersUpdated(address[] signers)
 error AddressDenied()
 ```
 
-
-
-*Address doesn&#39;t exist in a MerkleTree.Address not allowed as relayer.0x3b8474be*
-
+_Address doesn&#39;t exist in a MerkleTree.Address not allowed as relayer.0x3b8474be_
 
 ### AlreadyReleased
 
@@ -221,10 +165,7 @@ error AddressDenied()
 error AlreadyReleased()
 ```
 
-
-
-*Lock already released or returned.0x63b4904e*
-
+_Lock already released or returned.0x63b4904e_
 
 ### AmountNotAllowed
 
@@ -232,10 +173,7 @@ error AlreadyReleased()
 error AmountNotAllowed()
 ```
 
-
-
-*Wished amount to be locked exceeds the limit allowed.0x1c18f846*
-
+_Wished amount to be locked exceeds the limit allowed.0x1c18f846_
 
 ### DepositAlreadyExists
 
@@ -243,10 +181,7 @@ error AmountNotAllowed()
 error DepositAlreadyExists()
 ```
 
-
-
-*Deposit already exist and it is still valid.0xc44bd765*
-
+_Deposit already exist and it is still valid.0xc44bd765_
 
 ### InvalidDeposit
 
@@ -254,10 +189,7 @@ error DepositAlreadyExists()
 error InvalidDeposit()
 ```
 
-
-
-*Deposit not valid anymore.0xb2e532de*
-
+_Deposit not valid anymore.0xb2e532de_
 
 ### InvalidSigner
 
@@ -265,10 +197,7 @@ error InvalidDeposit()
 error InvalidSigner()
 ```
 
-
-
-*Signer is not a valid signer.0x815e1d64*
-
+_Signer is not a valid signer.0x815e1d64_
 
 ### LengthMismatch
 
@@ -276,10 +205,7 @@ error InvalidSigner()
 error LengthMismatch()
 ```
 
-
-
-*Arrays&#39; length don&#39;t match.0xff633a38*
-
+_Arrays&#39; length don&#39;t match.0xff633a38_
 
 ### LoopOverflow
 
@@ -287,10 +213,7 @@ error LengthMismatch()
 error LoopOverflow()
 ```
 
-
-
-*Loop bounds have overflowed.0xdfb035c9*
-
+_Loop bounds have overflowed.0xdfb035c9_
 
 ### NoTokens
 
@@ -298,10 +221,7 @@ error LoopOverflow()
 error NoTokens()
 ```
 
-
-
-*No tokens array provided as argument.0xdf957883*
-
+_No tokens array provided as argument.0xdf957883_
 
 ### NotEnoughTokens
 
@@ -309,10 +229,7 @@ error NoTokens()
 error NotEnoughTokens()
 ```
 
-
-
-*Not enough token remaining on deposit.0x22bbb43c*
-
+_Not enough token remaining on deposit.0x22bbb43c_
 
 ### NotExpired
 
@@ -320,10 +237,7 @@ error NotEnoughTokens()
 error NotExpired()
 ```
 
-
-
-*Lock not expired or already released.Another lock with same ID is not expired yet.0xd0404f85*
-
+_Lock not expired or already released.Another lock with same ID is not expired yet.0xd0404f85_
 
 ### OnlySeller
 
@@ -331,10 +245,7 @@ error NotExpired()
 error OnlySeller()
 ```
 
-
-
-*Only seller could call this function.`msg.sender` and the seller differ.0x85d1f726*
-
+_Only seller could call this function.`msg.sender` and the seller differ.0x85d1f726_
 
 ### TokenDenied
 
@@ -342,10 +253,7 @@ error OnlySeller()
 error TokenDenied()
 ```
 
-
-
-*Token address not allowed to be deposited.0x1578328e*
-
+_Token address not allowed to be deposited.0x1578328e_
 
 ### TxAlreadyUsed
 
@@ -353,9 +261,4 @@ error TokenDenied()
 error TxAlreadyUsed()
 ```
 
-
-
-*Transaction already used to unlock payment.0xf490a6ea*
-
-
-
+_Transaction already used to unlock payment.0xf490a6ea_

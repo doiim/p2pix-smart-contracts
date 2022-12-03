@@ -72,6 +72,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "StaticCallFailed",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "TokenDenied",
     type: "error",
   },

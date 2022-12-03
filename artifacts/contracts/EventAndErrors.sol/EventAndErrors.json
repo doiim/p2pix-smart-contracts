@@ -65,6 +65,11 @@
     },
     {
       "inputs": [],
+      "name": "StaticCallFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "TokenDenied",
       "type": "error"
     },

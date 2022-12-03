@@ -82,12 +82,7 @@ contract P2PIX is
         uint256 _amount,
         string calldata _pixTarget,
         bytes32 allowlistRoot
-    )
-        public
-        returns (
-            uint256 depositID
-        )
-    {
+    ) public returns (uint256 depositID) {
         ERC20 t = ERC20(_token);
         if (!allowedERC20s[t]) revert TokenDenied();
 
@@ -143,9 +138,9 @@ contract P2PIX is
 
     /// @notice Public method designed to lock an remaining amount of
     /// the deposit order of a seller.
-    /// @dev This method can be performed either by: 
+    /// @dev This method can be performed either by:
     /// - An user allowed via the seller's allowlist;
-    /// - An user with enough userRecord to lock the wished amount; 
+    /// - An user with enough userRecord to lock the wished amount;
     /// @dev There can only exist a lock per each `_amount` partitioned
     /// from the total `remaining` value.
     /// @dev Locks can only be performed in valid orders.
@@ -153,7 +148,7 @@ contract P2PIX is
     /// @param _relayerTarget Target address entitled to the `relayerPremium`.
     /// @param _relayerPremium The refund/premium owed to a relayer.
     /// @param _amount The deposit's remaining amount wished to be locked.
-    /// @param merkleProof This value should be: 
+    /// @param merkleProof This value should be:
     /// - Provided as a pass if the `msg.sender` is in the seller's allowlist;
     /// - Left empty otherwise;
     /// @param expiredLocks An array of `bytes32` identifiers to be
@@ -211,8 +206,7 @@ contract P2PIX is
 
             // Halt execution and output `lockID`.
             return lockID;
-        }
-        else {
+        } else {
             uint256 userCredit = userRecord[
                 _castAddrToKey(msg.sender)
             ];
@@ -239,15 +233,15 @@ contract P2PIX is
 
     /// @notice Lock release method that liquidate lock
     /// orders and distributes relayer fees.
-    /// @dev This method can be called by any public actor 
+    /// @dev This method can be called by any public actor
     /// as long the signature provided is valid.
-    /// @dev `relayerPremium` gets splitted equaly 
+    /// @dev `relayerPremium` gets splitted equaly
     /// if `relayerTarget` addresses differ.
     /// @dev If the `msg.sender` of this method and `l.relayerAddress` are the same,
     /// `msg.sender` accrues both l.amount and l.relayerPremium as userRecord credit.
     ///  In case of they differing:
     /// - `lock` caller gets accrued with `l.amount` as userRecord credit;
-    /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit; 
+    /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
     /// @param _relayerTarget Target address entitled to the `relayerPremim`.
     /// @dev Function sighash: 0x4e1389ed.
     function release(
@@ -342,12 +336,12 @@ contract P2PIX is
     /// @notice Unlocks expired locks.
     /// @dev Triggered in the callgraph by both `lock` and `withdraw` functions.
     /// @dev This method can also have any public actor as its `tx.origin`.
-    /// @dev For each successfull unexpired lock recovered, 
+    /// @dev For each successfull unexpired lock recovered,
     /// `userRecord[_castAddrToKey(l.relayerAddress)]` is decreased by half of its value.
     /// @dev Function sighash: 0x8e2749d6.
-    function unlockExpired(bytes32[] calldata lockIDs)
-        public
-    {
+    function unlockExpired(
+        bytes32[] calldata lockIDs
+    ) public {
         uint256 i;
         uint256 locksSize = lockIDs.length;
 
@@ -359,13 +353,14 @@ contract P2PIX is
             mapDeposits[l.depositID].remaining += l.amount;
             l.amount = 0;
 
-            uint256 userKey = 
-                _castAddrToKey(l.relayerAddress);
-            uint256 _newUserRecord = 
-                (userRecord[userKey] >> 1);
+            uint256 userKey = _castAddrToKey(
+                l.relayerAddress
+            );
+            uint256 _newUserRecord = (userRecord[userKey] >>
+                1);
 
             if (_newUserRecord <= 100) {
-                userRecord[userKey] = 100; 
+                userRecord[userKey] = 100;
             } else {
                 userRecord[userKey] = _newUserRecord;
             }
@@ -414,9 +409,10 @@ contract P2PIX is
         emit DepositWithdrawn(msg.sender, depositID, amount);
     }
 
-    function setRoot(address addr, bytes32 merkleroot)
-        public
-    {
+    function setRoot(
+        address addr,
+        bytes32 merkleroot
+    ) public {
         if (addr == msg.sender) {
             sellerAllowList[
                 _castAddrToKey(addr)
@@ -434,30 +430,27 @@ contract P2PIX is
         emit FundsWithdrawn(msg.sender, balance);
     }
 
-    function setReputation(IReputation _reputation)
-        public
-        onlyOwner
-    {
+    function setReputation(
+        IReputation _reputation
+    ) public onlyOwner {
         assembly {
             sstore(reputation.slot, _reputation)
         }
         emit ReputationUpdated(address(_reputation));
     }
 
-    function setDefaultLockBlocks(uint256 _blocks)
-        public
-        onlyOwner
-    {
+    function setDefaultLockBlocks(
+        uint256 _blocks
+    ) public onlyOwner {
         assembly {
             sstore(defaultLockBlocks.slot, _blocks)
         }
         emit LockBlocksUpdated(_blocks);
     }
 
-    function setValidSigners(address[] memory _validSigners)
-        public
-        onlyOwner
-    {
+    function setValidSigners(
+        address[] memory _validSigners
+    ) public onlyOwner {
         unchecked {
             uint256 i;
             uint256 len = _validSigners.length;
@@ -626,11 +619,9 @@ contract P2PIX is
         ) revert AddressDenied();
     }
 
-    function _limiter(uint256 _userCredit)
-        internal
-        view
-        returns (uint256 _spendLimit)
-    {
+    function _limiter(
+        uint256 _userCredit
+    ) internal view returns (uint256 _spendLimit) {
         // enconde the fx sighash and args
         bytes memory encodedParams = abi.encodeWithSelector(
             IReputation.limiter.selector,
@@ -670,11 +661,9 @@ contract P2PIX is
     /// @notice Public method that handles `address`
     /// to `uint256` safe type casting.
     /// @dev Function sighash: 0x4b2ae980.
-    function _castAddrToKey(address _addr)
-        public
-        pure
-        returns (uint256 _key)
-    {
+    function _castAddrToKey(
+        address _addr
+    ) public pure returns (uint256 _key) {
         _key = uint256(uint160(address(_addr))) << 12;
     }
 }

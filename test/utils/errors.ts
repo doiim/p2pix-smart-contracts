@@ -8,4 +8,5 @@ export enum P2PixErrors {
   AlreadyReleased = "AlreadyReleased",
   TxAlreadyUsed = "TxAlreadyUsed",
   InvalidSigner = "InvalidSigner",
+  UNAUTHORIZED = "UNAUTHORIZED",
 }

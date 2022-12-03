@@ -1,13 +1,5 @@
 # Reputation
 
-
-
-
-
-
-
-
-
 ## Methods
 
 ### limiter
@@ -16,21 +8,17 @@
 function limiter(uint256 _userCredit) external pure returns (uint256 _spendLimit)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| _userCredit | uint256 | undefined |
+| Name         | Type    | Description |
+| ------------ | ------- | ----------- |
+| \_userCredit | uint256 | undefined   |
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _spendLimit | uint256 | undefined |
+| Name         | Type    | Description |
+| ------------ | ------- | ----------- |
+| \_spendLimit | uint256 | undefined   |
 
 ### magicValue
 
@@ -38,16 +26,13 @@ function limiter(uint256 _userCredit) external pure returns (uint256 _spendLimit
 function magicValue() external view returns (uint256)
 ```
 
-
-
-*Denominator&#39;s constant operand for the `limiter` fx. *
-
+_Denominator&#39;s constant operand for the `limiter` fx. _
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| \_0  | uint256 | undefined   |
 
 ### maxLimit
 
@@ -55,16 +40,13 @@ function magicValue() external view returns (uint256)
 function maxLimit() external view returns (uint256)
 ```
 
-
-
-*Asymptote numerator constant value for the `limiter` fx.*
-
+_Asymptote numerator constant value for the `limiter` fx._
 
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | uint256 | undefined |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| \_0  | uint256 | undefined   |
 
 ### owner
 
@@ -72,16 +54,11 @@ function maxLimit() external view returns (uint256)
 function owner() external view returns (address)
 ```
 
-
-
-
-
-
 #### Returns
 
-| Name | Type | Description |
-|---|---|---|
-| _0 | address | undefined |
+| Name | Type    | Description |
+| ---- | ------- | ----------- |
+| \_0  | address | undefined   |
 
 ### setOwner
 
@@ -89,17 +66,11 @@ function owner() external view returns (address)
 function setOwner(address newOwner) external nonpayable
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| newOwner | address | undefined |
-
-
+| Name     | Type    | Description |
+| -------- | ------- | ----------- |
+| newOwner | address | undefined   |
 
 ## Events
 
@@ -109,16 +80,9 @@ function setOwner(address newOwner) external nonpayable
 event OwnerUpdated(address indexed user, address indexed newOwner)
 ```
 
-
-
-
-
 #### Parameters
 
-| Name | Type | Description |
-|---|---|---|
-| user `indexed` | address | undefined |
-| newOwner `indexed` | address | undefined |
-
-
-
+| Name               | Type    | Description |
+| ------------------ | ------- | ----------- |
+| user `indexed`     | address | undefined   |
+| newOwner `indexed` | address | undefined   |

@@ -38,7 +38,7 @@
 
 //     const ownerKey = await p2pix._castAddrToKey(owner.address);
 //     const wallet2Key = await p2pix._castAddrToKey(wallet2.address);
-    
+
 //     // Verify values at deployment
 //     expect(
 //       await p2pix.callStatic.validBacenSigners(ownerKey),
