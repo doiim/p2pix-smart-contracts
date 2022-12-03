@@ -234,4 +234,52 @@ describe("P2PIX", () => {
       );
     });
   });
+  describe("Deposit", async () => {
+    // it ("should revert if ERC20 is not alloed")
+    // it ("should revert if deposit already exists")
+    // it ("should create deposit, update storage and emit event")
+    // it ("should create multiple deposits") - EDGE CASE TEST
+  });
+  describe("Lock", async () => {
+    // it ("should revert if deposit is invalid")
+    // it ("should revert if wished amount is greater than deposit's remaining amount")
+    // it ("should revert if a non expired lock has the same ID encoded")
+    // it ("should revert if an invalid allowlist merkleproof is provided")
+    // it ("should revert if msg.sender does not have enough credit in his spend limit")
+    // it ("should create a lock, update storage and emit events via the allowlist path")
+    // it ("should create a lock, update storage and emit events via the reputation path")
+    // it ("should create multiple locks") - EDGE CASE TEST
+    // CHECK UNEXPIRE LOCK
+  });
+  describe("Cancel Deposit", async () => {
+    // it("should revert if the msg.sender isn't the deposit's seller")
+    // it("should cancel deposit, update storage and emit events")
+    // it("should cancel multiple deposits")
+  });
+  describe("Release", async () => {
+    // it("should revert if lock has expired or has already been released")
+    // it("should revert if signed message has already been used")
+    // it("should revert if ecrecovered signer is invalid")
+    // it("should release lock, update storage and emit events")
+    // it("should release multiple locks") - EDGE CASE TEST {
+    // TEST 3 CASES (
+    // EMPTY PREMIUM,
+    // LOCK RELAYER != RELEASE RELAYER, (check userRecord storage update)
+    // LOCK RELAYER == RELEASE RELAYER (check userRecord storage update)
+    // )}
+  });
+  describe("Unlock Expired Locks", async () => {
+    // it("should revert if lock isn't expired")
+    // it("should unlock expired locks, update storage and emit events")
+    // CHECK FOR userRecord STORAGE UPDATE
+  });
+  describe("Seller withdraw", async () => {
+    // it("should revert if the msg.sender isn't the deposit's seller")
+    // it -> withdraw remaining funds from deposit
+    // CHECK UNEXPIRE LOCKS
+  });
+  describe("Seller Allowlist Settings", async () => {
+    // it -> set root of seller's allowlist
+    // (test msg.sender != seller error)
+  });
 });
