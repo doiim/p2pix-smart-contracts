@@ -7,7 +7,11 @@ import { ethers, network } from "hardhat";
 
 import { MockToken, P2PIX, Reputation } from "../src/types";
 import { P2PixErrors } from "./utils/errors";
-import { p2pixFixture } from "./utils/fixtures";
+import {
+  // getSignerAddrs,
+  p2pixFixture,
+  randomSigners,
+} from "./utils/fixtures";
 
 describe("P2PIX", () => {
   type WalletWithAddress = Wallet & SignerWithAddress;
@@ -116,10 +120,11 @@ describe("P2PIX", () => {
 
   // each describe tests a set of functionalities of the contract's behavior
   describe("Owner Functions", async () => {
-    it("should allow contract's balance withdraw", async () => {
+    it("should allow owner to withdraw contract's balance", async () => {
       const oldBal = await p2pix.provider.getBalance(
         p2pix.address,
       );
+      // this call also tests p2pix's receive() fallback mechanism.
       const tx1 = await acc01.sendTransaction({
         to: p2pix.address,
         value: price,
@@ -132,16 +137,99 @@ describe("P2PIX", () => {
       expect(oldBal).to.eq(0);
       expect(newBal).to.eq(price);
 
-      await expect(
-        p2pix.withdrawBalance(),
-      ).to.changeEtherBalances(
-        [owner.address, p2pix.address],
-        [price, "-100000000000000000000"],
-      );
+      await expect(p2pix.withdrawBalance())
+        .to.changeEtherBalances(
+          [owner.address, p2pix.address],
+          [price, "-100000000000000000000"],
+        )
+        .and.to.emit(p2pix, "FundsWithdrawn")
+        .withArgs(owner.address, price);
 
       await expect(
         p2pix.connect(acc01).withdrawBalance(),
-      ).to.be.revertedWith(
+      ).to.be.revertedWith(P2PixErrors.UNAUTHORIZED);
+    });
+    it("should allow owner to change reputation instance", async () => {
+      const tx = await p2pix.setReputation(acc03.address);
+      const newRep = await p2pix.callStatic.reputation();
+      const fail = p2pix
+        .connect(acc02)
+        .setReputation(owner.address);
+
+      expect(tx).to.be.ok;
+      await expect(tx)
+        .to.emit(p2pix, "ReputationUpdated")
+        .withArgs(acc03.address);
+      expect(newRep).to.eq(acc03.address);
+      await expect(fail).to.be.revertedWith(
+        P2PixErrors.UNAUTHORIZED,
+      );
+    });
+    it("should allow owner to change defaultLockBlocks ", async () => {
+      const magicVal = 1337;
+      const tx = await p2pix.setDefaultLockBlocks(magicVal);
+      const newVal =
+        await p2pix.callStatic.defaultLockBlocks();
+      const fail = p2pix
+        .connect(acc02)
+        .setDefaultLockBlocks(0);
+
+      expect(tx).to.be.ok;
+      await expect(tx)
+        .to.emit(p2pix, "LockBlocksUpdated")
+        .withArgs(magicVal);
+      expect(newVal).to.eq(magicVal);
+      await expect(fail).to.be.revertedWith(
+        P2PixErrors.UNAUTHORIZED,
+      );
+    });
+    it("should allow owner to add valid Bacen signers", async () => {
+      const newSigners = randomSigners(2);
+      const bob = await newSigners[0].getAddress();
+      const alice = await newSigners[1].getAddress();
+      const bobCasted = await p2pix._castAddrToKey(bob);
+      const aliceCasted = await p2pix._castAddrToKey(alice);
+      const tx = await p2pix.setValidSigners([bob, alice]);
+      const newSigner1 =
+        await p2pix.callStatic.validBacenSigners(bobCasted);
+      const newSigner2 =
+        await p2pix.callStatic.validBacenSigners(aliceCasted);
+      const fail = p2pix
+        .connect(acc03)
+        .setValidSigners([owner.address, acc02.address]);
+
+      expect(tx).to.be.ok;
+      expect(newSigner1).to.eq(true);
+      expect(newSigner2).to.eq(true);
+      await expect(tx)
+        .to.emit(p2pix, "ValidSignersUpdated")
+        .withArgs([bob, alice]);
+      await expect(fail).to.be.revertedWith(
+        P2PixErrors.UNAUTHORIZED,
+      );
+    });
+    it("should allow owner to adjust tokenSettings", async () => {
+      const tx = await p2pix.tokenSettings(
+        [erc20.address, owner.address],
+        [false, true],
+      );
+      const newTokenState1 =
+        await p2pix.callStatic.allowedERC20s(erc20.address);
+      const newTokenState2 =
+        await p2pix.callStatic.allowedERC20s(owner.address);
+      const fail = p2pix
+        .connect(acc01)
+        .tokenSettings([acc01.address], [false]);
+
+      expect(tx).to.be.ok;
+      await expect(tx)
+        .to.emit(p2pix, "AllowedERC20Updated")
+        .withArgs(erc20.address, false)
+        .and.to.emit(p2pix, "AllowedERC20Updated")
+        .withArgs(owner.address, true);
+      expect(newTokenState1).to.eq(false);
+      expect(newTokenState2).to.eq(true);
+      await expect(fail).to.be.revertedWith(
         P2PixErrors.UNAUTHORIZED,
       );
     });

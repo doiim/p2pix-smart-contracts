@@ -496,6 +496,7 @@ contract P2PIX is
                 log3(
                     0,
                     0,
+                    // AllowedERC20Updated(address, bool)
                     0x5d6e86e5341d57a92c49934296c51542a25015c9b1782a1c2722a940131c3d9a,
                     mload(tLoc),
                     mload(sLoc)
