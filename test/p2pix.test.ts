@@ -235,7 +235,7 @@ describe("P2PIX", () => {
     });
   });
   describe("Deposit", async () => {
-    // it ("should revert if ERC20 is not alloed")
+    // it("should revert if ERC20 is not allowed", async () => {
     // it ("should revert if deposit already exists")
     // it ("should create deposit, update storage and emit event")
     // it ("should create multiple deposits") - EDGE CASE TEST

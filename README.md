@@ -19,7 +19,6 @@
 │   │   └── ERC20.sol
 │   └── utils
 │       ├── Counters.sol
-│       ├── FixedPointMathLib.sol
 │       ├── MerkleProofLib.sol
 │       ├── ReentrancyGuard.sol
 │       └── SafeTransferLib.sol
