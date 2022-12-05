@@ -12,4 +12,6 @@ export enum P2PixErrors {
   TokenDenied = "TokenDenied",
   NoTokens = "NoTokens",
   LengthMismatch = "LengthMismatch",
+  AddressDenied = "AddressDenied",
+  AmountNotAllowed = "AmountNotAllowed",
 }

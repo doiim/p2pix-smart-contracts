@@ -1,9 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
+import keccak256 from "keccak256";
+import { MerkleTree } from "merkletreejs";
 
-// import keccak256 from "keccak256";
-// import { MerkleTree } from "merkletreejs";
 import {
   MockToken,
   P2PIX,
@@ -33,9 +33,8 @@ export interface Lock {
 export interface P2pixFixture {
   p2pix: P2PIX;
   erc20: MockToken;
-  // proof: string[];
-  // wrongProof: string[];
-  // merkleRoot: string;
+  proof: string[];
+  merkleRoot: string;
 }
 
 export interface RepFixture {
@@ -121,5 +120,24 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     [true],
   )) as P2PIX;
 
-  return { reputation, erc20, p2pix };
+  const signers = await ethers.getSigners();
+  const whitelisted = signers.slice(0, 2);
+  const leaves = whitelisted.map(account =>
+    padBuffer(account.address),
+  );
+  const tree = new MerkleTree(leaves, keccak256, {
+    sort: true,
+  });
+  const merkleRoot: string = tree.getHexRoot();
+  const proof: string[] = tree.getHexProof(
+    padBuffer(whitelisted[0].address),
+  );
+
+  return {
+    reputation,
+    erc20,
+    p2pix,
+    merkleRoot,
+    proof,
+  };
 }

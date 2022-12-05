@@ -8,6 +8,7 @@ import {
   network,
   /* , tracer */
 } from "hardhat";
+import keccak256 from "keccak256";
 
 import { MockToken, P2PIX, Reputation } from "../src/types";
 import { P2PixErrors } from "./utils/errors";
@@ -35,7 +36,9 @@ describe("P2PIX", () => {
 
   let p2pix: P2PIX; // Contract instance
   let erc20: MockToken; // Token instance
-  let reputation: Reputation; // Reputation Interface instance;
+  let reputation: Reputation; // Reputation Interface instance
+  let merkleRoot: string; // MerkleRoot from seller's allowlist
+  let proof: string[]; // Owner's proof as whitelisted address
 
   const fundAmount: BigNumber =
     ethers.utils.parseEther("10000");
@@ -51,9 +54,8 @@ describe("P2PIX", () => {
     await network.provider.send("hardhat_reset");
   });
   beforeEach("Load deployment fixtures", async () => {
-    ({ erc20, p2pix, reputation } = await loadFixture(
-      p2pixFixture,
-    ));
+    ({ erc20, p2pix, reputation, merkleRoot, proof } =
+      await loadFixture(p2pixFixture));
   });
 
   describe("Init", async () => {
@@ -330,11 +332,18 @@ describe("P2PIX", () => {
     });
     // edge case test
     it("should create multiple deposits", async () => {
-      const ownerKey = await p2pix.callStatic._castAddrToKey(owner.address);
-      const acc01Key = await p2pix.callStatic._castAddrToKey(acc01.address);
-      const acc02Key = await p2pix.callStatic._castAddrToKey(acc02.address);
-      const acc03Key = await p2pix.callStatic._castAddrToKey(acc03.address);
-      
+      const ownerKey = await p2pix.callStatic._castAddrToKey(
+        owner.address,
+      );
+      const acc01Key = await p2pix.callStatic._castAddrToKey(
+        acc01.address,
+      );
+      const acc02Key = await p2pix.callStatic._castAddrToKey(
+        acc02.address,
+      );
+      const acc03Key = await p2pix.callStatic._castAddrToKey(
+        acc03.address,
+      );
 
       const pTarget = ethers.utils.keccak256(
         ethers.utils.toUtf8Bytes("_pixTarget"),
@@ -346,7 +355,7 @@ describe("P2PIX", () => {
         ethers.utils.toUtf8Bytes("_pixTarget3"),
       );
       // we mock the allowlist root here only to test storage update. In depth
-      // allowlist test coverage in both "Lock" and "Seller Allowlist Settings" unit tests.
+      // allowlist test coverage in both "Lock" and "Allowlist Settings" unit tests.
       const root = ethers.utils.keccak256(
         ethers.utils.toUtf8Bytes("root"),
       );
@@ -384,15 +393,23 @@ describe("P2PIX", () => {
         .connect(acc03)
         .deposit(erc20.address, price4, pTarget, nullRoot);
 
-        const storage1: Deposit = await p2pix.mapDeposits(0);
-        const storage2: Deposit = await p2pix.mapDeposits(1);
-        const storage3: Deposit = await p2pix.mapDeposits(2);
-        const storage4: Deposit = await p2pix.mapDeposits(3);
+      const storage1: Deposit = await p2pix.mapDeposits(0);
+      const storage2: Deposit = await p2pix.mapDeposits(1);
+      const storage3: Deposit = await p2pix.mapDeposits(2);
+      const storage4: Deposit = await p2pix.mapDeposits(3);
 
-        const allowList1 = await p2pix.sellerAllowList(ownerKey);
-        const allowList2 = await p2pix.sellerAllowList(acc01Key);
-        const allowList3 = await p2pix.sellerAllowList(acc02Key);
-        const allowList4 = await p2pix.sellerAllowList(acc03Key);
+      const allowList1 = await p2pix.sellerAllowList(
+        ownerKey,
+      );
+      const allowList2 = await p2pix.sellerAllowList(
+        acc01Key,
+      );
+      const allowList3 = await p2pix.sellerAllowList(
+        acc02Key,
+      );
+      const allowList4 = await p2pix.sellerAllowList(
+        acc03Key,
+      );
 
       expect(tx).to.be.ok;
       expect(tx2).to.be.ok;
@@ -455,7 +472,7 @@ describe("P2PIX", () => {
       expect(storage3.token).to.eq(erc20.address);
       expect(storage3.valid).to.eq(true);
       expect(allowList3).to.eq(root);
-    
+
       expect(storage4.remaining).to.eq(price4);
       expect(storage4.pixTarget).to.eq(pTarget);
       expect(storage4.seller).to.eq(acc03.address);
@@ -465,20 +482,222 @@ describe("P2PIX", () => {
     });
   });
   describe("Lock", async () => {
-    // it ("should revert if deposit is invalid")
-    // it ("should revert if wished amount is greater than deposit's remaining amount")
-    // it ("should revert if a non expired lock has the same ID encoded")
-    // it ("should revert if an invalid allowlist merkleproof is provided")
-    // it ("should revert if msg.sender does not have enough credit in his spend limit")
+    it("should revert if deposit is invalid", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      await p2pix.cancelDeposit(0);
+      const fail = p2pix
+        .connect(acc03)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          0,
+          price,
+          [],
+          [],
+        );
+      const fail2 = p2pix.lock(
+        2,
+        zero,
+        zero,
+        0,
+        price,
+        [],
+        [],
+      );
+
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.InvalidDeposit,
+      );
+      await expect(fail2).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.InvalidDeposit,
+      );
+    });
+    it("should revert if wished amount is greater than deposit's remaining amount", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      const fail = p2pix
+        .connect(acc03)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          0,
+          price.mul(ethers.BigNumber.from(2)),
+          [],
+          [],
+        );
+
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.NotEnoughTokens,
+      );
+    });
+    it("should revert if a non expired lock has the same ID encoded", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      await p2pix
+        .connect(acc03)
+        .lock(0, acc02.address, acc03.address, 0, 1, [], []);
+      const fail = p2pix
+        .connect(acc03)
+        .lock(0, acc02.address, acc03.address, 0, 1, [], []);
+
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.NotExpired,
+      );
+    });
+    it("should revert if an invalid allowlist merkleproof is provided", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        merkleRoot,
+      );
+      const fail = p2pix
+        .connect(acc02)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          0,
+          1000,
+          [
+            ethers.utils.keccak256(
+              ethers.utils.toUtf8Bytes("wrong"),
+            ),
+          ],
+          [],
+        );
+
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.AddressDenied,
+      );
+    });
+    it ("should revert if msg.sender does not have enough credit in his spend limit", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        merkleRoot,
+      );
+      const fail = p2pix
+        .connect(acc02)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          0,
+          price,
+          [],
+          [],
+        );
+
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.AmountNotAllowed,
+      );
+    });
     // it ("should create a lock, update storage and emit events via the allowlist path")
     // it ("should create a lock, update storage and emit events via the reputation path")
     // it ("should create multiple locks") - EDGE CASE TEST
-    // CHECK UNEXPIRE LOCK
   });
   describe("Cancel Deposit", async () => {
-    // it("should revert if the msg.sender isn't the deposit's seller")
-    // it("should cancel deposit, update storage and emit events")
-    // it("should cancel multiple deposits")
+    it("should revert if the msg.sender isn't the deposit's seller", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        merkleRoot,
+      );
+      const fail = p2pix.connect(acc01).cancelDeposit(0);
+      await expect(fail).to.be.revertedWithCustomError(p2pix, P2PixErrors.OnlySeller);
+    });
+    it("should cancel deposit, update storage and emit events", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        merkleRoot,
+      );
+      const state1:Deposit = await p2pix.callStatic.mapDeposits(0);
+      const tx = await p2pix.cancelDeposit(0);
+      const state2:Deposit = await p2pix.callStatic.mapDeposits(0);
+
+      expect(tx).to.be.ok;
+      await expect(tx).to.emit(p2pix, "DepositClosed").withArgs(owner.address, 0);
+      expect(state1.valid).to.be.true;
+      expect(state2.valid).to.be.false;
+    });
+    it("should cancel multiple deposits", async () => {
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        "pixTarget",
+        ethers.constants.HashZero,
+      );
+      const oldState1:Deposit = await p2pix.callStatic.mapDeposits(0);
+      const oldState2:Deposit = await p2pix.callStatic.mapDeposits(1);
+      const oldState3:Deposit = await p2pix.callStatic.mapDeposits(2);
+      const tx1 = await p2pix.cancelDeposit(0);
+      const tx2 = await p2pix.cancelDeposit(1);
+      const tx3 = await p2pix.cancelDeposit(2);
+      const newState1:Deposit = await p2pix.callStatic.mapDeposits(0);
+      const newState2:Deposit = await p2pix.callStatic.mapDeposits(1);
+      const newState3:Deposit = await p2pix.callStatic.mapDeposits(2);
+
+      expect(tx1).to.be.ok;
+      expect(tx2).to.be.ok;
+      expect(tx3).to.be.ok;
+      await expect(tx1).to.emit(p2pix, "DepositClosed").withArgs(owner.address, 0);
+      await expect(tx2).to.emit(p2pix, "DepositClosed").withArgs(owner.address, 1);
+      await expect(tx3).to.emit(p2pix, "DepositClosed").withArgs(owner.address, 2);
+      expect(oldState1.valid).to.be.true;
+      expect(oldState2.valid).to.be.true;
+      expect(oldState3.valid).to.be.true;
+      expect(newState1.valid).to.be.false;
+      expect(newState2.valid).to.be.false;
+      expect(newState3.valid).to.be.false;
+    });
   });
   describe("Release", async () => {
     // it("should revert if lock has expired or has already been released")
@@ -492,17 +711,18 @@ describe("P2PIX", () => {
     // LOCK RELAYER == RELEASE RELAYER (check userRecord storage update)
     // )}
   });
-  describe("Unlock Expired Locks", async () => {
+  describe("Unexpire Locks", async () => {
     // it("should revert if lock isn't expired")
     // it("should unlock expired locks, update storage and emit events")
     // CHECK FOR userRecord STORAGE UPDATE
+    // test method through lock fx
+    // test method through withdraw fx
   });
   describe("Seller Withdraw", async () => {
     // it("should revert if the msg.sender isn't the deposit's seller")
     // it -> withdraw remaining funds from deposit
-    // CHECK UNEXPIRE LOCKS
   });
-  describe("Seller Allowlist Settings", async () => {
+  describe("Allowlist Settings", async () => {
     // it -> set root of seller's allowlist
     // (test msg.sender != seller error)
     // i.e., set it in the fixture
