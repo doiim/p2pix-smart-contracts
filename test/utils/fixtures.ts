@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Signer } from "ethers";
+import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
 
 // import keccak256 from "keccak256";
@@ -11,6 +11,25 @@ import {
 } from "../../src/types";
 
 // exported interfaces
+
+export interface Deposit {
+  remaining: BigNumber;
+  pixTarget: string;
+  seller: string;
+  token: string;
+  valid: boolean;
+}
+
+export interface Lock {
+  depositID: string;
+  relayerPremium: string;
+  amount: string;
+  expirationBlock: string;
+  buyerAddress: string;
+  relayerTarget: string;
+  relayerAddress: string;
+}
+
 export interface P2pixFixture {
   p2pix: P2PIX;
   erc20: MockToken;
@@ -95,7 +114,7 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
 
   const P2PIX = await ethers.getContractFactory("P2PIX");
   const p2pix = (await P2PIX.deploy(
-    4,
+    10,
     validSigners,
     reputation.address,
     [erc20.address],

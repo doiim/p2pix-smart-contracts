@@ -11,6 +11,7 @@ contract Reputation is IReputation, Owned(msg.sender) {
     uint256 public constant magicValue = 2.5e11;
 
     // prettier-ignore
+    // solhint-disable no-inline-assembly
     // solhint-disable-next-line no-empty-blocks
     constructor(/*  */) {/*  */}
 

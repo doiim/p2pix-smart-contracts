@@ -213,7 +213,7 @@ contract P2PIX is
             uint256 spendLimit;
             (spendLimit) = _limiter(userCredit);
 
-            if (l.amount > spendLimit)
+            if (l.amount > spendLimit || l.amount > 1e6)
                 revert AmountNotAllowed();
 
             mapLocks[lockID] = l;
@@ -473,10 +473,12 @@ contract P2PIX is
         assembly {
             // first 32 bytes eq to array's length
             let tLen := mload(_tokens)
+            // NoTokens()
             if iszero(tLen) {
                 mstore(0x00, 0xdf957883)
                 revert(0x1c, 0x04)
             }
+            // LengthMismatch()
             if iszero(eq(tLen, mload(_states))) {
                 mstore(0x00, 0xff633a38)
                 revert(0x1c, 0x04)
@@ -489,6 +491,7 @@ contract P2PIX is
                 tLoc := add(tLoc, 0x20)
                 sLoc := add(sLoc, 0x20)
             } {
+                // cache hashmap entry in scratch space
                 mstore(0x00, mload(tLoc))
                 mstore(0x20, allowedERC20s.slot)
                 let mapSlot := keccak256(0x00, 0x40)

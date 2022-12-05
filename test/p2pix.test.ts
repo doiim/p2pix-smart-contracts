@@ -3,12 +3,18 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, Wallet } from "ethers";
-import { ethers, network } from "hardhat";
+import {
+  ethers,
+  network,
+  /* , tracer */
+} from "hardhat";
 
 import { MockToken, P2PIX, Reputation } from "../src/types";
 import { P2PixErrors } from "./utils/errors";
 import {
-  // getSignerAddrs,
+  Deposit,
+  Lock,
+  getSignerAddrs,
   p2pixFixture,
   randomSigners,
 } from "./utils/fixtures";
@@ -52,13 +58,14 @@ describe("P2PIX", () => {
 
   describe("Init", async () => {
     it("P2PIX, Reputation and ERC20 should initialize", async () => {
+      // tracer.enabled = true;
       await p2pix.deployed();
+      // tracer.enabled = false;
       await erc20.deployed();
       await reputation.deployed();
       expect(p2pix).to.be.ok;
       expect(erc20).to.be.ok;
       expect(reputation).to.be.ok;
-
       const ownerKey = await p2pix._castAddrToKey(
         owner.address,
       );
@@ -69,7 +76,7 @@ describe("P2PIX", () => {
       // storage checks
       expect(
         await p2pix.callStatic.defaultLockBlocks(),
-      ).to.eq(4);
+      ).to.eq(10);
       expect(await p2pix.callStatic.reputation()).to.eq(
         reputation.address,
       );
@@ -89,7 +96,7 @@ describe("P2PIX", () => {
         .to.emit(p2pix, "OwnerUpdated")
         .withArgs(zero, owner.address)
         .and.to.emit(p2pix, "LockBlocksUpdated")
-        .withArgs(4)
+        .withArgs(10)
         .and.to.emit(p2pix, "ReputationUpdated")
         .withArgs(reputation.address)
         .and.to.emit(p2pix, "ValidSignersUpdated")
@@ -220,6 +227,8 @@ describe("P2PIX", () => {
       const fail = p2pix
         .connect(acc01)
         .tokenSettings([acc01.address], [false]);
+      const fail2 = p2pix.tokenSettings([], [true, false]);
+      const fail3 = p2pix.tokenSettings([zero], [true, true]);
 
       expect(tx).to.be.ok;
       await expect(tx)
@@ -232,13 +241,228 @@ describe("P2PIX", () => {
       await expect(fail).to.be.revertedWith(
         P2PixErrors.UNAUTHORIZED,
       );
+      await expect(fail).to.be.revertedWith(
+        P2PixErrors.UNAUTHORIZED,
+      );
+      await expect(fail2).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.NoTokens,
+      );
+      await expect(fail3).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.LengthMismatch,
+      );
     });
   });
   describe("Deposit", async () => {
-    // it("should revert if ERC20 is not allowed", async () => {
-    // it ("should revert if deposit already exists")
-    // it ("should create deposit, update storage and emit event")
-    // it ("should create multiple deposits") - EDGE CASE TEST
+    it("should revert if ERC20 is not allowed", async () => {
+      const pTarget = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("_pixTarget"),
+      );
+      const root = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("root"),
+      );
+      const tx = p2pix.deposit(
+        owner.address,
+        1,
+        pTarget,
+        root,
+      );
+
+      await expect(tx).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.TokenDenied,
+      );
+    });
+    /// @todo DepositAlreadyExists() seems to be unreacheable
+    // it("should revert if deposit already exists", async () => {
+    //   const pTarget = ethers.utils.keccak256(
+    //     ethers.utils.toUtf8Bytes("_pixTarget"),
+    //   );
+    //   const root = ethers.utils.keccak256(
+    //     ethers.utils.toUtf8Bytes("0"),
+    //   );
+    //   await erc20.approve(p2pix.address, 1);
+    //   const tx = await p2pix.deposit(
+    //     erc20.address,
+    //     1,
+    //     pTarget,
+    //     root,
+    //   );
+    //   const info: Deposit = await p2pix.mapDeposits(0);
+    //   // console.log(info)
+    //   // console.log(info.valid);
+    // });
+    it("should create deposit, update storage and emit event", async () => {
+      const pTarget = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("_pixTarget"),
+      );
+      // we use `hashZero` to avoid updating seller's allowlist settings
+      const root = ethers.constants.HashZero;
+      await erc20.approve(p2pix.address, price);
+      const tx = await p2pix.deposit(
+        erc20.address,
+        price,
+        pTarget,
+        root,
+      );
+      const storage: Deposit = await p2pix.mapDeposits(0);
+      const ownerKey = await p2pix.callStatic._castAddrToKey(
+        owner.address,
+      );
+      const allowList = await p2pix.sellerAllowList(ownerKey);
+
+      expect(tx).to.be.ok;
+      await expect(tx)
+        .to.emit(p2pix, "DepositAdded")
+        .withArgs(owner.address, 0, erc20.address, price);
+      await expect(tx).to.changeTokenBalances(
+        erc20,
+        [owner.address, p2pix.address],
+        ["-100000000000000000000", price],
+      );
+      expect(storage.remaining).to.eq(price);
+      expect(storage.pixTarget).to.eq(pTarget);
+      expect(storage.seller).to.eq(owner.address);
+      expect(storage.token).to.eq(erc20.address);
+      expect(storage.valid).to.eq(true);
+      expect(allowList).to.eq(root);
+    });
+    // edge case test
+    it("should create multiple deposits", async () => {
+      const ownerKey = await p2pix.callStatic._castAddrToKey(owner.address);
+      const acc01Key = await p2pix.callStatic._castAddrToKey(acc01.address);
+      const acc02Key = await p2pix.callStatic._castAddrToKey(acc02.address);
+      const acc03Key = await p2pix.callStatic._castAddrToKey(acc03.address);
+      
+
+      const pTarget = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("_pixTarget"),
+      );
+      const pTarget2 = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("_pixTarget2"),
+      );
+      const pTarget3 = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("_pixTarget3"),
+      );
+      // we mock the allowlist root here only to test storage update. In depth
+      // allowlist test coverage in both "Lock" and "Seller Allowlist Settings" unit tests.
+      const root = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes("root"),
+      );
+      const nullRoot = ethers.constants.HashZero;
+      const price2 = price.mul(ethers.BigNumber.from(2));
+      const price3 = price.mul(ethers.BigNumber.from(3));
+      const price4 = price.mul(ethers.BigNumber.from(4));
+      await erc20.mint(
+        getSignerAddrs(4, await ethers.getSigners()),
+        price4,
+      );
+      await erc20
+        .connect(owner)
+        .approve(p2pix.address, price);
+      await erc20
+        .connect(acc01)
+        .approve(p2pix.address, price2);
+      await erc20
+        .connect(acc02)
+        .approve(p2pix.address, price3);
+      await erc20
+        .connect(acc03)
+        .approve(p2pix.address, price4);
+
+      const tx = await p2pix
+        .connect(owner)
+        .deposit(erc20.address, price, pTarget, root);
+      const tx2 = await p2pix
+        .connect(acc01)
+        .deposit(erc20.address, price2, pTarget2, nullRoot);
+      const tx3 = await p2pix
+        .connect(acc02)
+        .deposit(erc20.address, price3, pTarget3, root);
+      const tx4 = await p2pix
+        .connect(acc03)
+        .deposit(erc20.address, price4, pTarget, nullRoot);
+
+        const storage1: Deposit = await p2pix.mapDeposits(0);
+        const storage2: Deposit = await p2pix.mapDeposits(1);
+        const storage3: Deposit = await p2pix.mapDeposits(2);
+        const storage4: Deposit = await p2pix.mapDeposits(3);
+
+        const allowList1 = await p2pix.sellerAllowList(ownerKey);
+        const allowList2 = await p2pix.sellerAllowList(acc01Key);
+        const allowList3 = await p2pix.sellerAllowList(acc02Key);
+        const allowList4 = await p2pix.sellerAllowList(acc03Key);
+
+      expect(tx).to.be.ok;
+      expect(tx2).to.be.ok;
+      expect(tx3).to.be.ok;
+      expect(tx4).to.be.ok;
+
+      await expect(tx)
+        .to.emit(p2pix, "DepositAdded")
+        .withArgs(owner.address, 0, erc20.address, price);
+      await expect(tx).to.changeTokenBalances(
+        erc20,
+        [owner.address, p2pix.address],
+        ["-100000000000000000000", price],
+      );
+
+      await expect(tx2)
+        .to.emit(p2pix, "DepositAdded")
+        .withArgs(acc01.address, 1, erc20.address, price2);
+      await expect(tx2).to.changeTokenBalances(
+        erc20,
+        [acc01.address, p2pix.address],
+        ["-200000000000000000000", price2],
+      );
+
+      await expect(tx3)
+        .to.emit(p2pix, "DepositAdded")
+        .withArgs(acc02.address, 2, erc20.address, price3);
+      await expect(tx3).to.changeTokenBalances(
+        erc20,
+        [acc02.address, p2pix.address],
+        ["-300000000000000000000", price3],
+      );
+
+      await expect(tx4)
+        .to.emit(p2pix, "DepositAdded")
+        .withArgs(acc03.address, 3, erc20.address, price4);
+      await expect(tx4).to.changeTokenBalances(
+        erc20,
+        [acc03.address, p2pix.address],
+        ["-400000000000000000000", price4],
+      );
+
+      expect(storage1.remaining).to.eq(price);
+      expect(storage1.pixTarget).to.eq(pTarget);
+      expect(storage1.seller).to.eq(owner.address);
+      expect(storage1.token).to.eq(erc20.address);
+      expect(storage1.valid).to.eq(true);
+      expect(allowList1).to.eq(root);
+
+      expect(storage2.remaining).to.eq(price2);
+      expect(storage2.pixTarget).to.eq(pTarget2);
+      expect(storage2.seller).to.eq(acc01.address);
+      expect(storage2.token).to.eq(erc20.address);
+      expect(storage2.valid).to.eq(true);
+      expect(allowList2).to.eq(nullRoot);
+
+      expect(storage3.remaining).to.eq(price3);
+      expect(storage3.pixTarget).to.eq(pTarget3);
+      expect(storage3.seller).to.eq(acc02.address);
+      expect(storage3.token).to.eq(erc20.address);
+      expect(storage3.valid).to.eq(true);
+      expect(allowList3).to.eq(root);
+    
+      expect(storage4.remaining).to.eq(price4);
+      expect(storage4.pixTarget).to.eq(pTarget);
+      expect(storage4.seller).to.eq(acc03.address);
+      expect(storage4.token).to.eq(erc20.address);
+      expect(storage4.valid).to.eq(true);
+      expect(allowList4).to.eq(nullRoot);
+    });
   });
   describe("Lock", async () => {
     // it ("should revert if deposit is invalid")
@@ -273,7 +497,7 @@ describe("P2PIX", () => {
     // it("should unlock expired locks, update storage and emit events")
     // CHECK FOR userRecord STORAGE UPDATE
   });
-  describe("Seller withdraw", async () => {
+  describe("Seller Withdraw", async () => {
     // it("should revert if the msg.sender isn't the deposit's seller")
     // it -> withdraw remaining funds from deposit
     // CHECK UNEXPIRE LOCKS
@@ -281,5 +505,6 @@ describe("P2PIX", () => {
   describe("Seller Allowlist Settings", async () => {
     // it -> set root of seller's allowlist
     // (test msg.sender != seller error)
+    // i.e., set it in the fixture
   });
 });
