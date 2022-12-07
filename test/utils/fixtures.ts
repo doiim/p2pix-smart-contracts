@@ -11,6 +11,11 @@ import {
 } from "../../src/types";
 
 // exported interfaces
+export interface Deploys {
+  signers: string[];
+  p2pix: string;
+  token: string;
+}
 
 export interface Deposit {
   remaining: BigNumber;
@@ -21,10 +26,10 @@ export interface Deposit {
 }
 
 export interface Lock {
-  depositID: string;
-  relayerPremium: string;
-  amount: string;
-  expirationBlock: string;
+  depositID: BigNumber;
+  relayerPremium: BigNumber;
+  amount: BigNumber;
+  expirationBlock: BigNumber;
   buyerAddress: string;
   relayerTarget: string;
   relayerAddress: string;
@@ -130,7 +135,7 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
   });
   const merkleRoot: string = tree.getHexRoot();
   const proof: string[] = tree.getHexProof(
-    padBuffer(whitelisted[0].address),
+    padBuffer(whitelisted[1].address),
   );
 
   return {

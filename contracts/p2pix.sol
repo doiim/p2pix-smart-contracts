@@ -194,40 +194,29 @@ contract P2PIX is
                 msg.sender
             );
 
-            mapLocks[lockID] = l;
-            d.remaining -= _amount;
-
-            emit LockAdded(
-                _buyerAddress,
-                lockID,
-                l.depositID,
-                _amount
-            );
+            _addLock(lockID, l, d);
 
             // Halt execution and output `lockID`.
             return lockID;
         } else {
-            uint256 userCredit = userRecord[
-                _castAddrToKey(msg.sender)
-            ];
-            uint256 spendLimit;
-            (spendLimit) = _limiter(userCredit);
+            if (l.amount <= 1e2) {
+                _addLock(lockID, l, d);
+                // Halt execution and output `lockID`.
+                return lockID;
+            } else {
+                uint256 userCredit = userRecord[
+                    _castAddrToKey(msg.sender)
+                ];
+                uint256 spendLimit;
+                (spendLimit) = _limiter(userCredit);
 
-            if (l.amount > spendLimit || l.amount > 1e6)
-                revert AmountNotAllowed();
+                if (l.amount > spendLimit || l.amount > 1e6)
+                    revert AmountNotAllowed();
 
-            mapLocks[lockID] = l;
-            d.remaining -= _amount;
-
-            emit LockAdded(
-                _buyerAddress,
-                lockID,
-                l.depositID,
-                _amount
-            );
-
-            // Halt execution and output `lockID`.
-            return lockID;
+                _addLock(lockID, l, d);
+                // Halt execution and output `lockID`.
+                return lockID;
+            }
         }
     }
 
@@ -417,6 +406,10 @@ contract P2PIX is
             sellerAllowList[
                 _castAddrToKey(addr)
             ] = merkleroot;
+            emit RootUpdated(
+                addr, 
+                merkleroot
+            );
         } else revert OnlySeller();
     }
 
@@ -585,6 +578,22 @@ contract P2PIX is
         (_depositID) = depositCount.current();
         if (mapDeposits[_depositID].valid == true)
             revert DepositAlreadyExists();
+    }
+
+    function _addLock(
+        bytes32 _lockID,
+        DT.Lock memory _l,
+        DT.Deposit storage _d
+    ) internal {
+        mapLocks[_lockID] = _l;
+        _d.remaining -= _l.amount;
+
+        emit LockAdded(
+            _l.buyerAddress,
+            _lockID,
+            _l.depositID,
+            _l.amount
+        );
     }
 
     /// @notice Private view auxiliar logic that encodes/returns

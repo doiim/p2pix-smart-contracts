@@ -298,6 +298,25 @@ const _abi = [
     inputs: [
       {
         indexed: false,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "merkleRoot",
+        type: "bytes32",
+      },
+    ],
+    name: "RootUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
         internalType: "address[]",
         name: "signers",
         type: "address[]",

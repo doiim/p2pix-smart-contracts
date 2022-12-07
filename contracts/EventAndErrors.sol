@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
+// prettier-ignore
 interface EventAndErrors {
     /// ███ Events ████████████████████████████████████████████████████████████
 
@@ -25,16 +26,29 @@ interface EventAndErrors {
         uint256 depositID,
         uint256 amount
     );
-    event LockReleased(address indexed buyer, bytes32 lockId);
-    event LockReturned(address indexed buyer, bytes32 lockId);
-    event FundsWithdrawn(address owner, uint256 amount);
-    event ReputationUpdated(address reputation);
-    event LockBlocksUpdated(uint256 blocks);
-    event ValidSignersUpdated(address[] signers);
+    event LockReleased(
+        address indexed buyer, 
+        bytes32 lockId
+    );
+    event LockReturned(
+        address indexed buyer, 
+        bytes32 lockId
+    );
+    event FundsWithdrawn(
+        address owner, 
+        uint256 amount
+    );
+    event RootUpdated(
+        address seller, 
+        bytes32 merkleRoot
+    );
     event AllowedERC20Updated(
         address indexed token,
         bool indexed state
     );
+    event ReputationUpdated(address reputation);
+    event LockBlocksUpdated(uint256 blocks);
+    event ValidSignersUpdated(address[] signers);
 
     /// ███ Errors ████████████████████████████████████████████████████████████
 

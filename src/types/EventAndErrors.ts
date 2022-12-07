@@ -26,6 +26,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
     "LockReleased(address,bytes32)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
+    "RootUpdated(address,bytes32)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
 
@@ -39,6 +40,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LockReleased"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
 
@@ -158,6 +160,17 @@ export type ReputationUpdatedEvent = TypedEvent<
 
 export type ReputationUpdatedEventFilter =
   TypedEventFilter<ReputationUpdatedEvent>;
+
+export interface RootUpdatedEventObject {
+  seller: string;
+  merkleRoot: string;
+}
+export type RootUpdatedEvent = TypedEvent<
+  [string, string],
+  RootUpdatedEventObject
+>;
+
+export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
 
 export interface ValidSignersUpdatedEventObject {
   signers: string[];
@@ -287,6 +300,12 @@ export interface EventAndErrors extends BaseContract {
       reputation?: null
     ): ReputationUpdatedEventFilter;
     ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
+
+    "RootUpdated(address,bytes32)"(
+      seller?: null,
+      merkleRoot?: null
+    ): RootUpdatedEventFilter;
+    RootUpdated(seller?: null, merkleRoot?: null): RootUpdatedEventFilter;
 
     "ValidSignersUpdated(address[])"(
       signers?: null

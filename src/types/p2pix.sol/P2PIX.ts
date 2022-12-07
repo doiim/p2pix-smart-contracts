@@ -276,6 +276,7 @@ export interface P2PIXInterface extends utils.Interface {
     "LockReturned(address,bytes32)": EventFragment;
     "OwnerUpdated(address,address)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
+    "RootUpdated(address,bytes32)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
 
@@ -290,6 +291,7 @@ export interface P2PIXInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
 
@@ -420,6 +422,17 @@ export type ReputationUpdatedEvent = TypedEvent<
 
 export type ReputationUpdatedEventFilter =
   TypedEventFilter<ReputationUpdatedEvent>;
+
+export interface RootUpdatedEventObject {
+  seller: string;
+  merkleRoot: string;
+}
+export type RootUpdatedEvent = TypedEvent<
+  [string, string],
+  RootUpdatedEventObject
+>;
+
+export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
 
 export interface ValidSignersUpdatedEventObject {
   signers: string[];
@@ -984,6 +997,12 @@ export interface P2PIX extends BaseContract {
       reputation?: null
     ): ReputationUpdatedEventFilter;
     ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
+
+    "RootUpdated(address,bytes32)"(
+      seller?: null,
+      merkleRoot?: null
+    ): RootUpdatedEventFilter;
+    RootUpdated(seller?: null, merkleRoot?: null): RootUpdatedEventFilter;
 
     "ValidSignersUpdated(address[])"(
       signers?: null
