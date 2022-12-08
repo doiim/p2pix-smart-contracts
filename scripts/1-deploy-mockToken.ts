@@ -4,13 +4,9 @@ import { BigNumber } from "ethers";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
 
-// import hre from "hardhat";
+import { Deploys } from "../test/utils/fixtures";
 
-interface Deploys {
-  signers: string[];
-  p2pix: string;
-  token: string;
-}
+// import hre from "hardhat";
 
 let deploysJson: Deploys;
 const supply: BigNumber = ethers.utils.parseEther("20000000");

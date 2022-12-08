@@ -348,8 +348,8 @@ contract P2PIX is
             uint256 _newUserRecord = (userRecord[userKey] >>
                 1);
 
-            if (_newUserRecord <= 100) {
-                userRecord[userKey] = 100;
+            if (_newUserRecord <= 1e2) {
+                userRecord[userKey] = 1e2;
             } else {
                 userRecord[userKey] = _newUserRecord;
             }
@@ -406,10 +406,7 @@ contract P2PIX is
             sellerAllowList[
                 _castAddrToKey(addr)
             ] = merkleroot;
-            emit RootUpdated(
-                addr, 
-                merkleroot
-            );
+            emit RootUpdated(addr, merkleroot);
         } else revert OnlySeller();
     }
 
@@ -536,11 +533,11 @@ contract P2PIX is
     /// @dev Called exclusively by the `unlockExpired` method.
     /// @dev Function sighash: 0x74e2a0bb.
     function _notExpired(DT.Lock storage _l) private view {
+        // not expired or released
         // Custom Error Solidity Impl
-        if (
-            _l.expirationBlock >= block.number ||
-            _l.amount <= 0
-        ) revert NotExpired();
+        if (_l.expirationBlock > block.number)
+            revert NotExpired();
+        if (_l.amount == 0) revert AlreadyReleased();
         /*         
     // Custom Error Yul Impl
         assembly {
@@ -558,13 +555,13 @@ contract P2PIX is
             }
         }
         
-    // Require Error Solidity Impl
-        require(
-                _l.expirationBlock < block.number &&
-                    _l.amount > 0,
-                "P2PIX: Lock not expired or already released"
-            ); 
 */
+        // Require Error Solidity Impl
+        // require(
+        //         _l.expirationBlock > block.number &&
+        //             _l.amount > 0,
+        //         "P2PIX: Lock not expired or already released"
+        //     );
     }
 
     /// @notice Internal view auxiliar logic that returns a new valid `_depositID`.
@@ -576,8 +573,9 @@ contract P2PIX is
         returns (uint256 _depositID)
     {
         (_depositID) = depositCount.current();
-        if (mapDeposits[_depositID].valid == true)
-            revert DepositAlreadyExists();
+        /// @todo remove this for good
+        // if (mapDeposits[_depositID].valid == true)
+        //     revert DepositAlreadyExists();
     }
 
     function _addLock(
@@ -648,7 +646,7 @@ contract P2PIX is
         assembly {
             success := staticcall(
                 // gas
-                30000,
+                0x7530,
                 // address
                 sload(reputation.slot),
                 // argsOffset

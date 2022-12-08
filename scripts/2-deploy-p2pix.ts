@@ -2,8 +2,8 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
-import { Deploys } from "../test/utils/fixtures"; 
 
+import { Deploys } from "../test/utils/fixtures";
 
 let deploysJson: Deploys;
 
@@ -22,17 +22,19 @@ const main = async () => {
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying contracts with ${deployer.address}`);
 
-  const Reputation = await ethers.getContractFactory("Reputation");
+  const Reputation = await ethers.getContractFactory(
+    "Reputation",
+  );
   const reputation = await Reputation.deploy();
   await reputation.deployed();
 
   const P2PIX = await ethers.getContractFactory("P2PIX");
   const p2pix = await P2PIX.deploy(
-    10, 
+    10,
     deploysJson.signers,
     reputation.address,
     [deploysJson.token],
-    [true]
+    [true],
   );
   await p2pix.deployed();
 
