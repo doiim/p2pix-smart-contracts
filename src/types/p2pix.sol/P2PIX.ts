@@ -49,6 +49,7 @@ export interface P2PIXInterface extends utils.Interface {
     "setValidSigners(address[])": FunctionFragment;
     "tokenSettings(address[],bool[])": FunctionFragment;
     "unlockExpired(bytes32[])": FunctionFragment;
+    "usedTransactions(bytes32)": FunctionFragment;
     "userRecord(uint256)": FunctionFragment;
     "validBacenSigners(uint256)": FunctionFragment;
     "withdraw(uint256,bytes32[])": FunctionFragment;
@@ -77,6 +78,7 @@ export interface P2PIXInterface extends utils.Interface {
       | "setValidSigners"
       | "tokenSettings"
       | "unlockExpired"
+      | "usedTransactions"
       | "userRecord"
       | "validBacenSigners"
       | "withdraw"
@@ -181,6 +183,10 @@ export interface P2PIXInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "usedTransactions",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "userRecord",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -251,6 +257,10 @@ export interface P2PIXInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "unlockExpired",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "usedTransactions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "userRecord", data: BytesLike): Result;
@@ -596,6 +606,11 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    usedTransactions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     userRecord(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -739,6 +754,11 @@ export interface P2PIX extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  usedTransactions(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   userRecord(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
@@ -881,6 +901,11 @@ export interface P2PIX extends BaseContract {
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
     ): Promise<void>;
+
+    usedTransactions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     userRecord(
       arg0: PromiseOrValue<BigNumberish>,
@@ -1115,6 +1140,11 @@ export interface P2PIX extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    usedTransactions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     userRecord(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1239,6 +1269,11 @@ export interface P2PIX extends BaseContract {
     unlockExpired(
       lockIDs: PromiseOrValue<BytesLike>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    usedTransactions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     userRecord(

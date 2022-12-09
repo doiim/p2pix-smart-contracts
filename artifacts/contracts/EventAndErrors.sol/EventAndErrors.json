@@ -40,6 +40,11 @@
     },
     {
       "inputs": [],
+      "name": "LockExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "LoopOverflow",
       "type": "error"
     },

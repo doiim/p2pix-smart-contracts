@@ -100,4 +100,7 @@ interface EventAndErrors {
     /// @dev Reverts when success return value returns false.
     /// @dev 0xe10bf1cc
     error StaticCallFailed();
+    /// @dev Reverts on an expired lock.
+    /// @dev 0xf6fafba0
+    error LockExpired();
 }

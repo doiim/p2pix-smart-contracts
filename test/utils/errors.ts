@@ -14,4 +14,5 @@ export enum P2PixErrors {
   LengthMismatch = "LengthMismatch",
   AddressDenied = "AddressDenied",
   AmountNotAllowed = "AmountNotAllowed",
+  LockExpired = "LockExpired",
 }

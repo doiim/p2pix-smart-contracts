@@ -47,6 +47,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "LockExpired",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "LoopOverflow",
     type: "error",
   },

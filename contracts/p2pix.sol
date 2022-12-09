@@ -46,7 +46,7 @@ contract P2PIX is
     /// @dev List of Locks.
     mapping(bytes32 => DT.Lock) public mapLocks;
     /// @dev List of Pix transactions already signed.
-    mapping(bytes32 => bool) private usedTransactions;
+    mapping(bytes32 => bool) public usedTransactions;
     /// @dev Seller casted to key => Seller's allowlist merkleroot.
     mapping(uint256 => bytes32) public sellerAllowList;
     /// @dev Tokens allowed to serve as the underlying amount of a deposit.
@@ -243,9 +243,12 @@ contract P2PIX is
     ) public nonReentrant {
         DT.Lock storage l = mapLocks[lockID];
 
-        if (
-            l.expirationBlock <= block.number || l.amount <= 0
-        ) revert AlreadyReleased();
+        // if (
+        //     l.expirationBlock <= block.number || l.amount <= 0
+        // ) revert AlreadyReleased();
+        if (l.amount == 0) revert AlreadyReleased();
+        if (l.expirationBlock < block.number)
+            revert LockExpired();
 
         DT.Deposit storage d = mapDeposits[l.depositID];
         bytes32 message = keccak256(
@@ -275,7 +278,8 @@ contract P2PIX is
         ERC20 t = ERC20(d.token);
 
         // We cache values before zeroing them out.
-        uint256 totalAmount = (l.amount - l.relayerPremium);
+        uint256 lockAmount = l.amount;
+        uint256 totalAmount = (lockAmount - l.relayerPremium);
 
         l.amount = 0;
         l.expirationBlock = 0;
@@ -284,11 +288,12 @@ contract P2PIX is
         if (msg.sender != l.relayerAddress) {
             userRecord[_castAddrToKey(msg.sender)] += l
                 .relayerPremium;
-            userRecord[_castAddrToKey(l.relayerAddress)] += l
-                .amount;
+            userRecord[
+                _castAddrToKey(l.relayerAddress)
+            ] += lockAmount;
         } else {
             userRecord[_castAddrToKey(msg.sender)] += (l
-                .relayerPremium + l.amount);
+                .relayerPremium + lockAmount);
         }
 
         SafeTransferLib.safeTransfer(
