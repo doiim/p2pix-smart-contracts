@@ -1275,13 +1275,202 @@ describe("P2PIX", () => {
         // (i.e., 94 + 3 = 97)
       );
     });
-    /// @todo
-    // it("should release multiple locks") - EDGE CASE TEST {
-    // TEST 3 CASES (
-    // EMPTY PREMIUM,
-    // LOCK RELAYER != RELEASE RELAYER, (check userRecord storage update)
-    // LOCK RELAYER == RELEASE RELAYER (check userRecord storage update)
-    // )}
+    // edge case test
+    it("should release multiple locks", async () => {
+      const endtoendID = "124";
+      const pixTarget = "pixTarget";
+      const root = ethers.constants.HashZero;
+      const acc01Key = 
+        await p2pix.callStatic._castAddrToKey(acc01.address);
+      const acc03Key = 
+        await p2pix.callStatic._castAddrToKey(acc03.address);
+      const acc01Record1 = 
+        await p2pix.callStatic.userRecord(acc01Key);
+      const acc03Record1 = 
+        await p2pix.callStatic.userRecord(acc03Key);
+      const messageToSign1 = ethers.utils.solidityKeccak256(
+        ["string", "uint256", "uint256"],
+        [pixTarget, 100, endtoendID]);
+      const flatSig1 = await owner.signMessage(
+        ethers.utils.arrayify(messageToSign1));
+      const sig1 = ethers.utils.splitSignature(flatSig1);
+      const messageToSign2 = ethers.utils.solidityKeccak256(
+        ["string", "uint256", "uint256"],
+        [pixTarget, 50, endtoendID]);
+      const flatSig2 = await owner.signMessage(
+        ethers.utils.arrayify(messageToSign2));
+      const sig2 = ethers.utils.splitSignature(flatSig2);
+      const messageToSign3 = ethers.utils.solidityKeccak256(
+        ["string", "uint256", "uint256"],
+        [pixTarget, 25, endtoendID]);
+      const flatSig3 = await owner.signMessage(
+        ethers.utils.arrayify(messageToSign3));
+      const sig3 = ethers.utils.splitSignature(flatSig3);
+      await erc20.approve(p2pix.address, price);
+      await p2pix.deposit(
+        erc20.address,
+        price,
+        pixTarget,
+        root,
+      );
+      await p2pix
+        .connect(acc03)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          0,
+          100,
+          [],
+          [],
+        );
+      await p2pix
+        .connect(acc03)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          6,
+          50,
+          [],
+          [],
+        );
+      await p2pix
+        .connect(acc03)
+        .lock(
+          0,
+          acc02.address,
+          acc03.address,
+          10,
+          25,
+          [],
+          [],
+        );
+      const lockID = ethers.utils.solidityKeccak256(
+        ["uint256", "uint256", "address"],
+        [0, 100, acc02.address],
+      );
+      const lockID2 = ethers.utils.solidityKeccak256(
+        ["uint256", "uint256", "address"],
+        [0, 50, acc02.address],
+      );
+      const lockID3 = ethers.utils.solidityKeccak256(
+        ["uint256", "uint256", "address"],
+        [0, 25, acc02.address],
+      );
+      // relayerPremium == 0
+      const tx = await p2pix
+        .connect(acc01)
+        .release(
+          lockID,
+          acc02.address,
+          endtoendID,
+          sig1.r,
+          sig1.s,
+          sig1.v,
+        );
+      // relayerPremium != 0 && 
+      // lock's msg.sender != release's msg.sender
+      const tx1 = await p2pix
+        .connect(acc01)
+        .release(
+          lockID2,
+          acc02.address,
+          endtoendID,
+          sig2.r,
+          sig2.s,
+          sig2.v,
+        );
+      // relayerPremium != 0 && 
+      // lock's msg.sender == release's msg.sender
+      const tx2 = await p2pix
+        .connect(acc03)
+        .release(
+          lockID3,
+          acc02.address,
+          endtoendID,
+          sig3.r,
+          sig3.s,
+          sig3.v,
+        );
+        const used1 = await p2pix.callStatic.usedTransactions(
+          ethers.utils.arrayify(messageToSign1),
+        );
+        const used2 = await p2pix.callStatic.usedTransactions(
+          ethers.utils.arrayify(messageToSign2),
+        );
+        const used3 = await p2pix.callStatic.usedTransactions(
+          ethers.utils.arrayify(messageToSign3),
+        );
+        const acc01Record2 = 
+          await p2pix.callStatic.userRecord(acc01Key);
+        const acc03Record2 = 
+          await p2pix.callStatic.userRecord(acc03Key);
+
+        expect(tx).to.be.ok;
+        expect(tx1).to.be.ok;
+        expect(tx2).to.be.ok;
+        await expect(tx)
+          .to.emit(p2pix, "LockReleased")
+          .withArgs(acc02.address, lockID);
+        await expect(tx1)
+          .to.emit(p2pix, "LockReleased")
+          .withArgs(acc02.address, lockID2);
+        await expect(tx2)
+          .to.emit(p2pix, "LockReleased")
+          .withArgs(acc02.address, lockID3);
+        expect(used1).to.eq(true);
+        expect(used2).to.eq(true);
+        expect(used3).to.eq(true);
+        expect(0).to.eq(acc01Record1).and.to.eq(acc03Record1);
+        expect(acc01Record2).to.eq(6); // 0 + 6
+        expect(acc03Record2).to.eq(185); // 100 + 50 + 25 + 10
+        await expect(tx).to.changeTokenBalances(
+          erc20, 
+          [
+            acc01.address, 
+            acc02.address, 
+            acc03.address, 
+            p2pix.address
+          ], 
+          [
+            0,
+            100, 
+            0,   
+            "-100"
+          ],
+        );
+        await expect(tx1).to.changeTokenBalances(
+          erc20, 
+          [
+            acc01.address, 
+            acc02.address, 
+            acc03.address, 
+            p2pix.address
+          ], 
+          [
+            0,
+            47, 
+            3,  
+            "-50"
+          ],
+        );
+        await expect(tx2).to.changeTokenBalances(
+          erc20, 
+          [
+            acc01.address, 
+            acc02.address, 
+            acc03.address, 
+            p2pix.address
+          ], 
+          [
+            0,
+            20, 
+            5,   
+            "-25"
+          ],
+        );
+    });
   });
   describe("Unexpire Locks", async () => {
     it("should revert if lock isn't expired", async () => {

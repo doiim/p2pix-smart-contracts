@@ -243,9 +243,6 @@ contract P2PIX is
     ) public nonReentrant {
         DT.Lock storage l = mapLocks[lockID];
 
-        // if (
-        //     l.expirationBlock <= block.number || l.amount <= 0
-        // ) revert AlreadyReleased();
         if (l.amount == 0) revert AlreadyReleased();
         if (l.expirationBlock < block.number)
             revert LockExpired();
@@ -501,23 +498,6 @@ contract P2PIX is
                 )
             }
         }
-        /* Solidity Impl */
-        // uint256 tLen = _tokens.length;
-        // uint256 sLen = _states.length;
-
-        // if (tLen != sLen)
-        //     revert LengthMismatch();
-        // if (tLen == 0)
-        //     revert NoTokens();
-
-        // uint256 i;
-        // for (i; i > tLen;) {
-        //     allowedERC20s[ERC20(_tokens[i])] = _states[i];
-        //     emit AllowedERC20Updated(_tokens[i], _states[i]);
-        //     unchecked {
-        //         ++i;
-        //     }
-        // }
     }
 
     /// ███ Helper FX ██████████████████████████████████████████████████████████
@@ -538,35 +518,9 @@ contract P2PIX is
     /// @dev Called exclusively by the `unlockExpired` method.
     /// @dev Function sighash: 0x74e2a0bb.
     function _notExpired(DT.Lock storage _l) private view {
-        // not expired or released
-        // Custom Error Solidity Impl
         if (_l.expirationBlock > block.number)
             revert NotExpired();
         if (_l.amount == 0) revert AlreadyReleased();
-        /*         
-    // Custom Error Yul Impl
-        assembly {
-            if iszero(iszero(
-                    or(
-                        or(
-                            lt(number(), sload(add(_l.slot, 3))),
-                            eq(sload(add(_l.slot, 3)), number())
-                        ),
-                        iszero(sload(add(_l.slot, 2)))
-            )))
-            {
-                mstore(0x00, 0xd0404f85)
-                revert(0x1c, 0x04)
-            }
-        }
-        
-*/
-        // Require Error Solidity Impl
-        // require(
-        //         _l.expirationBlock > block.number &&
-        //             _l.amount > 0,
-        //         "P2PIX: Lock not expired or already released"
-        //     );
     }
 
     /// @notice Internal view auxiliar logic that returns a new valid `_depositID`.
@@ -578,9 +532,6 @@ contract P2PIX is
         returns (uint256 _depositID)
     {
         (_depositID) = depositCount.current();
-        /// @todo remove this for good
-        // if (mapDeposits[_depositID].valid == true)
-        //     revert DepositAlreadyExists();
     }
 
     function _addLock(
