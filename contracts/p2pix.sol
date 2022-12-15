@@ -236,7 +236,7 @@ contract P2PIX is
     function release(
         bytes32 lockID,
         address _relayerTarget,
-        uint256 pixTimestamp,
+        bytes32 pixTimestamp,
         bytes32 r,
         bytes32 s,
         uint8 v
