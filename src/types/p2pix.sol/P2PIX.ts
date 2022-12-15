@@ -39,7 +39,7 @@ export interface P2PIXInterface extends utils.Interface {
     "mapDeposits(uint256)": FunctionFragment;
     "mapLocks(bytes32)": FunctionFragment;
     "owner()": FunctionFragment;
-    "release(bytes32,address,uint256,bytes32,bytes32,uint8)": FunctionFragment;
+    "release(bytes32,address,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
     "reputation()": FunctionFragment;
     "sellerAllowList(uint256)": FunctionFragment;
     "setDefaultLockBlocks(uint256)": FunctionFragment;
@@ -140,7 +140,7 @@ export interface P2PIXInterface extends utils.Interface {
     values: [
       PromiseOrValue<BytesLike>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BigNumberish>
@@ -555,7 +555,7 @@ export interface P2PIX extends BaseContract {
     release(
       lockID: PromiseOrValue<BytesLike>,
       _relayerTarget: PromiseOrValue<string>,
-      pixTimestamp: PromiseOrValue<BigNumberish>,
+      pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
@@ -703,7 +703,7 @@ export interface P2PIX extends BaseContract {
   release(
     lockID: PromiseOrValue<BytesLike>,
     _relayerTarget: PromiseOrValue<string>,
-    pixTimestamp: PromiseOrValue<BigNumberish>,
+    pixTimestamp: PromiseOrValue<BytesLike>,
     r: PromiseOrValue<BytesLike>,
     s: PromiseOrValue<BytesLike>,
     v: PromiseOrValue<BigNumberish>,
@@ -851,7 +851,7 @@ export interface P2PIX extends BaseContract {
     release(
       lockID: PromiseOrValue<BytesLike>,
       _relayerTarget: PromiseOrValue<string>,
-      pixTimestamp: PromiseOrValue<BigNumberish>,
+      pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
@@ -1089,7 +1089,7 @@ export interface P2PIX extends BaseContract {
     release(
       lockID: PromiseOrValue<BytesLike>,
       _relayerTarget: PromiseOrValue<string>,
-      pixTimestamp: PromiseOrValue<BigNumberish>,
+      pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,
@@ -1220,7 +1220,7 @@ export interface P2PIX extends BaseContract {
     release(
       lockID: PromiseOrValue<BytesLike>,
       _relayerTarget: PromiseOrValue<string>,
-      pixTimestamp: PromiseOrValue<BigNumberish>,
+      pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
       v: PromiseOrValue<BigNumberish>,

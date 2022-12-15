@@ -947,8 +947,8 @@ describe("P2PIX", () => {
   describe("Release", async () => {
     it("should revert if lock has expired", async () => {
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
-        ["pixTarget", 100, "1337"],
+        ["string", "uint256", "bytes32"],
+        ["pixTarget", 100, ethers.constants.HashZero],
       );
       const flatSig = await acc01.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -980,7 +980,7 @@ describe("P2PIX", () => {
       const fail = p2pix.release(
         lockID,
         acc03.address,
-        "1337",
+        ethers.constants.HashZero,
         sig.r,
         sig.s,
         sig.v,
@@ -993,8 +993,8 @@ describe("P2PIX", () => {
     });
     it("should revert if lock has already been released", async () => {
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
-        ["pixTarget", 100, "1337"],
+        ["string", "uint256", "bytes32"],
+        ["pixTarget", 100, ethers.constants.HashZero],
       );
       const flatSig = await acc01.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1025,7 +1025,7 @@ describe("P2PIX", () => {
       await p2pix.release(
         lockID,
         acc03.address,
-        "1337",
+        ethers.constants.HashZero,
         sig.r,
         sig.s,
         sig.v,
@@ -1033,7 +1033,7 @@ describe("P2PIX", () => {
       const fail = p2pix.release(
         lockID,
         acc03.address,
-        "1337",
+        ethers.constants.HashZero,
         sig.r,
         sig.s,
         sig.v,
@@ -1046,8 +1046,8 @@ describe("P2PIX", () => {
     });
     it("should revert if signed message has already been used", async () => {
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
-        ["pixTarget", 100, "1337"],
+        ["string", "uint256", "bytes32"],
+        ["pixTarget", 100, ethers.constants.HashZero],
       );
       const flatSig = await owner.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1080,7 +1080,7 @@ describe("P2PIX", () => {
         .release(
           lockID,
           acc02.address,
-          "1337",
+          ethers.constants.HashZero,
           sig.r,
           sig.s,
           sig.v,
@@ -1105,7 +1105,7 @@ describe("P2PIX", () => {
         .release(
           lockID2,
           acc02.address,
-          "1337",
+          ethers.constants.HashZero,
           sig.r,
           sig.s,
           sig.v,
@@ -1118,8 +1118,8 @@ describe("P2PIX", () => {
     });
     it("should revert if ecrecovered signer is invalid", async () => {
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
-        ["pixTarget", 100, "1337"],
+        ["string", "uint256", "bytes32"],
+        ["pixTarget", 100, ethers.constants.HashZero],
       );
       const flatSig = await acc03.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1153,7 +1153,7 @@ describe("P2PIX", () => {
         .release(
           lockID,
           acc02.address,
-          "1337",
+          ethers.constants.HashZero,
           sig.r,
           sig.s,
           sig.v,
@@ -1165,10 +1165,10 @@ describe("P2PIX", () => {
       );
     });
     it("should release lock, update storage and emit events", async () => {
-      const endtoendID = "124";
+      const endtoendID = ethers.constants.HashZero;
       const pixTarget = "pixTarget";
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
+        ["string", "uint256", "bytes32"],
         [pixTarget, 100, endtoendID],
       );
       // Note: messageToSign is a string, that is 66-bytes long, to sign the
@@ -1277,7 +1277,7 @@ describe("P2PIX", () => {
     });
     // edge case test
     it("should release multiple locks", async () => {
-      const endtoendID = "124";
+      const endtoendID = ethers.constants.HashZero;
       const pixTarget = "pixTarget";
       const root = ethers.constants.HashZero;
       const acc01Key = 
@@ -1289,19 +1289,19 @@ describe("P2PIX", () => {
       const acc03Record1 = 
         await p2pix.callStatic.userRecord(acc03Key);
       const messageToSign1 = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
+        ["string", "uint256", "bytes32"],
         [pixTarget, 100, endtoendID]);
       const flatSig1 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign1));
       const sig1 = ethers.utils.splitSignature(flatSig1);
       const messageToSign2 = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
+        ["string", "uint256", "bytes32"],
         [pixTarget, 50, endtoendID]);
       const flatSig2 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign2));
       const sig2 = ethers.utils.splitSignature(flatSig2);
       const messageToSign3 = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
+        ["string", "uint256", "bytes32"],
         [pixTarget, 25, endtoendID]);
       const flatSig3 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign3));
@@ -1496,10 +1496,10 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if lock has already been released", async () => {
-      const endtoendID = "124";
+      const endtoendID = ethers.constants.HashZero;
       const pixTarget = "pixTarget";
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["string", "uint256", "uint256"],
+        ["string", "uint256", "bytes32"],
         [pixTarget, 1, endtoendID],
       );
       const messageHashBytes =
