@@ -585,10 +585,10 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if msg.sender does not have enough credit in his spend limit", async () => {
-      await erc20.approve(p2pix.address, price);
+      await erc20.approve(p2pix.address, price.mul(BigNumber.from('3')));
       await p2pix.deposit(
         erc20.address,
-        price,
+        price.mul(BigNumber.from('3')),
         "pixTarget",
         merkleRoot,
       );
@@ -599,7 +599,7 @@ describe("P2PIX", () => {
           acc02.address,
           acc03.address,
           0,
-          price,
+          price.mul(BigNumber.from('2')),
           [],
           [],
         );
@@ -674,13 +674,13 @@ describe("P2PIX", () => {
           acc02.address,
           acc03.address,
           0,
-          100,
+          price,
           [],
           [],
         );
       const lockID = ethers.utils.solidityKeccak256(
         ["uint256", "uint256", "address"],
-        [0, 100, acc02.address],
+        [0, price, acc02.address],
       );
       const storage: Lock = await p2pix.callStatic.mapLocks(
         lockID,
@@ -695,7 +695,7 @@ describe("P2PIX", () => {
         ethers.constants.Zero,
       );
       expect(storage.amount).to.eq(
-        ethers.BigNumber.from(100),
+        price
       );
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.buyerAddress).to.eq(acc02.address);

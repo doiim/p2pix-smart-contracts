@@ -199,7 +199,7 @@ contract P2PIX is
             // Halt execution and output `lockID`.
             return lockID;
         } else {
-            if (l.amount <= 1e2) {
+            if (l.amount <= 100 ether) {
                 _addLock(lockID, l, d);
                 // Halt execution and output `lockID`.
                 return lockID;
