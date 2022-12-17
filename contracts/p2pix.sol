@@ -34,8 +34,11 @@ contract P2PIX is
     IReputation public reputation;
     Counters.Counter public depositCount;
 
+
     /// @dev Default blocks that lock will hold tokens.
     uint256 public defaultLockBlocks;
+    /// @dev The scalar of BRZ token.
+    uint256 constant public WAD = 1e18;
 
     /// @dev Stores an relayer's last computed credit.
     mapping(uint256 => uint256) public userRecord;
@@ -199,7 +202,7 @@ contract P2PIX is
             // Halt execution and output `lockID`.
             return lockID;
         } else {
-            if (l.amount <= 100 ether) {
+            if (l.amount <= 1e2 ether) {
                 _addLock(lockID, l, d);
                 // Halt execution and output `lockID`.
                 return lockID;
@@ -208,9 +211,9 @@ contract P2PIX is
                     _castAddrToKey(msg.sender)
                 ];
                 uint256 spendLimit;
-                (spendLimit) = _limiter(userCredit);
+                (spendLimit) = _limiter(userCredit / WAD);
 
-                if (l.amount > spendLimit || l.amount > 1e6)
+                if (l.amount > (spendLimit * WAD) || l.amount > 1e6 ether)
                     revert AmountNotAllowed();
 
                 _addLock(lockID, l, d);
@@ -350,8 +353,8 @@ contract P2PIX is
             uint256 _newUserRecord = (userRecord[userKey] >>
                 1);
 
-            if (_newUserRecord <= 1e2) {
-                userRecord[userKey] = 1e2;
+            if (_newUserRecord <= 1e2 ether) {
+                userRecord[userKey] = 1e2 ether;
             } else {
                 userRecord[userKey] = _newUserRecord;
             }
