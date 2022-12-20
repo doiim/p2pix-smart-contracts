@@ -34,11 +34,10 @@ contract P2PIX is
     IReputation public reputation;
     Counters.Counter public depositCount;
 
-
     /// @dev Default blocks that lock will hold tokens.
     uint256 public defaultLockBlocks;
     /// @dev The scalar of BRZ token.
-    uint256 constant public WAD = 1e18;
+    uint256 public constant WAD = 1e18;
 
     /// @dev Stores an relayer's last computed credit.
     mapping(uint256 => uint256) public userRecord;
@@ -213,8 +212,10 @@ contract P2PIX is
                 uint256 spendLimit;
                 (spendLimit) = _limiter(userCredit / WAD);
 
-                if (l.amount > (spendLimit * WAD) || l.amount > 1e6 ether)
-                    revert AmountNotAllowed();
+                if (
+                    l.amount > (spendLimit * WAD) ||
+                    l.amount > 1e6 ether
+                ) revert AmountNotAllowed();
 
                 _addLock(lockID, l, d);
                 // Halt execution and output `lockID`.
@@ -324,7 +325,7 @@ contract P2PIX is
             }
         }
 
-        emit LockReleased(l.buyerAddress, lockID);
+        emit LockReleased(l.buyerAddress, lockID, lockAmount);
     }
 
     /// @notice Unlocks expired locks.
@@ -333,9 +334,9 @@ contract P2PIX is
     /// @dev For each successfull unexpired lock recovered,
     /// `userRecord[_castAddrToKey(l.relayerAddress)]` is decreased by half of its value.
     /// @dev Function sighash: 0x8e2749d6.
-    function unlockExpired(
-        bytes32[] calldata lockIDs
-    ) public {
+    function unlockExpired(bytes32[] calldata lockIDs)
+        public
+    {
         uint256 i;
         uint256 locksSize = lockIDs.length;
 
@@ -403,10 +404,9 @@ contract P2PIX is
         emit DepositWithdrawn(msg.sender, depositID, amount);
     }
 
-    function setRoot(
-        address addr,
-        bytes32 merkleroot
-    ) public {
+    function setRoot(address addr, bytes32 merkleroot)
+        public
+    {
         if (addr == msg.sender) {
             sellerAllowList[
                 _castAddrToKey(addr)
@@ -425,27 +425,30 @@ contract P2PIX is
         emit FundsWithdrawn(msg.sender, balance);
     }
 
-    function setReputation(
-        IReputation _reputation
-    ) public onlyOwner {
+    function setReputation(IReputation _reputation)
+        public
+        onlyOwner
+    {
         assembly {
             sstore(reputation.slot, _reputation)
         }
         emit ReputationUpdated(address(_reputation));
     }
 
-    function setDefaultLockBlocks(
-        uint256 _blocks
-    ) public onlyOwner {
+    function setDefaultLockBlocks(uint256 _blocks)
+        public
+        onlyOwner
+    {
         assembly {
             sstore(defaultLockBlocks.slot, _blocks)
         }
         emit LockBlocksUpdated(_blocks);
     }
 
-    function setValidSigners(
-        address[] memory _validSigners
-    ) public onlyOwner {
+    function setValidSigners(address[] memory _validSigners)
+        public
+        onlyOwner
+    {
         unchecked {
             uint256 i;
             uint256 len = _validSigners.length;
@@ -589,9 +592,11 @@ contract P2PIX is
         ) revert AddressDenied();
     }
 
-    function _limiter(
-        uint256 _userCredit
-    ) internal view returns (uint256 _spendLimit) {
+    function _limiter(uint256 _userCredit)
+        internal
+        view
+        returns (uint256 _spendLimit)
+    {
         // enconde the fx sighash and args
         bytes memory encodedParams = abi.encodeWithSelector(
             IReputation.limiter.selector,
@@ -631,9 +636,11 @@ contract P2PIX is
     /// @notice Public method that handles `address`
     /// to `uint256` safe type casting.
     /// @dev Function sighash: 0x4b2ae980.
-    function _castAddrToKey(
-        address _addr
-    ) public pure returns (uint256 _key) {
+    function _castAddrToKey(address _addr)
+        public
+        pure
+        returns (uint256 _key)
+    {
         _key = uint256(uint160(address(_addr))) << 12;
     }
 }
