@@ -17,22 +17,21 @@ export interface EventAndErrorsInterface extends utils.Interface {
 
   events: {
     "AllowedERC20Updated(address,bool)": EventFragment;
-    "DepositAdded(address,uint256,address,uint256)": EventFragment;
-    "DepositClosed(address,uint256)": EventFragment;
-    "DepositWithdrawn(address,uint256,uint256)": EventFragment;
+    "DepositAdded(address,address,uint256)": EventFragment;
+    "DepositWithdrawn(address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,uint256)": EventFragment;
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
     "LockBlocksUpdated(uint256)": EventFragment;
-    "LockReleased(address,bytes32)": EventFragment;
+    "LockReleased(address,bytes32,uint256)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
     "RootUpdated(address,bytes32)": EventFragment;
+    "ValidSet(address,address,bool)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AllowedERC20Updated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DepositClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DepositWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FundsWithdrawn"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LockAdded"): EventFragment;
@@ -41,6 +40,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ValidSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
 
@@ -58,35 +58,23 @@ export type AllowedERC20UpdatedEventFilter =
 
 export interface DepositAddedEventObject {
   seller: string;
-  depositID: BigNumber;
   token: string;
   amount: BigNumber;
 }
 export type DepositAddedEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber],
+  [string, string, BigNumber],
   DepositAddedEventObject
 >;
 
 export type DepositAddedEventFilter = TypedEventFilter<DepositAddedEvent>;
 
-export interface DepositClosedEventObject {
-  seller: string;
-  depositID: BigNumber;
-}
-export type DepositClosedEvent = TypedEvent<
-  [string, BigNumber],
-  DepositClosedEventObject
->;
-
-export type DepositClosedEventFilter = TypedEventFilter<DepositClosedEvent>;
-
 export interface DepositWithdrawnEventObject {
   seller: string;
-  depositID: BigNumber;
+  token: string;
   amount: BigNumber;
 }
 export type DepositWithdrawnEvent = TypedEvent<
-  [string, BigNumber, BigNumber],
+  [string, string, BigNumber],
   DepositWithdrawnEventObject
 >;
 
@@ -107,7 +95,7 @@ export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
 export interface LockAddedEventObject {
   buyer: string;
   lockID: string;
-  depositID: BigNumber;
+  seller: BigNumber;
   amount: BigNumber;
 }
 export type LockAddedEvent = TypedEvent<
@@ -131,9 +119,10 @@ export type LockBlocksUpdatedEventFilter =
 export interface LockReleasedEventObject {
   buyer: string;
   lockId: string;
+  amount: BigNumber;
 }
 export type LockReleasedEvent = TypedEvent<
-  [string, string],
+  [string, string, BigNumber],
   LockReleasedEventObject
 >;
 
@@ -171,6 +160,18 @@ export type RootUpdatedEvent = TypedEvent<
 >;
 
 export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
+
+export interface ValidSetEventObject {
+  seller: string;
+  token: string;
+  state: boolean;
+}
+export type ValidSetEvent = TypedEvent<
+  [string, string, boolean],
+  ValidSetEventObject
+>;
+
+export type ValidSetEventFilter = TypedEventFilter<ValidSetEvent>;
 
 export interface ValidSignersUpdatedEventObject {
   signers: string[];
@@ -223,36 +224,25 @@ export interface EventAndErrors extends BaseContract {
       state?: PromiseOrValue<boolean> | null
     ): AllowedERC20UpdatedEventFilter;
 
-    "DepositAdded(address,uint256,address,uint256)"(
+    "DepositAdded(address,address,uint256)"(
       seller?: PromiseOrValue<string> | null,
-      depositID?: null,
       token?: null,
       amount?: null
     ): DepositAddedEventFilter;
     DepositAdded(
       seller?: PromiseOrValue<string> | null,
-      depositID?: null,
       token?: null,
       amount?: null
     ): DepositAddedEventFilter;
 
-    "DepositClosed(address,uint256)"(
+    "DepositWithdrawn(address,address,uint256)"(
       seller?: PromiseOrValue<string> | null,
-      depositID?: null
-    ): DepositClosedEventFilter;
-    DepositClosed(
-      seller?: PromiseOrValue<string> | null,
-      depositID?: null
-    ): DepositClosedEventFilter;
-
-    "DepositWithdrawn(address,uint256,uint256)"(
-      seller?: PromiseOrValue<string> | null,
-      depositID?: null,
+      token?: null,
       amount?: null
     ): DepositWithdrawnEventFilter;
     DepositWithdrawn(
       seller?: PromiseOrValue<string> | null,
-      depositID?: null,
+      token?: null,
       amount?: null
     ): DepositWithdrawnEventFilter;
 
@@ -265,26 +255,28 @@ export interface EventAndErrors extends BaseContract {
     "LockAdded(address,bytes32,uint256,uint256)"(
       buyer?: PromiseOrValue<string> | null,
       lockID?: PromiseOrValue<BytesLike> | null,
-      depositID?: null,
+      seller?: null,
       amount?: null
     ): LockAddedEventFilter;
     LockAdded(
       buyer?: PromiseOrValue<string> | null,
       lockID?: PromiseOrValue<BytesLike> | null,
-      depositID?: null,
+      seller?: null,
       amount?: null
     ): LockAddedEventFilter;
 
     "LockBlocksUpdated(uint256)"(blocks?: null): LockBlocksUpdatedEventFilter;
     LockBlocksUpdated(blocks?: null): LockBlocksUpdatedEventFilter;
 
-    "LockReleased(address,bytes32)"(
+    "LockReleased(address,bytes32,uint256)"(
       buyer?: PromiseOrValue<string> | null,
-      lockId?: null
+      lockId?: null,
+      amount?: null
     ): LockReleasedEventFilter;
     LockReleased(
       buyer?: PromiseOrValue<string> | null,
-      lockId?: null
+      lockId?: null,
+      amount?: null
     ): LockReleasedEventFilter;
 
     "LockReturned(address,bytes32)"(
@@ -306,6 +298,17 @@ export interface EventAndErrors extends BaseContract {
       merkleRoot?: null
     ): RootUpdatedEventFilter;
     RootUpdated(seller?: null, merkleRoot?: null): RootUpdatedEventFilter;
+
+    "ValidSet(address,address,bool)"(
+      seller?: PromiseOrValue<string> | null,
+      token?: null,
+      state?: null
+    ): ValidSetEventFilter;
+    ValidSet(
+      seller?: PromiseOrValue<string> | null,
+      token?: null,
+      state?: null
+    ): ValidSetEventFilter;
 
     "ValidSignersUpdated(address[])"(
       signers?: null
