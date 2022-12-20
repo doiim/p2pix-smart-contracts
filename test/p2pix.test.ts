@@ -1251,7 +1251,7 @@ describe("P2PIX", () => {
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "LockReleased")
-        .withArgs(acc02.address, lockID);
+        .withArgs(acc02.address, lockID, storage1.amount);
       expect(storage1.expirationBlock).to.eq(
         ethers.BigNumber.from(16),
       );
@@ -1358,6 +1358,11 @@ describe("P2PIX", () => {
         ["uint256", "uint256", "address"],
         [0, 25, acc02.address],
       );
+
+      const storage1: Lock = await p2pix.callStatic.mapLocks(lockID);
+      const storage2: Lock = await p2pix.callStatic.mapLocks(lockID2);
+      const storage3: Lock = await p2pix.callStatic.mapLocks(lockID3);
+
       // relayerPremium == 0
       const tx = await p2pix
         .connect(acc01)
@@ -1412,13 +1417,13 @@ describe("P2PIX", () => {
         expect(tx2).to.be.ok;
         await expect(tx)
           .to.emit(p2pix, "LockReleased")
-          .withArgs(acc02.address, lockID);
+          .withArgs(acc02.address, lockID, storage1.amount);
         await expect(tx1)
           .to.emit(p2pix, "LockReleased")
-          .withArgs(acc02.address, lockID2);
+          .withArgs(acc02.address, lockID2, storage2.amount);
         await expect(tx2)
           .to.emit(p2pix, "LockReleased")
-          .withArgs(acc02.address, lockID3);
+          .withArgs(acc02.address, lockID3, storage3.amount);
         expect(used1).to.eq(true);
         expect(used2).to.eq(true);
         expect(used3).to.eq(true);
