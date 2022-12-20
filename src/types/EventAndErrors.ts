@@ -23,7 +23,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
     "FundsWithdrawn(address,uint256)": EventFragment;
     "LockAdded(address,bytes32,uint256,uint256)": EventFragment;
     "LockBlocksUpdated(uint256)": EventFragment;
-    "LockReleased(address,bytes32)": EventFragment;
+    "LockReleased(address,bytes32,uint256)": EventFragment;
     "LockReturned(address,bytes32)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
     "RootUpdated(address,bytes32)": EventFragment;
@@ -131,9 +131,10 @@ export type LockBlocksUpdatedEventFilter =
 export interface LockReleasedEventObject {
   buyer: string;
   lockId: string;
+  amount: BigNumber;
 }
 export type LockReleasedEvent = TypedEvent<
-  [string, string],
+  [string, string, BigNumber],
   LockReleasedEventObject
 >;
 
@@ -278,13 +279,15 @@ export interface EventAndErrors extends BaseContract {
     "LockBlocksUpdated(uint256)"(blocks?: null): LockBlocksUpdatedEventFilter;
     LockBlocksUpdated(blocks?: null): LockBlocksUpdatedEventFilter;
 
-    "LockReleased(address,bytes32)"(
+    "LockReleased(address,bytes32,uint256)"(
       buyer?: PromiseOrValue<string> | null,
-      lockId?: null
+      lockId?: null,
+      amount?: null
     ): LockReleasedEventFilter;
     LockReleased(
       buyer?: PromiseOrValue<string> | null,
-      lockId?: null
+      lockId?: null,
+      amount?: null
     ): LockReleasedEventFilter;
 
     "LockReturned(address,bytes32)"(

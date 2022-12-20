@@ -28,7 +28,8 @@ interface EventAndErrors {
     );
     event LockReleased(
         address indexed buyer, 
-        bytes32 lockId
+        bytes32 lockId,
+        uint256 amount
     );
     event LockReturned(
         address indexed buyer, 
