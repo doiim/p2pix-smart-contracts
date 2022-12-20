@@ -14,7 +14,7 @@ import {
 import {
   ethers,
   network,
-  /* , tracer */
+  /* tracer */
 } from "hardhat";
 
 // import keccak256 from "keccak256";
@@ -1578,7 +1578,7 @@ describe("P2PIX", () => {
       expect(storage.amount).to.eq(ethers.constants.One);
       expect(storage2.amount).to.eq(ethers.constants.Zero);
       expect(record1).to.eq(0);
-      expect(record2).to.eq(100);
+      expect(record2).to.eq(price);
     });
     it("should unlock expired through lock function", async () => {
       // test method through lock fx
