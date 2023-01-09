@@ -21,11 +21,21 @@ if (!infuraApiKey) {
   );
 }
 
+const alchemyApiKey: string | undefined =
+  process.env.ALCHEMY_API_KEY;
+if (!alchemyApiKey) {
+  throw new Error(
+    "Please set your ALCHEMY_API_KEY in a .env file",
+  );
+}
+
 const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
   hardhat: 31337,
   mainnet: 1,
   sepolia: 11155111,
+  goerli : 5,
+  "polygon-mumbai": 80001,
 };
 
 function getChainConfig(
@@ -33,9 +43,9 @@ function getChainConfig(
 ): NetworkUserConfig {
   let jsonRpcUrl: string;
   switch (chain) {
-    // case "{INSERT_NAME}":
-    // jsonRpcUrl = "{INSERT_URL}";
-    // break;
+    case "polygon-mumbai":
+    jsonRpcUrl = "https://polygon-mumbai.g.alchemy.com/v2/" + alchemyApiKey;
+    break;
     default:
       jsonRpcUrl =
         "https://" + chain + ".infura.io/v3/" + infuraApiKey;
@@ -47,6 +57,7 @@ function getChainConfig(
       mnemonic,
       path: "m/44'/60'/0'/0",
     },
+    // gasPrice: 8000000000,
     chainId: chainIds[chain],
     url: jsonRpcUrl,
   };
@@ -58,6 +69,8 @@ const config: HardhatUserConfig = {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY || "",
       rinkeby: process.env.ETHERSCAN_API_KEY || "",
+      goerli: process.env.ETHERSCAN_API_KEY || "",
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
     },
     // customChains: [
     //   {
@@ -78,7 +91,7 @@ const config: HardhatUserConfig = {
     ),
     showTimeSpent: true,
     showMethodSig: true,
-    token: "ONE",
+    token: "ETH",
     currency: "USD",
     // gasPriceApi: process.env.GASPRICE_API_ENDPOINT,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
@@ -95,7 +108,9 @@ const config: HardhatUserConfig = {
     },
     // network: getChainConfig("{INSERT_NAME}"),
     mainnet: getChainConfig("mainnet"),
+    goerli: getChainConfig("goerli"),
     sepolia: getChainConfig("sepolia"),
+    "polygon-mumbai": getChainConfig("polygon-mumbai"),
   },
   paths: {
     artifacts: "./artifacts",
@@ -111,7 +126,7 @@ const config: HardhatUserConfig = {
       },
       optimizer: {
         enabled: true,
-        runs: 800,
+        runs: 2000,
       },
     },
   },
