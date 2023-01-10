@@ -30,6 +30,23 @@
 
 ![Callgraph](docs/callgraph.svg)
 
+## Current Deployment addresses
+
+| Testnet 	| Token Address                              	| P2pix Address                              	|
+|---------	|--------------------------------------------	|--------------------------------------------	|
+| Goerli  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee 	| 0x5f3EFA9A90532914545CEf527C530658af87e196 	|
+| Mumbai  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee  | 0x5f3EFA9A90532914545CEf527C530658af87e196	|
+
+<!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
+
+<!-- https://goerli.etherscan.io/address/0x294003F602c321627152c6b7DED3EAb5bEa853Ee#code -->
+
+<!-- https://goerli.etherscan.io/address/0x5f3EFA9A90532914545CEf527C530658af87e196#code -->
+
+<!-- https://mumbai.polygonscan.com/address/0x294003F602c321627152c6b7DED3EAb5bEa853Ee#code -->
+
+<!-- https://mumbai.polygonscan.com/address/0x5f3EFA9A90532914545CEf527C530658af87e196#code -->
+
 ## Usage
 
 ### Pre Requisites
@@ -103,3 +120,20 @@ yarn deploy2:localhost
 
 **_NOTE_:** The second script transfers 2M tokens to the first wallet of the node.
 To use the P2Pix smart contract first transfer some of the tokens to other wallets.
+
+
+## Deploying to testnets
+
+Deploy to Ethereum's Goerli testnet:
+
+```sh
+yarn deploy1:goerli
+yarn deploy2:goerli
+```
+
+Deploy to Polygon's Mumbai testnet:
+
+```sh
+yarn deploy1:mumbai
+yarn deploy2:mumbai
+```
