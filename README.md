@@ -18,7 +18,6 @@
 │   ├── tokens
 │   │   └── ERC20.sol
 │   └── utils
-│       ├── Counters.sol
 │       ├── MerkleProofLib.sol
 │       ├── ReentrancyGuard.sol
 │       └── SafeTransferLib.sol
@@ -30,6 +29,37 @@
 
 ![Callgraph](docs/callgraph.svg)
 
+## Current Deployment addresses
+
+### V1
+| Testnet 	| Token Address                              	| P2pix Address                              	|
+|---------	|--------------------------------------------	|--------------------------------------------	|
+| Goerli  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee 	| 0x5f3EFA9A90532914545CEf527C530658af87e196 	|
+| Mumbai  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee  | 0x5f3EFA9A90532914545CEf527C530658af87e196	|
+
+<!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
+
+<!-- https://goerli.etherscan.io/address/0x294003F602c321627152c6b7DED3EAb5bEa853Ee#code -->
+
+<!-- https://goerli.etherscan.io/address/0x5f3EFA9A90532914545CEf527C530658af87e196#code -->
+
+<!-- https://mumbai.polygonscan.com/address/0x294003F602c321627152c6b7DED3EAb5bEa853Ee#code -->
+
+<!-- https://mumbai.polygonscan.com/address/0x5f3EFA9A90532914545CEf527C530658af87e196#code -->
+
+### V2
+| Testnet 	| Token Address                              	| P2pix Address                              	| Reputation Address                          |
+|---------	|--------------------------------------------	|--------------------------------------------	|--------------------------------------------	|
+| Goerli  	| 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 	| 0x2a54667b566B1Aa3779828720E6696AC18ae3f1b 	| 0x7c4010CFe2B5446f0c9dcc5e9B596534b2D2eB44 	|
+| Mumbai  	| 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29  | 0x7F4680D114B43c4434FB604c7Bc6306125D32f28	| 0xD38D6367f452D097ccBfDe4490b7de570B6A72Db	|
+
+<!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
+<!-- https://goerli.etherscan.io/address/0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00#code -->
+<!-- https://goerli.etherscan.io/address/0x2a54667b566B1Aa3779828720E6696AC18ae3f1b#code -->
+<!-- https://goerli.etherscan.io/address/0x7c4010CFe2B5446f0c9dcc5e9B596534b2D2eB44#code -->
+<!-- https://mumbai.polygonscan.com/address/0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29#code -->
+<!-- https://mumbai.polygonscan.com/address/0x7F4680D114B43c4434FB604c7Bc6306125D32f28#code -->
+<!-- https://mumbai.polygonscan.com/address/0xD38D6367f452D097ccBfDe4490b7de570B6A72Db#code -->
 ## Usage
 
 ### Pre Requisites
@@ -103,3 +133,20 @@ yarn deploy2:localhost
 
 **_NOTE_:** The second script transfers 2M tokens to the first wallet of the node.
 To use the P2Pix smart contract first transfer some of the tokens to other wallets.
+
+
+## Deploying to testnets
+
+Deploy to Ethereum's Goerli testnet:
+
+```sh
+yarn deploy1:goerli
+yarn deploy2:goerli
+```
+
+Deploy to Polygon's Mumbai testnet:
+
+```sh
+yarn deploy1:mumbai
+yarn deploy2:mumbai
+```

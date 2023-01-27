@@ -209,9 +209,9 @@ const _abi = [
       },
       {
         indexed: true,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockID",
-        type: "bytes32",
+        type: "uint256",
       },
       {
         indexed: false,
@@ -253,9 +253,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockId",
-        type: "bytes32",
+        type: "uint256",
       },
       {
         indexed: false,
@@ -278,9 +278,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockId",
-        type: "bytes32",
+        type: "uint256",
       },
     ],
     name: "LockReturned",

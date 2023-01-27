@@ -23,18 +23,18 @@ interface EventAndErrors {
     );
     event LockAdded(
         address indexed buyer,
-        bytes32 indexed lockID,
+        uint256 indexed lockID,
         uint256 seller,
         uint256 amount
     );
     event LockReleased(
         address indexed buyer, 
-        bytes32 lockId,
+        uint256 lockId,
         uint256 amount
     );
     event LockReturned(
         address indexed buyer, 
-        bytes32 lockId
+        uint256 lockId
     );
     event FundsWithdrawn(
         address owner, 
@@ -108,8 +108,10 @@ interface EventAndErrors {
     
     /// @dev 0xce3a3d37
     error DecOverflow();
-    /// @dev 0x
+    /// @dev 0xf3fb0eb9
     error MaxBalExceeded();
+    /// @dev 0x6a3bc53e
     error EmptyPixTarget();
+    /// @dev 0x87138d5c
     error NotInitialized();
 }

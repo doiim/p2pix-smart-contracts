@@ -17,22 +17,25 @@ export interface Deploys {
   token: string;
 }
 
-export interface Deposit {
-  remaining: BigNumber;
-  pixTarget: string;
-  seller: string;
-  token: string;
-  valid: boolean;
-}
+// export interface Deposit {
+//   remaining: BigNumber;
+//   pixTarget: string;
+//   seller: string;
+//   token: string;
+//   valid: boolean;
+// }
 
 export interface Lock {
-  depositID: BigNumber;
+  sellerKey: BigNumber;
+  counter: BigNumber;
   relayerPremium: BigNumber;
   amount: BigNumber;
   expirationBlock: BigNumber;
+  pixTarget: BigNumber;
   buyerAddress: string;
   relayerTarget: string;
   relayerAddress: string;
+  token: string;
 }
 
 export interface P2pixFixture {

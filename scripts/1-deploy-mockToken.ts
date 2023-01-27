@@ -6,7 +6,7 @@ import { ethers, network } from "hardhat";
 
 import { Deploys } from "../test/utils/fixtures";
 
-// import hre from "hardhat";
+import hre from "hardhat";
 
 let deploysJson: Deploys;
 const supply: BigNumber = ethers.utils.parseEther("20000000");
@@ -34,18 +34,19 @@ const main = async () => {
 
   deploysJson.token = erc20.address;
   console.log("🚀 Mock Token Deployed:", erc20.address);
+  await erc20.deployTransaction.wait(6);
 
   fs.writeFileSync(
     `./deploys/${network.name}.json`,
     JSON.stringify(deploysJson, undefined, 2),
   );
 
-  /* UNCOMMENT WHEN DEPLOYING TO MAINNET */
-  //verify
-  // await hre.run("verify:verify", {
-  //   address: erc20.address,
-  //   constructorArguments: supply,
-  // });
+  /* UNCOMMENT WHEN DEPLOYING TO MAINNET/PUBLIC TESTNETS */
+  // verify
+  await hre.run("verify:verify", {
+    address: erc20.address,
+    constructorArguments: [supply],
+  });
 };
 
 main()

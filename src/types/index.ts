@@ -17,8 +17,6 @@ export type { MockToken } from "./lib/mock/mockToken.sol/MockToken";
 export { MockToken__factory } from "./factories/lib/mock/mockToken.sol/MockToken__factory";
 export type { ERC20 } from "./lib/tokens/ERC20";
 export { ERC20__factory } from "./factories/lib/tokens/ERC20__factory";
-export type { Counters } from "./lib/utils/Counters";
-export { Counters__factory } from "./factories/lib/utils/Counters__factory";
 export type { ReentrancyGuard } from "./lib/utils/ReentrancyGuard";
 export { ReentrancyGuard__factory } from "./factories/lib/utils/ReentrancyGuard__factory";
 export type { P2PIX } from "./p2pix.sol/P2PIX";
