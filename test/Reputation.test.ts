@@ -36,8 +36,6 @@ describe("Reputation", () => {
       expect(tx2).to.eq(curve(500));
       expect(tx3).to.eq(curve(444444));
       expect(tx4).to.eq(curve(988700));
-
-
     });
   });
 });

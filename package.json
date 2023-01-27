@@ -1,6 +1,6 @@
 {
   "name": "p2pix-smart-contracts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Repository for P2Pix EVM contracts to be imported by the project.",
   "homepage": "https://github.com/doiim/p2pix-smart-contracts#readme",
   "author": "Filipe Soccol (doiim)",

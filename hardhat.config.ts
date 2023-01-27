@@ -121,12 +121,14 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.9",
     settings: {
+      // viaIR: true,
       metadata: {
         bytecodeHash: "none",
       },
       optimizer: {
         enabled: true,
-        runs: 2000,
+        // max val = 4_294_967_295
+        runs: 20_000,
       },
     },
   },

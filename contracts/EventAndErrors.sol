@@ -7,33 +7,34 @@ interface EventAndErrors {
 
     event DepositAdded(
         address indexed seller,
-        uint256 depositID,
+        // uint256 depositID,
         address token,
         uint256 amount
     );
-    event DepositClosed(
+    event ValidSet(
         address indexed seller,
-        uint256 depositID
+        address token,
+        bool state
     );
     event DepositWithdrawn(
         address indexed seller,
-        uint256 depositID,
+        address token,
         uint256 amount
     );
     event LockAdded(
         address indexed buyer,
-        bytes32 indexed lockID,
-        uint256 depositID,
+        uint256 indexed lockID,
+        uint256 seller,
         uint256 amount
     );
     event LockReleased(
         address indexed buyer, 
-        bytes32 lockId,
+        uint256 lockId,
         uint256 amount
     );
     event LockReturned(
         address indexed buyer, 
-        bytes32 lockId
+        uint256 lockId
     );
     event FundsWithdrawn(
         address owner, 
@@ -104,4 +105,13 @@ interface EventAndErrors {
     /// @dev Reverts on an expired lock.
     /// @dev 0xf6fafba0
     error LockExpired();
+    
+    /// @dev 0xce3a3d37
+    error DecOverflow();
+    /// @dev 0xf3fb0eb9
+    error MaxBalExceeded();
+    /// @dev 0x6a3bc53e
+    error EmptyPixTarget();
+    /// @dev 0x87138d5c
+    error NotInitialized();
 }

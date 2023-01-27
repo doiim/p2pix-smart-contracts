@@ -27,7 +27,17 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "DecOverflow",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "DepositAlreadyExists",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "EmptyPixTarget",
     type: "error",
   },
   {
@@ -57,6 +67,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "MaxBalExceeded",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "NoTokens",
     type: "error",
   },
@@ -68,6 +83,11 @@ const _abi = [
   {
     inputs: [],
     name: "NotExpired",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotInitialized",
     type: "error",
   },
   {
@@ -120,12 +140,6 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "depositID",
-        type: "uint256",
-      },
-      {
-        indexed: false,
         internalType: "address",
         name: "token",
         type: "address",
@@ -151,28 +165,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "depositID",
-        type: "uint256",
-      },
-    ],
-    name: "DepositClosed",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
         internalType: "address",
-        name: "seller",
+        name: "token",
         type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "depositID",
-        type: "uint256",
       },
       {
         indexed: false,
@@ -214,14 +209,14 @@ const _abi = [
       },
       {
         indexed: true,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockID",
-        type: "bytes32",
+        type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "depositID",
+        name: "seller",
         type: "uint256",
       },
       {
@@ -258,9 +253,15 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockId",
-        type: "bytes32",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
       },
       {
         indexed: false,
@@ -283,9 +284,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "bytes32",
+        internalType: "uint256",
         name: "lockId",
-        type: "bytes32",
+        type: "uint256",
       },
     ],
     name: "LockReturned",
@@ -321,6 +322,31 @@ const _abi = [
       },
     ],
     name: "RootUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "state",
+        type: "bool",
+      },
+    ],
+    name: "ValidSet",
     type: "event",
   },
   {

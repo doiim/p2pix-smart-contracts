@@ -15,4 +15,8 @@ export enum P2PixErrors {
   AddressDenied = "AddressDenied",
   AmountNotAllowed = "AmountNotAllowed",
   LockExpired = "LockExpired",
+  EmptyPixTarget = "EmptyPixTarget",
+  MaxBalExceeded = "MaxBalExceeded",
+  NotInitialized = "NotInitialized",
+  DecOverflow = "DecOverflow",
 }

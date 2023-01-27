@@ -62,6 +62,10 @@ const main = async () => {
       [true],
     ],
   });
+  await hre.run("verify:verify", {
+    address: reputation.address,
+    constructorArguments: [],
+  });
 };
 
 main()
