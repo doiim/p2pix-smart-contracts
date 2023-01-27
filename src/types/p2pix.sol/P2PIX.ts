@@ -575,7 +575,7 @@ export interface P2PIX extends BaseContract {
       sellers: PromiseOrValue<string>[],
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]] & { balances: BigNumber[] }>;
+    ): Promise<[BigNumber[]]>;
 
     getPixTarget(
       seller: PromiseOrValue<string>,

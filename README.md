@@ -50,16 +50,18 @@
 ### V2
 | Testnet 	| Token Address                              	| P2pix Address                              	| Reputation Address                          |
 |---------	|--------------------------------------------	|--------------------------------------------	|--------------------------------------------	|
-| Goerli  	| 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 	| 0x2a54667b566B1Aa3779828720E6696AC18ae3f1b 	| 0x7c4010CFe2B5446f0c9dcc5e9B596534b2D2eB44 	|
-| Mumbai  	| 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29  | 0x7F4680D114B43c4434FB604c7Bc6306125D32f28	| 0xD38D6367f452D097ccBfDe4490b7de570B6A72Db	|
+| Goerli  	| 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 	| 0xefa5cE4351cda51192509cf8De7d8881ADAE95DD 	| 0x939d3c357dc7017cDbDE681BF8e552b54595318A 	|
+| Mumbai  	| 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29  | 0xA9258eBb157E4cf5e756b77FDD0DF09C2F73240b	| 0x1fd30b94f20d2f73e9630261342ba68f244da92b	|
 
 <!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
 <!-- https://goerli.etherscan.io/address/0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00#code -->
-<!-- https://goerli.etherscan.io/address/0x2a54667b566B1Aa3779828720E6696AC18ae3f1b#code -->
-<!-- https://goerli.etherscan.io/address/0x7c4010CFe2B5446f0c9dcc5e9B596534b2D2eB44#code -->
+<!-- https://goerli.etherscan.io/address/0xefa5cE4351cda51192509cf8De7d8881ADAE95DD#code -->
+<!-- https://goerli.etherscan.io/address/0x939d3c357dc7017cDbDE681BF8e552b54595318A#code -->
+
 <!-- https://mumbai.polygonscan.com/address/0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29#code -->
-<!-- https://mumbai.polygonscan.com/address/0x7F4680D114B43c4434FB604c7Bc6306125D32f28#code -->
-<!-- https://mumbai.polygonscan.com/address/0xD38D6367f452D097ccBfDe4490b7de570B6A72Db#code -->
+<!-- https://mumbai.polygonscan.com/address/0xA9258eBb157E4cf5e756b77FDD0DF09C2F73240b#code -->
+<!-- https://mumbai.polygonscan.com/address/0x1fd30b94f20d2f73e9630261342ba68f244da92b#code -->
+
 ## Usage
 
 ### Pre Requisites

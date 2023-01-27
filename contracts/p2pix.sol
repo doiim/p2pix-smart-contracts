@@ -332,7 +332,7 @@ contract P2PIX is
     ///  In case of they differing:
     /// - `lock` caller gets accrued with `l.amount` as userRecord credit;
     /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
-    /// @param _relayerTarget Target address entitled to the `relayerPremim`.
+    /// @param _relayerTarget Target address entitled to the `relayerPremium`.
     /// @dev Function sighash: 0x4e1389ed.
     function release(
         uint256 lockID,
@@ -852,17 +852,21 @@ contract P2PIX is
     ) 
         external 
         view 
-        returns(uint256[] memory balances) 
+        returns(uint256[] memory) 
     {
-        if(address(token) == address(0x0)) 
-            revert NoTokens();
-        if(sellers.length == 0) 
-            revert LengthMismatch();
-
         uint256 j;
-        uint256 len = sellers.length;
-        while (j < len) { balances[j] = 
-            getBalance(sellers[j], token);
+        uint256 len = 
+            sellers.length;
+        uint256[] memory balances = 
+            new uint256[](len);
+        while (j < len) {
+            uint256 bal = 
+                getBalance(
+                    sellers[j], 
+                    token
+                );
+            balances[j] = bal;
+            unchecked { ++j; }
         }
 
         return balances;
