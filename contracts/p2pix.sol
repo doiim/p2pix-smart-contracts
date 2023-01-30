@@ -872,10 +872,10 @@ contract P2PIX is
     }
 
     /// @notice External getter that returns the status of a lockIDs array.
-    /// @dev The `ids` array gets sorted in ascending order
-    /// if a non-initialized counter value is provided as an array item.
     /// @dev The `ids` array gets sorted in descending order
-    /// if all provied array items are initialized.
+    /// if a non-initialized counter value is provided as an array item.
+    /// @dev The `ids` array gets sorted in ascending order
+    /// if all provided array items are initialized.
     /// @dev Call will not revert if provided with an empty array.
     /// @dev Function sighash: 0x49ef8448
     function getLocksStatus(uint256[] memory ids)
@@ -959,7 +959,8 @@ contract P2PIX is
         assembly {
             let n := mload(_ids)
             mstore(_ids, 0)
-            for { let i := add(_ids, 32) } 1 {} {
+            for { let i := add(_ids, 32) } 
+            iszero(0) {} {
                 i := add(i, 32)
                 if gt(i, add(
                     _ids, 
@@ -968,7 +969,7 @@ contract P2PIX is
                 let j := sub(i, 32)
                 let v := mload(j)
                 if iszero(gt(v, k)) { continue }
-                for {} 1 {} {
+                for {} iszero(0) {} {
                     mstore(add(j, 32), v)
                     j := sub(j, 32)
                     v := mload(j)
@@ -981,13 +982,13 @@ contract P2PIX is
                 let end := add(
                     _ids, 
                     mul(add(mload(_ids), 1), 32))
-                for {} 1 {} {
+                for {} iszero(0) {} {
                     if iszero(eq(mload(x), mload(y))) {
                         x := add(x, 32)
                         mstore(x, mload(y)) }
                     y := add(y, 32)
                     if eq(y, end) { break }}
-                mstore(_ids, shr(5, sub(x, _ids))) }
+                mstore(_ids, div(sub(x, _ids), 32)) }
                 _sorted := _ids
                 _len := mload(_ids)
                 switch iszero(mload(add(_ids,32)))
