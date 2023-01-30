@@ -43,7 +43,6 @@ contract P2PIX is
     /// ███ Storage ████████████████████████████████████████████████████████████
 
     IReputation public reputation;
-    // Counters.Counter public depositCount;
 
     /// @dev Default blocks that lock will hold tokens.
     uint256 public defaultLockBlocks;
@@ -870,6 +869,131 @@ contract P2PIX is
         }
 
         return balances;
+    }
+
+    /// @notice External getter that returns the status of a lockIDs array.
+    /// @dev The `ids` array gets sorted in ascending order
+    /// if a non-initialized counter value is provided as an array item.
+    /// @dev The `ids` array gets sorted in descending order
+    /// if all provied array items are initialized.
+    /// @dev Call will not revert if provided with an empty array.
+    /// @dev Function sighash: 0x49ef8448
+    function getLocksStatus(uint256[] memory ids)
+        external 
+        view 
+        returns(
+            uint256[] memory,
+            bool[] memory
+    ) {
+        if (ids.length == 0) { 
+            uint256[] memory null1 = 
+                new uint256[](0);
+            bool[] memory null2 = 
+                new bool[](0);
+            return(null1, null2); }
+
+            uint256 c;
+            uint256 len = 
+                ids.length;
+
+        (ids, len, c) = sort(ids);
+        
+        if (c == 0x00) { 
+            bool[] memory status = 
+                new bool[](len); 
+            uint256[] memory sortedIDs = 
+                new uint256[](len);
+            for(c; c < len;) {
+                if(
+                    mapLocks[ids[c]].expirationBlock 
+                        < block.number ||
+                    mapLocks[ids[c]].amount == 0x0) { 
+                        sortedIDs[c] = ids[c]; 
+                        status[c] = false; ++c;
+                } else { 
+                    sortedIDs[c] = ids[c];
+                    status[c] = true; ++c; 
+                }
+            } 
+            return(sortedIDs, status); 
+        }
+        else if (c == len - 1) { 
+            uint256 p;
+            bool[] memory status = 
+                new bool[](len - 1); 
+            uint256[] memory sortedIDs = 
+                new uint256[](len - 1);
+                    while (c != 0) {
+                    if(
+                        mapLocks[ids[c]].expirationBlock 
+                            < block.number ||
+                        mapLocks[ids[c]].amount == 0x0) { 
+                            sortedIDs[p] = ids[c]; 
+                            status[p] = false; c--; ++p;
+                    } else { 
+                        sortedIDs[p] = ids[c];
+                        status[p] = true; c--; ++p;
+                    }
+                }
+            return(sortedIDs, status);
+        }
+    }
+
+    /// @dev Adapted from Solady's LibSort. 
+    /// (https://github.com/vectorized/solady/blob/main/src/utils/Sort.sol)
+    function sort(uint256[] memory _ids) 
+        private 
+        view 
+        returns(
+            uint256[] memory _sorted, 
+            uint256 _len, 
+            uint256 _c
+        )
+    {               
+        uint256 index;
+        uint256 len = _ids.length;
+        while (index < len) 
+        { if(mapLocks[_ids[index]].sellerKey == 0x0) 
+        { delete _ids[index]; ++index; } else ++index; }
+
+        assembly {
+            let n := mload(_ids)
+            mstore(_ids, 0)
+            for { let i := add(_ids, 32) } 1 {} {
+                i := add(i, 32)
+                if gt(i, add(
+                    _ids, 
+                    mul(n, 32))) { break }
+                let k := mload(i)
+                let j := sub(i, 32)
+                let v := mload(j)
+                if iszero(gt(v, k)) { continue }
+                for {} 1 {} {
+                    mstore(add(j, 32), v)
+                    j := sub(j, 32)
+                    v := mload(j)
+                    if iszero(gt(v, k)) { break }}
+                mstore(add(j, 32), k) }
+                mstore(_ids, n)
+                if iszero(lt(mload(_ids), 2)) {
+                let x := add(_ids, 32)
+                let y := add(_ids, 64)
+                let end := add(
+                    _ids, 
+                    mul(add(mload(_ids), 1), 32))
+                for {} 1 {} {
+                    if iszero(eq(mload(x), mload(y))) {
+                        x := add(x, 32)
+                        mstore(x, mload(y)) }
+                    y := add(y, 32)
+                    if eq(y, end) { break }}
+                mstore(_ids, shr(5, sub(x, _ids))) }
+                _sorted := _ids
+                _len := mload(_ids)
+                switch iszero(mload(add(_ids,32)))
+                case 0 { _c := 0 } 
+                case 1 { _c := sub(_len, 1) }
+        }
     }
 
     /// @notice Public method that handles `address`

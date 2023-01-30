@@ -936,9 +936,44 @@ describe("P2PIX", () => {
 
       const key = await p2pix.callStatic._castAddrToKey(owner.address);
 
+      const lockStatus1 = await p2pix.callStatic.getLocksStatus([1,7,7,2,3,4,5,5,2,3]);
+      const lockStatus2 = await p2pix.callStatic.getLocksStatus([1,2,3]);
+      const lockStatus3 = await p2pix.callStatic.getLocksStatus([7,7,5,14,666]);
+      const lockStatus4 = await p2pix.callStatic.getLocksStatus([]);
+
+      const ls1: [BigNumber[], boolean[]] = [
+      [
+        ethers.BigNumber.from(3),
+        ethers.constants.Two,
+        ethers.constants.One,
+      ], [true, true, true] ];
+
+      const ls2: [BigNumber[], boolean[]] = [
+        [
+          ethers.constants.One,
+          ethers.constants.Two,
+          ethers.BigNumber.from(3),
+        ], [true, true, true] ];
+      
+      const ls3: [BigNumber[], boolean[]] = [
+        [
+          ethers.constants.Zero,
+        ], [false] ];
+
+      const ls4 = [[],[]];
+
       expect(tx1).to.be.ok;
       expect(tx2).to.be.ok;
       expect(tx3).to.be.ok;
+
+      expect(lockStatus1[0].toString()).to.equal(ls1[0].toString());
+      expect(lockStatus1[1].toString()).to.equal(ls1[1].toString());
+      expect(lockStatus2[0].toString()).to.equal(ls2[0].toString());
+      expect(lockStatus2[1].toString()).to.equal(ls2[1].toString());
+      expect(lockStatus3[0].toString()).to.equal(ls3[0].toString());
+      expect(lockStatus3[1].toString()).to.equal(ls3[1].toString());
+      expect(lockStatus4[0].toString()).to.equal(ls4[0].toString());
+      expect(lockStatus4[1].toString()).to.equal(ls4[1].toString());
 
       expect(key)
         .to.eq(storage1.sellerKey)
