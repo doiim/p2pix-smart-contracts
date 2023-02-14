@@ -7,7 +7,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import {
   BigNumber,
-  Bytes,
   BytesLike,
   ContractReceipt,
   ContractTransaction,
@@ -554,42 +553,6 @@ describe("P2PIX", () => {
       expect(tx3).to.be.ok;
       expect(tx4).to.be.ok;
 
-      // await expect(tx)
-      //   .to.emit(p2pix, "DepositAdded")
-      //   .withArgs(owner.address, erc20.address, price);
-      // await expect(tx).to.changeTokenBalances(
-      //   erc20,
-      //   [owner.address, p2pix.address],
-      //   ["-100000000000000000000", price],
-      // );
-
-      // await expect(tx2)
-      //   .to.emit(p2pix, "DepositAdded")
-      //   .withArgs(acc01.address, erc20.address, price2);
-      // await expect(tx2).to.changeTokenBalances(
-      //   erc20,
-      //   [acc01.address, p2pix.address],
-      //   ["-200000000000000000000", price2],
-      // );
-
-      // await expect(tx3)
-      //   .to.emit(p2pix, "DepositAdded")
-      //   .withArgs(acc02.address, erc20.address, price3);
-      // await expect(tx3).to.changeTokenBalances(
-      //   erc20,
-      //   [acc02.address, p2pix.address],
-      //   ["-300000000000000000000", price3],
-      // );
-
-      // await expect(tx4)
-      //   .to.emit(p2pix, "DepositAdded")
-      //   .withArgs(acc03.address, erc20.address, price4);
-      // await expect(tx4).to.changeTokenBalances(
-      //   erc20,
-      //   [acc03.address, p2pix.address],
-      //   ["-400000000000000000000", price4],
-      // );
-
       const transactions = [tx, tx2, tx3, tx4];
       const addresses = [
         owner.address,
@@ -713,36 +676,7 @@ describe("P2PIX", () => {
         P2PixErrors.NotEnoughTokens,
       );
     });
-    // test invalid since lockID has been replaced by a counter.
-    // it.only("should revert if a non expired lock has the same ID encoded", async () => {
-    //   const pTarget = ethers.BigNumber.from(1337);
-    //   await erc20.approve(p2pix.address, price);
-    //   await p2pix.deposit(
-    //     erc20.address,
-    //     price,
-    //     pTarget,
-    //     true,
-    //     ethers.constants.HashZero,
-    //   );
-    //   await p2pix
-    //     .connect(acc03)
-    //     .lock(
-    //       owner.address,
-    //       erc20.address,
-    //       acc02.address,
-    //       acc03.address,
-    //       0, 1, [], []);
 
-    // console.log(await p2pix.callStatic.getValid(owner.address,erc20.address))
-    // const fail = p2pix
-    //   .connect(acc03)
-    //   .lock(owner.address, erc20.address, acc02.address, acc03.address, 0, 1, [], []);
-
-    // await expect(fail).to.be.revertedWithCustomError(
-    //   p2pix,
-    //   P2PixErrors.NotExpired,
-    // );
-    // });
     it("should revert if an invalid allowlist merkleproof is provided", async () => {
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
@@ -1905,37 +1839,6 @@ describe("P2PIX", () => {
       expect(0).to.eq(acc01Record1).and.to.eq(acc03Record1);
       expect(acc01Record2).to.eq(6); // 0 + 6
       expect(acc03Record2).to.eq(185); // 100 + 50 + 25 + 10
-
-      // await expect(tx).to.changeTokenBalances(
-      //   erc20,
-      //   [
-      //     acc01.address,
-      //     acc02.address,
-      //     acc03.address,
-      //     p2pix.address,
-      //   ],
-      //   [0, 100, 0, "-100"],
-      // );
-      // await expect(tx1).to.changeTokenBalances(
-      //   erc20,
-      //   [
-      //     acc01.address,
-      //     acc02.address,
-      //     acc03.address,
-      //     p2pix.address,
-      //   ],
-      //   [0, 47, 3, "-50"],
-      // );
-      // await expect(tx2).to.changeTokenBalances(
-      //   erc20,
-      //   [
-      //     acc01.address,
-      //     acc02.address,
-      //     acc03.address,
-      //     p2pix.address,
-      //   ],
-      //   [0, 20, 5, "-25"],
-      // );
 
       const addresses = [
         acc01.address,
