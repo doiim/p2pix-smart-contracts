@@ -37,6 +37,7 @@ export interface P2PIXInterface extends utils.Interface {
     "deposit(address,uint96,uint160,bool,bytes32)": FunctionFragment;
     "getBalance(address,address)": FunctionFragment;
     "getBalances(address[],address)": FunctionFragment;
+    "getLocksStatus(uint256[])": FunctionFragment;
     "getPixTarget(address,address)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
     "lock(address,address,address,address,uint256,uint256,bytes32[],uint256[])": FunctionFragment;
@@ -72,6 +73,7 @@ export interface P2PIXInterface extends utils.Interface {
       | "deposit"
       | "getBalance"
       | "getBalances"
+      | "getLocksStatus"
       | "getPixTarget"
       | "getValid"
       | "lock"
@@ -131,6 +133,10 @@ export interface P2PIXInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getBalances",
     values: [PromiseOrValue<string>[], PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLocksStatus",
+    values: [PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getPixTarget",
@@ -263,6 +269,10 @@ export interface P2PIXInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "getBalance", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getBalances",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLocksStatus",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -577,6 +587,11 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
+    getLocksStatus(
+      ids: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[], number[]]>;
+
     getPixTarget(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -767,6 +782,11 @@ export interface P2PIX extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
+  getLocksStatus(
+    ids: PromiseOrValue<BigNumberish>[],
+    overrides?: CallOverrides
+  ): Promise<[BigNumber[], number[]]>;
+
   getPixTarget(
     seller: PromiseOrValue<string>,
     token: PromiseOrValue<string>,
@@ -956,6 +976,11 @@ export interface P2PIX extends BaseContract {
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
+
+    getLocksStatus(
+      ids: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[], number[]]>;
 
     getPixTarget(
       seller: PromiseOrValue<string>,
@@ -1257,6 +1282,11 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getLocksStatus(
+      ids: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPixTarget(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
@@ -1421,6 +1451,11 @@ export interface P2PIX extends BaseContract {
     getBalances(
       sellers: PromiseOrValue<string>[],
       token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getLocksStatus(
+      ids: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

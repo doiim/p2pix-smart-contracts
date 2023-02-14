@@ -2,18 +2,6 @@
 pragma solidity 0.8.9;
 
 library DataTypes {
-    // struct Deposit {
-    //     /// @dev Remaining tokens available.
-    //     uint256 remaining;
-    //     /// @dev The PIX account for the seller receive transactions.
-    //     string pixTarget;
-    //     address seller;
-    //     /// @dev ERC20 stable token address.
-    //     address token;
-    //     /// @dev Could be invalidated by the seller.
-    //     bool valid;
-    // }
-
     struct Lock {
         uint256 sellerKey;
         uint256 counter;
@@ -32,5 +20,13 @@ library DataTypes {
         /// @dev Reputation points accruer.
         address relayerAddress;
         address token;
+    }
+
+    // prettier-ignore
+    enum LockStatus {
+        Inexistent,     // 0 := Uninitialized Lock.
+        Active,         // 1 := Valid Lock.
+        Expired,        // 2 := Expired Lock.
+        Released        // 3 := Already released Lock.
     }
 }

@@ -2,10 +2,9 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
+import hre from "hardhat";
 
 import { Deploys } from "../test/utils/fixtures";
-
-import hre from "hardhat";
 
 let deploysJson: Deploys;
 
@@ -27,8 +26,13 @@ const main = async () => {
   const Reputation = await ethers.getContractFactory(
     "Reputation",
   );
+  const Multicall = await ethers.getContractFactory(
+    "Multicall",
+  );
   const reputation = await Reputation.deploy();
   await reputation.deployed();
+  const mutlicall = await Multicall.deploy();
+  await mutlicall.deployed();
 
   const P2PIX = await ethers.getContractFactory("P2PIX");
   const p2pix = await P2PIX.deploy(
@@ -42,6 +46,8 @@ const main = async () => {
 
   deploysJson.p2pix = p2pix.address;
   console.log("🚀 P2PIX Deployed:", p2pix.address);
+  console.log("🌠 Reputation Deployed:", reputation.address);
+  console.log("🛰 Multicall Deployed:", mutlicall.address);
   await p2pix.deployTransaction.wait(6);
 
   fs.writeFileSync(
@@ -53,10 +59,9 @@ const main = async () => {
   //verify
   await hre.run("verify:verify", {
     address: p2pix.address,
-    constructorArguments: 
-    [
-      10, 
-      deploysJson.signers, 
+    constructorArguments: [
+      10,
+      deploysJson.signers,
       reputation.address,
       [deploysJson.token],
       [true],
@@ -64,6 +69,10 @@ const main = async () => {
   });
   await hre.run("verify:verify", {
     address: reputation.address,
+    constructorArguments: [],
+  });
+  await hre.run("verify:verify", {
+    address: mutlicall.address,
     constructorArguments: [],
   });
 };

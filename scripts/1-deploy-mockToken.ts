@@ -3,10 +3,9 @@ import "@nomiclabs/hardhat-etherscan";
 import { BigNumber } from "ethers";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
+import hre from "hardhat";
 
 import { Deploys } from "../test/utils/fixtures";
-
-import hre from "hardhat";
 
 let deploysJson: Deploys;
 const supply: BigNumber = ethers.utils.parseEther("20000000");
