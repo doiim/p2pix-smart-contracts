@@ -19,4 +19,5 @@ export enum P2PixErrors {
   MaxBalExceeded = "MaxBalExceeded",
   NotInitialized = "NotInitialized",
   DecOverflow = "DecOverflow",
+  CallFailed = "CallFailed",
 }

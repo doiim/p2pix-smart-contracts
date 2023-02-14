@@ -34,7 +34,7 @@ const chainIds = {
   hardhat: 31337,
   mainnet: 1,
   sepolia: 11155111,
-  goerli : 5,
+  goerli: 5,
   "polygon-mumbai": 80001,
 };
 
@@ -44,8 +44,10 @@ function getChainConfig(
   let jsonRpcUrl: string;
   switch (chain) {
     case "polygon-mumbai":
-    jsonRpcUrl = "https://polygon-mumbai.g.alchemy.com/v2/" + alchemyApiKey;
-    break;
+      jsonRpcUrl =
+        "https://polygon-mumbai.g.alchemy.com/v2/" +
+        alchemyApiKey;
+      break;
     default:
       jsonRpcUrl =
         "https://" + chain + ".infura.io/v3/" + infuraApiKey;

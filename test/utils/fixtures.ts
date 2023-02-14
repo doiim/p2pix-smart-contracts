@@ -6,7 +6,9 @@ import { MerkleTree } from "merkletreejs";
 
 import {
   MockToken,
+  Multicall,
   P2PIX,
+  P2PIX__factory,
   Reputation,
 } from "../../src/types";
 
@@ -16,14 +18,6 @@ export interface Deploys {
   p2pix: string;
   token: string;
 }
-
-// export interface Deposit {
-//   remaining: BigNumber;
-//   pixTarget: string;
-//   seller: string;
-//   token: string;
-//   valid: boolean;
-// }
 
 export interface Lock {
   sellerKey: BigNumber;
@@ -38,6 +32,16 @@ export interface Lock {
   token: string;
 }
 
+export interface Call {
+  target: string;
+  callData: string;
+}
+
+export interface Result {
+  success: boolean;
+  returnData: string;
+}
+
 export interface P2pixFixture {
   p2pix: P2PIX;
   erc20: MockToken;
@@ -49,19 +53,40 @@ export interface RepFixture {
   reputation: Reputation;
 }
 
-type P2PixAndReputation = P2pixFixture & RepFixture;
+export interface MtcFixture {
+  multicall: Multicall;
+}
+
+type P2PixAndReputation = P2pixFixture &
+  RepFixture &
+  MtcFixture;
 
 // exported constants
 export const getSignerAddrs = (
   amount: number,
   addrs: SignerWithAddress[],
 ): string[] => {
-  const signers: string[] = [];
-  const buffr = addrs.slice(0, amount);
-  for (let i = 0; i < amount; i++) {
-    signers.push(buffr[i].address);
-  }
-  return signers;
+  return addrs.slice(0, amount).map(({ address }) => address);
+};
+
+export const getBnFrom = (nums: number[]): BigNumber[] => {
+  const bns = nums.map(num => ethers.BigNumber.from(num));
+  return bns;
+};
+
+export const getLockData = (
+  addr: string,
+  locks: BigNumber[][],
+): Call[] => {
+  const iface = new ethers.utils.Interface(
+    P2PIX__factory.abi,
+  );
+  return locks.map(lock => ({
+    target: addr,
+    callData: iface.encodeFunctionData("getLocksStatus", [
+      lock,
+    ]),
+  }));
 };
 
 export const randomSigners = (amount: number): Signer[] => {
@@ -128,6 +153,11 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     [true],
   )) as P2PIX;
 
+  const Multicall = await ethers.getContractFactory(
+    "Multicall",
+  );
+  const multicall = (await Multicall.deploy()) as Multicall;
+
   const signers = await ethers.getSigners();
   const whitelisted = signers.slice(0, 2);
   const leaves = whitelisted.map(account =>
@@ -142,6 +172,7 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
   );
 
   return {
+    multicall,
     reputation,
     erc20,
     p2pix,

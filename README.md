@@ -32,10 +32,11 @@
 ## Current Deployment addresses
 
 ### V1
-| Testnet 	| Token Address                              	| P2pix Address                              	|
-|---------	|--------------------------------------------	|--------------------------------------------	|
-| Goerli  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee 	| 0x5f3EFA9A90532914545CEf527C530658af87e196 	|
-| Mumbai  	| 0x294003F602c321627152c6b7DED3EAb5bEa853Ee  | 0x5f3EFA9A90532914545CEf527C530658af87e196	|
+
+| Testnet | Token Address                              | P2pix Address                              |
+| ------- | ------------------------------------------ | ------------------------------------------ |
+| Goerli  | 0x294003F602c321627152c6b7DED3EAb5bEa853Ee | 0x5f3EFA9A90532914545CEf527C530658af87e196 |
+| Mumbai  | 0x294003F602c321627152c6b7DED3EAb5bEa853Ee | 0x5f3EFA9A90532914545CEf527C530658af87e196 |
 
 <!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
 
@@ -48,10 +49,11 @@
 <!-- https://mumbai.polygonscan.com/address/0x5f3EFA9A90532914545CEf527C530658af87e196#code -->
 
 ### V2
-| Testnet 	| Token Address                              	| P2pix Address                              	| Reputation Address                          |
-|---------	|--------------------------------------------	|--------------------------------------------	|--------------------------------------------	|
-| Goerli  	| 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 	| 0xefa5cE4351cda51192509cf8De7d8881ADAE95DD 	| 0x939d3c357dc7017cDbDE681BF8e552b54595318A 	|
-| Mumbai  	| 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29  | 0xA9258eBb157E4cf5e756b77FDD0DF09C2F73240b	| 0x1fd30b94f20d2f73e9630261342ba68f244da92b	|
+
+| Testnet | Token Address                              | P2pix Address                              | Reputation Address                         |
+| ------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ |
+| Goerli  | 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 | 0xefa5cE4351cda51192509cf8De7d8881ADAE95DD | 0x939d3c357dc7017cDbDE681BF8e552b54595318A |
+| Mumbai  | 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29 | 0xA9258eBb157E4cf5e756b77FDD0DF09C2F73240b | 0x1fd30b94f20d2f73e9630261342ba68f244da92b |
 
 <!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
 <!-- https://goerli.etherscan.io/address/0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00#code -->
@@ -135,7 +137,6 @@ yarn deploy2:localhost
 
 **_NOTE_:** The second script transfers 2M tokens to the first wallet of the node.
 To use the P2Pix smart contract first transfer some of the tokens to other wallets.
-
 
 ## Deploying to testnets
 

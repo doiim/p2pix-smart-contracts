@@ -23,19 +23,73 @@ describe("Reputation", () => {
     ({ reputation } = await loadFixture(repFixture));
   });
 
+  // describe("Limiter", async () => {
+  //   it("Curve reliability", async () => {
+  //     const tx1 = await reputation.connect(owner).limiter(0);
+  //     const tx2 = await reputation.limiter(500);
+  //     const tx3 = await reputation
+  //       .connect(owner)
+  //       .limiter(444444);
+  //     const tx4 = await reputation.limiter(988700);
+
+  //     expect(tx1).to.eq(curve(0));
+  //     expect(tx2).to.eq(curve(500));
+  //     expect(tx3).to.eq(curve(444444));
+  //     expect(tx4).to.eq(curve(988700));
+  //   });
+  // });
+
   describe("Limiter", async () => {
     it("Curve reliability", async () => {
-      const tx1 = await reputation.connect(owner).limiter(0);
-      const tx2 = await reputation.limiter(500);
-      const tx3 = await reputation
-        .connect(owner)
-        .limiter(444444);
-      const tx4 = await reputation.limiter(988700);
+      const testCases = [
+        {
+          x: 0,
+          expected: curve(0),
+        },
+        {
+          x: 500,
+          expected: curve(500),
+        },
+        {
+          x: 444444,
+          expected: curve(444444),
+        },
+        {
+          x: 988700,
+          expected: curve(988700),
+        },
+        {
+          x: Number.MAX_SAFE_INTEGER,
+          shouldRevert: "overflow",
+        },
+        {
+          x: Number.POSITIVE_INFINITY,
+          shouldRevert: "overflow",
+        },
+        {
+          x: Number.NEGATIVE_INFINITY,
+          shouldRevert: "overflow",
+        },
+        {
+          x: -1,
+          shouldRevert: "value out-of-bounds",
+        },
+        {
+          x: Number.NaN,
+          shouldRevert: "invalid BigNumber string",
+        },
+      ];
 
-      expect(tx1).to.eq(curve(0));
-      expect(tx2).to.eq(curve(500));
-      expect(tx3).to.eq(curve(444444));
-      expect(tx4).to.eq(curve(988700));
+      for (const testCase of testCases) {
+        if (testCase.shouldRevert != undefined) {
+          await expect(reputation.limiter(testCase.x)).to.be
+            .rejected;
+        } else {
+          const result = await reputation.limiter(testCase.x);
+          expect(result).to.eq(testCase.expected).and.to.be
+            .ok;
+        }
+      }
     });
   });
 });

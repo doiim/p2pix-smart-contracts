@@ -2,10 +2,9 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
+import hre from "hardhat";
 
 import { Deploys } from "../test/utils/fixtures";
-
-import hre from "hardhat";
 
 let deploysJson: Deploys;
 
@@ -53,10 +52,9 @@ const main = async () => {
   //verify
   await hre.run("verify:verify", {
     address: p2pix.address,
-    constructorArguments: 
-    [
-      10, 
-      deploysJson.signers, 
+    constructorArguments: [
+      10,
+      deploysJson.signers,
       reputation.address,
       [deploysJson.token],
       [true],

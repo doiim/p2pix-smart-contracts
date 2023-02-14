@@ -590,7 +590,7 @@ export interface P2PIX extends BaseContract {
     getLocksStatus(
       ids: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
-    ): Promise<[BigNumber[], boolean[]]>;
+    ): Promise<[BigNumber[], number[]]>;
 
     getPixTarget(
       seller: PromiseOrValue<string>,
@@ -785,7 +785,7 @@ export interface P2PIX extends BaseContract {
   getLocksStatus(
     ids: PromiseOrValue<BigNumberish>[],
     overrides?: CallOverrides
-  ): Promise<[BigNumber[], boolean[]]>;
+  ): Promise<[BigNumber[], number[]]>;
 
   getPixTarget(
     seller: PromiseOrValue<string>,
@@ -980,7 +980,7 @@ export interface P2PIX extends BaseContract {
     getLocksStatus(
       ids: PromiseOrValue<BigNumberish>[],
       overrides?: CallOverrides
-    ): Promise<[BigNumber[], boolean[]]>;
+    ): Promise<[BigNumber[], number[]]>;
 
     getPixTarget(
       seller: PromiseOrValue<string>,
