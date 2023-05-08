@@ -54,9 +54,6 @@ interface EventAndErrors {
 
     /// ███ Errors ████████████████████████████████████████████████████████████
 
-    /// @dev Deposit already exist and it is still valid.
-    /// @dev 0xc44bd765
-    error DepositAlreadyExists();
     /// @dev Only seller could call this function.
     /// @dev `msg.sender` and the seller differ.
     /// @dev 0x85d1f726
@@ -105,7 +102,6 @@ interface EventAndErrors {
     /// @dev Reverts on an expired lock.
     /// @dev 0xf6fafba0
     error LockExpired();
-    
     /// @dev 0xce3a3d37
     error DecOverflow();
     /// @dev 0xf3fb0eb9

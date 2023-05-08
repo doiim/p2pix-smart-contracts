@@ -654,6 +654,7 @@ contract P2PIX is
             _spendLimit := returnValue
             // reverts if call does not succeed.
             if iszero(success) {
+                // StaticCallFailed()
                 mstore(0x00, 0xe10bf1cc)
                 revert(0x1c, 0x04)
             }
