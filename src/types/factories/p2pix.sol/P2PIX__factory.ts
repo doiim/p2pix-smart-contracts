@@ -67,11 +67,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "DepositAlreadyExists",
-    type: "error",
-  },
-  {
-    inputs: [],
     name: "EmptyPixTarget",
     type: "error",
   },
