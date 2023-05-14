@@ -622,14 +622,12 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price,
           [],
           [],
         );
       const fail2 = p2pix.lock(
-        zero,
         zero,
         zero,
         zero,
@@ -664,7 +662,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price.mul(ethers.BigNumber.from(2)),
           [],
@@ -692,7 +689,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           1000,
           [
@@ -726,7 +722,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price.mul(BigNumber.from("2")),
           [],
@@ -754,7 +749,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price,
           proof,
@@ -788,7 +782,6 @@ describe("P2PIX", () => {
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
       expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerTarget).to.eq(acc03.address);
       expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
     });
@@ -809,7 +802,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price,
           [],
@@ -839,7 +831,6 @@ describe("P2PIX", () => {
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
       expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerTarget).to.eq(acc03.address);
       expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
 
@@ -878,7 +869,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           price,
           price,
           [],
@@ -888,7 +878,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           1,
-          acc02.address,
           endtoendID,
           sig.r,
           sig.s,
@@ -900,7 +889,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price.add(ethers.constants.One),
           [],
@@ -932,7 +920,6 @@ describe("P2PIX", () => {
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
       expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerTarget).to.eq(acc03.address);
       expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
 
@@ -958,7 +945,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           newPrice,
           proof,
@@ -977,7 +963,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           100,
           [],
@@ -995,7 +980,6 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc03.address,
           acc03.address,
           0,
           100,
@@ -1110,10 +1094,10 @@ describe("P2PIX", () => {
         .and.to.eq(storage2.buyerAddress);
       expect(storage3.buyerAddress).to.eq(acc03.address);
 
-      expect(acc03.address)
-        .to.eq(storage1.relayerTarget)
-        .and.to.eq(storage2.relayerTarget)
-        .and.to.eq(storage3.relayerTarget);
+      // expect(acc03.address)
+      //   .to.eq(storage1.relayerTarget)
+      //   .and.to.eq(storage2.relayerTarget)
+      //   .and.to.eq(storage3.relayerTarget);
 
       expect(acc01.address)
         .to.eq(storage1.relayerAddress)
@@ -1290,7 +1274,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1300,7 +1283,6 @@ describe("P2PIX", () => {
       await mine(13);
       const fail = p2pix.release(
         lockID,
-        acc03.address,
         ethers.constants.HashZero,
         sig.r,
         sig.s,
@@ -1337,7 +1319,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1346,7 +1327,6 @@ describe("P2PIX", () => {
       const lockID = ethers.constants.One;
       await p2pix.release(
         lockID,
-        acc03.address,
         ethers.constants.HashZero,
         sig.r,
         sig.s,
@@ -1354,7 +1334,6 @@ describe("P2PIX", () => {
       );
       const fail = p2pix.release(
         lockID,
-        acc03.address,
         ethers.constants.HashZero,
         sig.r,
         sig.s,
@@ -1390,7 +1369,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1401,7 +1379,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           1,
-          acc02.address,
           ethers.constants.HashZero,
           sig.r,
           sig.s,
@@ -1413,7 +1390,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1423,7 +1399,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           2,
-          acc02.address,
           ethers.constants.HashZero,
           sig.r,
           sig.s,
@@ -1460,7 +1435,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1470,7 +1444,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           1,
-          acc02.address,
           ethers.constants.HashZero,
           sig.r,
           sig.s,
@@ -1522,7 +1495,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           100,
           [],
@@ -1547,7 +1519,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           1,
-          acc02.address,
           endtoendID,
           sig.r,
           sig.s,
@@ -1633,8 +1604,8 @@ describe("P2PIX", () => {
       expect(userRecord2).to.eq(ethers.BigNumber.from(100));
       await expect(tx).to.changeTokenBalances(
         erc20,
-        [acc03.address, acc02.address],
-        [3, 97],
+        [acc03.address, acc01.address, acc02.address ],
+        [3, 3, 94],
         // acc02 is acting both as buyer and relayerTarget
         // (i.e., 94 + 3 = 97)
       );
@@ -1694,7 +1665,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           100,
           [],
@@ -1706,7 +1676,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           6,
           50,
           [],
@@ -1718,7 +1687,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           10,
           25,
           [],
@@ -1754,7 +1722,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           lockID,
-          acc02.address,
           endtoendID,
           sig1.r,
           sig1.s,
@@ -1766,7 +1733,6 @@ describe("P2PIX", () => {
         .connect(acc01)
         .release(
           lockID2,
-          acc02.address,
           endtoendID,
           sig2.r,
           sig2.s,
@@ -1778,7 +1744,6 @@ describe("P2PIX", () => {
         .connect(acc03)
         .release(
           lockID3,
-          acc02.address,
           endtoendID,
           sig3.r,
           sig3.s,
@@ -1849,8 +1814,8 @@ describe("P2PIX", () => {
 
       const balances = [
         [0, 100, 0, "-100"],
-        [0, 47, 3, "-50"],
-        [0, 20, 5, "-25"],
+        [3, 44, 3, "-50"],
+        [0, 15, 10, "-25"],
       ];
 
       for (let i = 0; i < 3; i++) {
@@ -1899,7 +1864,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           1,
           [],
@@ -1940,7 +1904,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           1,
           [],
@@ -1950,7 +1913,6 @@ describe("P2PIX", () => {
       // await mine(10);
       await p2pix.release(
         lockID,
-        acc03.address,
         endtoendID,
         sig.r,
         sig.s,
@@ -1979,7 +1941,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           1,
           [],
@@ -2045,7 +2006,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price,
           proof,
@@ -2087,7 +2047,6 @@ describe("P2PIX", () => {
         owner.address,
         erc20.address,
         acc02.address,
-        acc03.address,
         0,
         100,
         [],
@@ -2123,7 +2082,6 @@ describe("P2PIX", () => {
           owner.address,
           erc20.address,
           acc02.address,
-          acc03.address,
           0,
           price,
           proof,

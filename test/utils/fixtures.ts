@@ -27,7 +27,6 @@ export interface Lock {
   expirationBlock: BigNumber;
   pixTarget: BigNumber;
   buyerAddress: string;
-  relayerTarget: string;
   relayerAddress: string;
   token: string;
 }
