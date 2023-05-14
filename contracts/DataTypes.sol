@@ -14,9 +14,8 @@ library DataTypes {
         uint160 pixTarget;
         /// @dev Where the tokens are sent the when order gets validated.
         address buyerAddress;
-        /// @dev Relayer's target address that receives `relayerPremium` funds.
-        address relayerTarget;
         /// @dev Relayer address (msg.sender) that facilitated this transaction.
+        /// @dev Relayer's target address that receives `relayerPremium` funds.
         /// @dev Reputation points accruer.
         address relayerAddress;
         address token;

@@ -30,6 +30,28 @@ contract P2PIX is
 
     /// ███ Constants ██████████████████████████████████████████████████████████
 
+    uint256 private constant _ROOT_UPDATED_EVENT_SIGNATURE =
+        0x0b294da292f26e55fd442b5c0164fbb9013036ff00c5cfdde0efd01c1baaf632;
+    uint256 private constant _ALLOWED_ERC20_UPDATED_EVENT_SIGNATURE =
+        0x5d6e86e5341d57a92c49934296c51542a25015c9b1782a1c2722a940131c3d9a;
+
+    /// @dev Seller casted to key => Seller's allowlist merkleroot.
+    /// mapping(uint256 => bytes32) public sellerAllowList;
+    uint256 private constant _SELLER_ALLOWLIST_SLOT_SEED = 0x74dfee70;
+    /// @dev Tokens allowed to serve as the underlying amount of a deposit.
+    /// mapping(ERC20 => bool) public allowedERC20s;
+    uint256 private constant _ALLOWED_ERC20_SLOT_SEED = 0xcbc9d1c4;
+
+    // BITS LAYOUT
+    // `uint96`  [0...94]   := balance
+    // `uint160` [95...254] := pixTarget
+    // `bool`    [255]       := valid
+
+    /// @dev `balance` max. value = 10**26.
+    /// @dev `pixTarget` keys are restricted to 160 bits.
+    // mapping(uint256 => mapping(ERC20 => uint256)) public sellerBalance;
+    uint256 private constant _SELLER_BALANCE_SLOT_SEED = 0x739094b1;
+
     /// @dev The bitmask of `sellerBalance` entry.
     uint256 private constant BITMASK_SB_ENTRY = (1 << 94) - 1;
     /// @dev The bit position of `pixTarget` in `sellerBalance`.
@@ -38,10 +60,21 @@ contract P2PIX is
     uint256 private constant BITPOS_VALID = 255;
     /// @dev The bitmask of all 256 bits of `sellerBalance` except for the last one.
     uint256 private constant BITMASK_VALID = (1 << 255) - 1;
+    
     /// @dev The scalar of BRZ token.
     uint256 public constant WAD = 1e18;
 
     /// ███ Storage ████████████████████████████████████████████████████████████
+
+    /// @dev List of valid Bacen signature addresses
+    /// @dev Value in custom storage slot given by: 
+    /// let slot := sload(shl(12, address)).
+    // mapping(uint256 => bool) public validBacenSigners;
+    
+    /// @dev List of Pix transactions already signed.
+    /// @dev Value in custom storage slot given by: 
+    /// let slot := sload(bytes32).
+    // mapping(bytes32 => bool) public usedTransactions;
 
     IReputation public reputation;
 
@@ -51,26 +84,8 @@ contract P2PIX is
 
     /// @dev List of Locks.
     mapping(uint256 => DT.Lock) public mapLocks;
-    /// @dev Seller casted to key => Seller's allowlist merkleroot.
-    mapping(uint256 => bytes32) public sellerAllowList;
     /// @dev Stores an relayer's last computed credit.
     mapping(uint256 => uint256) public userRecord;
-    /// @dev List of valid Bacen signature addresses
-    mapping(uint256 => bool) public validBacenSigners;
-    /// @dev List of Pix transactions already signed.
-    mapping(bytes32 => bool) public usedTransactions;
-    /// @dev Tokens allowed to serve as the underlying amount of a deposit.
-    mapping(ERC20 => bool) public allowedERC20s;
-
-    // BITS LAYOUT
-    // `uint96`  [0...94]   := balance
-    // `uint160` [95...254] := pixTarget
-    // `bool`    [255]       := valid
-
-    /// @dev `balance` max. value = 10**26.
-    /// @dev `pixTarget` keys are restricted to 160 bits.
-    mapping(uint256 => mapping(ERC20 => uint256))
-        public sellerBalance;
 
     /// ███ Constructor ████████████████████████████████████████████████████████
 
@@ -107,8 +122,8 @@ contract P2PIX is
         uint256 k = _castAddrToKey(msg.sender);
 
         if (_pixTarget == 0) revert EmptyPixTarget();
-        if (!allowedERC20s[t]) revert TokenDenied();
-        uint256 _sellerBalance = sellerBalance[k][t];
+        if (!allowedERC20s(t)) revert TokenDenied();
+        uint256 _sellerBalance = sellerBalance(k,t);
 
         uint256 currBal = _sellerBalance & BITMASK_SB_ENTRY;
         if ((currBal + _amount) > 1e8 ether)
@@ -129,10 +144,13 @@ contract P2PIX is
             validCasted
         ) = _castToUint(_amount, _pixTarget, _valid);
 
-        sellerBalance[k][t] =
-            (currBal + amountCasted) |
+        _setSellerBalance(
+            k, 
+            t, 
+            ((currBal + amountCasted) |
             (pixTargetCasted << BITPOS_PIXTARGET) |
-            (validCasted << BITPOS_VALID);
+            (validCasted << BITPOS_VALID))
+        );
 
         SafeTransferLib.safeTransferFrom(
             t,
@@ -152,7 +170,7 @@ contract P2PIX is
     /// @dev Function sighash: 0x72fada5c.
     function setValidState(ERC20 token, bool state) public {
         uint256 key = _castAddrToKey(msg.sender);
-        uint256 _sellerBalance = sellerBalance[key][token];
+        uint256 _sellerBalance = sellerBalance(key, token);
 
         if (_sellerBalance != 0) {
             uint256 _valid;
@@ -164,7 +182,7 @@ contract P2PIX is
                 (_sellerBalance & BITMASK_VALID) |
                 (_valid << BITPOS_VALID);
 
-            sellerBalance[key][token] = _sellerBalance;
+            _setSellerBalance(key, token, _sellerBalance);
 
             emit ValidSet(msg.sender, address(token), state);
         } else revert NotInitialized();
@@ -179,7 +197,6 @@ contract P2PIX is
     /// from the total `remaining` value.
     /// @dev Locks can only be performed in valid orders.
     /// @param _buyerAddress The address of the buyer of a `_depositID`.
-    /// @param _relayerTarget Target address entitled to the `relayerPremium`.
     /// @param _relayerPremium The refund/premium owed to a relayer.
     /// @param _amount The deposit's remaining amount wished to be locked.
     /// @param merkleProof This value should be:
@@ -193,7 +210,7 @@ contract P2PIX is
         address _seller,
         address _token,
         address _buyerAddress,
-        address _relayerTarget,
+        // address _relayerTarget,
         uint256 _relayerPremium,
         uint256 _amount,
         bytes32[] calldata merkleProof,
@@ -221,17 +238,17 @@ contract P2PIX is
             _relayerPremium,
             _amount,
             (block.number + defaultLockBlocks),
-            uint160(sellerBalance[k][t] >> BITPOS_PIXTARGET),
+            uint160(sellerBalance(k, t) >> BITPOS_PIXTARGET),
             _buyerAddress,
-            _relayerTarget,
+            // _relayerTarget,
             msg.sender,
             address(t)
         );
 
         if (merkleProof.length != 0) {
-            merkleVerify(
+            _merkleVerify(
                 merkleProof,
-                sellerAllowList[k],
+                sellerAllowList(k),
                 msg.sender
             );
 
@@ -283,11 +300,10 @@ contract P2PIX is
     ///  In case of they differing:
     /// - `lock` caller gets accrued with `l.amount` as userRecord credit;
     /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
-    /// @param _relayerTarget Target address entitled to the `relayerPremium`.
     /// @dev Function sighash: 0x4e1389ed.
     function release(
         uint256 lockID,
-        address _relayerTarget,
+        // address _relayerTarget,
         bytes32 pixTimestamp,
         bytes32 r,
         bytes32 s,
@@ -313,14 +329,14 @@ contract P2PIX is
             )
         );
 
-        if (usedTransactions[message] == true)
+        if (usedTransactions(message) == true)
             revert TxAlreadyUsed();
 
         uint256 signer = _castAddrToKey(
             ecrecover(messageDigest, v, r, s)
         );
 
-        if (!validBacenSigners[signer])
+        if (!validBacenSigners(signer))
             revert InvalidSigner();
 
         ERC20 t = ERC20(l.token);
@@ -331,7 +347,7 @@ contract P2PIX is
 
         l.amount = 0;
         l.expirationBlock = 0;
-        usedTransactions[message] = true;
+        _setUsedTransactions(message);
 
         if (msg.sender != l.relayerAddress) {
             userRecord[_castAddrToKey(msg.sender)] += l
@@ -352,21 +368,21 @@ contract P2PIX is
 
         // Method doesn't check for zero address.
         if (l.relayerPremium != 0) {
-            if (_relayerTarget != l.relayerTarget) {
+            if (msg.sender != l.relayerAddress) {
                 SafeTransferLib.safeTransfer(
                     t,
-                    l.relayerTarget,
+                    l.relayerAddress,
                     (l.relayerPremium >> 1)
                 );
                 SafeTransferLib.safeTransfer(
                     t,
-                    _relayerTarget,
+                    msg.sender,
                     (l.relayerPremium >> 1)
                 );
             } else {
                 SafeTransferLib.safeTransfer(
                     t,
-                    _relayerTarget,
+                    msg.sender,
                     l.relayerPremium
                 );
             }
@@ -392,15 +408,12 @@ contract P2PIX is
 
             _notExpired(l);
 
-            uint256 _sellerBalance = sellerBalance[
-                l.sellerKey
-            ][ERC20(l.token)] & BITMASK_SB_ENTRY;
+            uint256 _sellerBalance = sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
 
             if ((_sellerBalance + l.amount) > 1e8 ether)
                 revert MaxBalExceeded();
 
-            sellerBalance[l.sellerKey][ERC20(l.token)] += l
-                .amount;
+            _addSellerBalance(l.sellerKey, ERC20(l.token), l.amount);
 
             l.amount = 0;
 
@@ -448,7 +461,7 @@ contract P2PIX is
 
         uint256 key = _castAddrToKey(msg.sender);
         _decBal(
-            (sellerBalance[key][token] & BITMASK_SB_ENTRY),
+            (sellerBalance(key, token) & BITMASK_SB_ENTRY),
             amount,
             token,
             key
@@ -471,13 +484,29 @@ contract P2PIX is
     function setRoot(address addr, bytes32 merkleroot)
         public
     {
-        if (addr == msg.sender) {
-            sellerAllowList[
-                _castAddrToKey(addr)
-            ] = merkleroot;
-            emit RootUpdated(addr, merkleroot);
-        } else revert OnlySeller();
+        assembly {
+            // if (addr != msg.sender)  
+            if iszero(eq(addr, caller())) {
+                // revert OnlySeller()
+                mstore(0x00, 0x85d1f726)
+                revert(0x1c, 0x04)
+            }
+            // sets root to SellerAllowlist's storage slot
+            mstore(0x0c, _SELLER_ALLOWLIST_SLOT_SEED)
+            mstore(0x00, addr)
+            sstore(keccak256(0x00, 0x20), merkleroot)
+
+            // emit RootUpdated(addr, merkleroot);
+            log3(
+                0, 
+                0, 
+                _ROOT_UPDATED_EVENT_SIGNATURE,
+                addr,
+                merkleroot
+            )
+        }
     }
+
 
     /// ███ Owner Only █████████████████████████████████████████████████████████
 
@@ -513,15 +542,16 @@ contract P2PIX is
         public
         onlyOwner
     {
-        unchecked {
-            uint256 i;
-            uint256 len = _validSigners.length;
-            for (i; i < len; ) {
-                uint256 key = _castAddrToKey(
-                    _validSigners[i]
-                );
-                validBacenSigners[key] = true;
-                ++i;
+        assembly {
+            let i := add(_validSigners, 0x20)
+            let end := add(i, shl(0x05, mload(_validSigners)))
+            for {/*  */} iszero(returndatasize()) {/*  */} {
+                sstore(shl(12, mload(i)), true)
+                i := add(i, 0x20)
+
+                if iszero(lt(i, end)) {
+                    break
+                }
             }
         }
         emit ValidSignersUpdated(_validSigners);
@@ -554,15 +584,16 @@ contract P2PIX is
                 sLoc := add(sLoc, 0x20)
             } {
                 // cache hashmap entry in scratch space
+                mstore(0x0c, _ALLOWED_ERC20_SLOT_SEED)
                 mstore(0x00, mload(tLoc))
-                mstore(0x20, allowedERC20s.slot)
-                let mapSlot := keccak256(0x00, 0x40)
-                sstore(mapSlot, mload(sLoc))
+               //  let mapSlot := keccak256(0x0c, 0x20)
+                sstore(keccak256(0x0c, 0x20), mload(sLoc))
+                
+                // emit AllowedERC20Updated(address, bool)
                 log3(
                     0,
                     0,
-                    // AllowedERC20Updated(address, bool)
-                    0x5d6e86e5341d57a92c49934296c51542a25015c9b1782a1c2722a940131c3d9a,
+                    _ALLOWED_ERC20_UPDATED_EVENT_SIGNATURE,
                     mload(tLoc),
                     mload(sLoc)
                 )
@@ -605,7 +636,7 @@ contract P2PIX is
         );
     }
 
-    function merkleVerify(
+    function _merkleVerify(
         bytes32[] calldata _merkleProof,
         bytes32 root,
         address _addr
@@ -631,8 +662,8 @@ contract P2PIX is
         );
         // cast the uninitialized return values to memory
         bool success;
-        uint256 returnSize;
-        uint256 returnValue;
+        // uint256 returnSize;
+        // uint256 returnValue;
         // perform staticcall from the stack w yul
         assembly {
             success := staticcall(
@@ -649,9 +680,10 @@ contract P2PIX is
                 // retSize
                 0x20
             )
-            returnSize := returndatasize()
-            returnValue := mload(0x00)
-            _spendLimit := returnValue
+            // returnSize := returndatasize()
+            // returnValue := mload(0x00)
+            // _spendLimit := returnValue
+            _spendLimit := mload(0x00)
             // reverts if call does not succeed.
             if iszero(success) {
                 // StaticCallFailed()
@@ -692,7 +724,7 @@ contract P2PIX is
                 iszero(
                     or(
                         iszero(_bal),
-                        lt(sub(_bal, _amount), 0x0)
+                        gt(sub(_bal, _amount), _bal)
                     )
                 )
             ) {
@@ -703,7 +735,7 @@ contract P2PIX is
         }
 
         // we can directly dec from packed uint entry value
-        sellerBalance[_k][_t] -= _amount;
+        _decSellerBalance(_k,_t, _amount);
     }
 
     function getBalance(address seller, ERC20 token)
@@ -717,17 +749,15 @@ contract P2PIX is
         assembly {
             for {
                 /*  */
-            } iszero(0x0) {
+            } iszero(returndatasize()) {
                 /*  */
             } {
-                mstore(0x00, shl(0xC, seller))
-                mstore(0x20, sellerBalance.slot)
-                let sbkslot := keccak256(0x00, 0x40)
-                mstore(0x00, token)
-                mstore(0x20, sbkslot)
+                mstore(0x20, token)
+                mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+                mstore(0x00, seller)
                 bal := and(
                     BITMASK_SB_ENTRY,
-                    sload(keccak256(0x00, 0x40))
+                    sload(keccak256(0x0c, 0x34))
                 )
                 break
             }
@@ -746,19 +776,17 @@ contract P2PIX is
         assembly {
             for {
                 /*  */
-            } iszero(0x0) {
+            } iszero(returndatasize()) {
                 /*  */
             } {
-                mstore(0x00, shl(0xC, seller))
-                mstore(0x20, sellerBalance.slot)
-                let sbkslot := keccak256(0x00, 0x40)
-                mstore(0x00, token)
-                mstore(0x20, sbkslot)
+                mstore(0x20, token)
+                mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+                mstore(0x00, seller)
                 valid := and(
                     BITMASK_SB_ENTRY,
                     shr(
                         BITPOS_VALID,
-                        sload(keccak256(0x00, 0x40))
+                        sload(keccak256(0x0c, 0x34))
                     )
                 )
                 break
@@ -778,17 +806,15 @@ contract P2PIX is
         assembly {
             for {
                 /*  */
-            } iszero(0) {
+            } iszero(returndatasize()) {
                 /*  */
             } {
-                mstore(0, shl(12, seller))
-                mstore(32, sellerBalance.slot)
-                let sbkslot := keccak256(0, 64)
-                mstore(0, token)
-                mstore(32, sbkslot)
+                mstore(0x20, token)
+                mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+                mstore(0x00, seller)
                 pixTarget := shr(
                     BITPOS_PIXTARGET,
-                    sload(keccak256(0, 64))
+                    sload(keccak256(0x0c, 0x34))
                 )
                 break
             }
@@ -860,6 +886,79 @@ contract P2PIX is
             }
         }
         return (sortedIDs, status);
+    }
+
+    function allowedERC20s(ERC20 erc20) public view returns (bool state) {
+        assembly {
+            mstore(0x0c, _ALLOWED_ERC20_SLOT_SEED)
+            mstore(0x00, erc20)
+            state := sload(keccak256(0x0c, 0x20))
+        }
+    }
+
+    function _setUsedTransactions(bytes32 message) private {
+        assembly {
+            sstore(message, true)
+        }
+    }
+
+    function usedTransactions(bytes32 message) public view returns(bool used) {
+        assembly {
+            used := sload(message)
+        }
+    }
+
+    function validBacenSigners(uint256 signer) public view returns(bool valid) {
+        assembly {
+            valid := sload(signer)
+        }
+    }
+
+    function sellerAllowList(uint256 sellerKey) public view returns(bytes32 root) {
+        assembly {
+            mstore(0x0c, _SELLER_ALLOWLIST_SLOT_SEED)
+            mstore(0x00, shr(12, sellerKey))
+            root := sload(keccak256(0x00, 0x20))
+        }
+    }
+
+    function _setSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 packed) private {
+        assembly {
+            mstore(0x20, erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(12, sellerKey))
+            sstore(keccak256(0x0c, 0x34), packed)
+        }
+    }
+
+    function _addSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 amount) private {
+        assembly {
+            mstore(0x20, erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(12, sellerKey))
+            let slot := keccak256(0x0c, 0x34)
+            sstore(slot, add(sload(slot), amount))
+        }
+    }
+
+    function _decSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 amount) private {
+        assembly {
+            mstore(0x20, erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(12, sellerKey))
+            let slot := keccak256(0x0c, 0x34)
+            sstore(slot, sub(sload(slot), amount))
+        }
+    }
+
+    function sellerBalance(uint256 sellerKey, ERC20 erc20) public view returns(uint256 packed) {
+        assembly {
+            mstore(0x20, erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(12, sellerKey))
+            packed := sload(keccak256(0x0c, 0x34))
+
+        }
     }
 
     /// @notice Public method that handles `address`

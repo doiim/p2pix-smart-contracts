@@ -5,6 +5,7 @@ import type {
   BaseContract,
   BigNumber,
   BigNumberish,
+  BytesLike,
   Signer,
   utils,
 } from "ethers";
@@ -300,10 +301,13 @@ export interface EventAndErrors extends BaseContract {
     ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
 
     "RootUpdated(address,bytes32)"(
-      seller?: null,
-      merkleRoot?: null
+      seller?: PromiseOrValue<string> | null,
+      merkleRoot?: PromiseOrValue<BytesLike> | null
     ): RootUpdatedEventFilter;
-    RootUpdated(seller?: null, merkleRoot?: null): RootUpdatedEventFilter;
+    RootUpdated(
+      seller?: PromiseOrValue<string> | null,
+      merkleRoot?: PromiseOrValue<BytesLike> | null
+    ): RootUpdatedEventFilter;
 
     "ValidSet(address,address,bool)"(
       seller?: PromiseOrValue<string> | null,

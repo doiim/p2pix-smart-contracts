@@ -40,11 +40,11 @@ export interface P2PIXInterface extends utils.Interface {
     "getLocksStatus(uint256[])": FunctionFragment;
     "getPixTarget(address,address)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
-    "lock(address,address,address,address,uint256,uint256,bytes32[],uint256[])": FunctionFragment;
+    "lock(address,address,address,uint256,uint256,bytes32[],uint256[])": FunctionFragment;
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
-    "release(uint256,address,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
+    "release(uint256,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
     "reputation()": FunctionFragment;
     "sellerAllowList(uint256)": FunctionFragment;
     "sellerBalance(uint256,address)": FunctionFragment;
@@ -152,7 +152,6 @@ export interface P2PIXInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>,
-      PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BytesLike>[],
@@ -172,7 +171,6 @@ export interface P2PIXInterface extends utils.Interface {
     functionFragment: "release",
     values: [
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>,
@@ -560,9 +558,9 @@ export interface P2PIX extends BaseContract {
     ): Promise<[string] & { _addr: string }>;
 
     allowedERC20s(
-      arg0: PromiseOrValue<string>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    ): Promise<[boolean] & { state: boolean }>;
 
     defaultLockBlocks(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -608,7 +606,6 @@ export interface P2PIX extends BaseContract {
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
       _buyerAddress: PromiseOrValue<string>,
-      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
@@ -631,7 +628,6 @@ export interface P2PIX extends BaseContract {
         BigNumber,
         string,
         string,
-        string,
         string
       ] & {
         sellerKey: BigNumber;
@@ -641,7 +637,6 @@ export interface P2PIX extends BaseContract {
         expirationBlock: BigNumber;
         pixTarget: BigNumber;
         buyerAddress: string;
-        relayerTarget: string;
         relayerAddress: string;
         token: string;
       }
@@ -651,7 +646,6 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BigNumberish>,
-      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
@@ -662,15 +656,15 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<[string]>;
 
     sellerAllowList(
-      arg0: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[string]>;
+    ): Promise<[string] & { root: string }>;
 
     sellerBalance(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
+      sellerKey: PromiseOrValue<BigNumberish>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { packed: BigNumber }>;
 
     setDefaultLockBlocks(
       _blocks: PromiseOrValue<BigNumberish>,
@@ -716,9 +710,9 @@ export interface P2PIX extends BaseContract {
     ): Promise<ContractTransaction>;
 
     usedTransactions(
-      arg0: PromiseOrValue<BytesLike>,
+      message: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    ): Promise<[boolean] & { used: boolean }>;
 
     userRecord(
       arg0: PromiseOrValue<BigNumberish>,
@@ -726,9 +720,9 @@ export interface P2PIX extends BaseContract {
     ): Promise<[BigNumber]>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<BigNumberish>,
+      signer: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<[boolean]>;
+    ): Promise<[boolean] & { valid: boolean }>;
 
     withdraw(
       token: PromiseOrValue<string>,
@@ -755,7 +749,7 @@ export interface P2PIX extends BaseContract {
   ): Promise<string>;
 
   allowedERC20s(
-    arg0: PromiseOrValue<string>,
+    erc20: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -803,7 +797,6 @@ export interface P2PIX extends BaseContract {
     _seller: PromiseOrValue<string>,
     _token: PromiseOrValue<string>,
     _buyerAddress: PromiseOrValue<string>,
-    _relayerTarget: PromiseOrValue<string>,
     _relayerPremium: PromiseOrValue<BigNumberish>,
     _amount: PromiseOrValue<BigNumberish>,
     merkleProof: PromiseOrValue<BytesLike>[],
@@ -826,7 +819,6 @@ export interface P2PIX extends BaseContract {
       BigNumber,
       string,
       string,
-      string,
       string
     ] & {
       sellerKey: BigNumber;
@@ -836,7 +828,6 @@ export interface P2PIX extends BaseContract {
       expirationBlock: BigNumber;
       pixTarget: BigNumber;
       buyerAddress: string;
-      relayerTarget: string;
       relayerAddress: string;
       token: string;
     }
@@ -846,7 +837,6 @@ export interface P2PIX extends BaseContract {
 
   release(
     lockID: PromiseOrValue<BigNumberish>,
-    _relayerTarget: PromiseOrValue<string>,
     pixTimestamp: PromiseOrValue<BytesLike>,
     r: PromiseOrValue<BytesLike>,
     s: PromiseOrValue<BytesLike>,
@@ -857,13 +847,13 @@ export interface P2PIX extends BaseContract {
   reputation(overrides?: CallOverrides): Promise<string>;
 
   sellerAllowList(
-    arg0: PromiseOrValue<BigNumberish>,
+    sellerKey: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
   sellerBalance(
-    arg0: PromiseOrValue<BigNumberish>,
-    arg1: PromiseOrValue<string>,
+    sellerKey: PromiseOrValue<BigNumberish>,
+    erc20: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
@@ -911,7 +901,7 @@ export interface P2PIX extends BaseContract {
   ): Promise<ContractTransaction>;
 
   usedTransactions(
-    arg0: PromiseOrValue<BytesLike>,
+    message: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -921,7 +911,7 @@ export interface P2PIX extends BaseContract {
   ): Promise<BigNumber>;
 
   validBacenSigners(
-    arg0: PromiseOrValue<BigNumberish>,
+    signer: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -950,7 +940,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<string>;
 
     allowedERC20s(
-      arg0: PromiseOrValue<string>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -998,7 +988,6 @@ export interface P2PIX extends BaseContract {
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
       _buyerAddress: PromiseOrValue<string>,
-      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
@@ -1021,7 +1010,6 @@ export interface P2PIX extends BaseContract {
         BigNumber,
         string,
         string,
-        string,
         string
       ] & {
         sellerKey: BigNumber;
@@ -1031,7 +1019,6 @@ export interface P2PIX extends BaseContract {
         expirationBlock: BigNumber;
         pixTarget: BigNumber;
         buyerAddress: string;
-        relayerTarget: string;
         relayerAddress: string;
         token: string;
       }
@@ -1041,7 +1028,6 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BigNumberish>,
-      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
@@ -1052,13 +1038,13 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<string>;
 
     sellerAllowList(
-      arg0: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
     sellerBalance(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
+      sellerKey: PromiseOrValue<BigNumberish>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1106,7 +1092,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<void>;
 
     usedTransactions(
-      arg0: PromiseOrValue<BytesLike>,
+      message: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1116,7 +1102,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<BigNumberish>,
+      signer: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -1219,10 +1205,13 @@ export interface P2PIX extends BaseContract {
     ReputationUpdated(reputation?: null): ReputationUpdatedEventFilter;
 
     "RootUpdated(address,bytes32)"(
-      seller?: null,
-      merkleRoot?: null
+      seller?: PromiseOrValue<string> | null,
+      merkleRoot?: PromiseOrValue<BytesLike> | null
     ): RootUpdatedEventFilter;
-    RootUpdated(seller?: null, merkleRoot?: null): RootUpdatedEventFilter;
+    RootUpdated(
+      seller?: PromiseOrValue<string> | null,
+      merkleRoot?: PromiseOrValue<BytesLike> | null
+    ): RootUpdatedEventFilter;
 
     "ValidSet(address,address,bool)"(
       seller?: PromiseOrValue<string> | null,
@@ -1255,7 +1244,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     allowedERC20s(
-      arg0: PromiseOrValue<string>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1303,7 +1292,6 @@ export interface P2PIX extends BaseContract {
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
       _buyerAddress: PromiseOrValue<string>,
-      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
@@ -1322,7 +1310,6 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BigNumberish>,
-      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
@@ -1333,13 +1320,13 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<BigNumber>;
 
     sellerAllowList(
-      arg0: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     sellerBalance(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
+      sellerKey: PromiseOrValue<BigNumberish>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1387,7 +1374,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     usedTransactions(
-      arg0: PromiseOrValue<BytesLike>,
+      message: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1397,7 +1384,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<BigNumberish>,
+      signer: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1427,7 +1414,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     allowedERC20s(
-      arg0: PromiseOrValue<string>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1475,7 +1462,6 @@ export interface P2PIX extends BaseContract {
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
       _buyerAddress: PromiseOrValue<string>,
-      _relayerTarget: PromiseOrValue<string>,
       _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
@@ -1494,7 +1480,6 @@ export interface P2PIX extends BaseContract {
 
     release(
       lockID: PromiseOrValue<BigNumberish>,
-      _relayerTarget: PromiseOrValue<string>,
       pixTimestamp: PromiseOrValue<BytesLike>,
       r: PromiseOrValue<BytesLike>,
       s: PromiseOrValue<BytesLike>,
@@ -1505,13 +1490,13 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     sellerAllowList(
-      arg0: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     sellerBalance(
-      arg0: PromiseOrValue<BigNumberish>,
-      arg1: PromiseOrValue<string>,
+      sellerKey: PromiseOrValue<BigNumberish>,
+      erc20: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1559,7 +1544,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     usedTransactions(
-      arg0: PromiseOrValue<BytesLike>,
+      message: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1569,7 +1554,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     validBacenSigners(
-      arg0: PromiseOrValue<BigNumberish>,
+      signer: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
