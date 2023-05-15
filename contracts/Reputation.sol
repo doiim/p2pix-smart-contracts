@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity 0.8.19;
 
 import { IReputation } from "./lib/interfaces/IReputation.sol";
 import { Owned } from "./lib/auth/Owned.sol";

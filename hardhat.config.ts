@@ -121,16 +121,18 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.9",
+    version: "0.8.19",
     settings: {
-      // viaIR: true,
-      metadata: {
-        bytecodeHash: "none",
-      },
+      viaIR: true,
       optimizer: {
         enabled: true,
-        // max val = 4_294_967_295
         runs: 20_000,
+        details: {
+          yul: true,
+          yulDetails: {
+            stackAllocation: true,
+          },
+        },
       },
     },
   },
