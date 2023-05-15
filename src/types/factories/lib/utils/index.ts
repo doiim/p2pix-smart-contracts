@@ -3,3 +3,4 @@
 /* eslint-disable */
 export { Multicall__factory } from "./Multicall__factory";
 export { ReentrancyGuard__factory } from "./ReentrancyGuard__factory";
+export { SafeTransferLib__factory } from "./SafeTransferLib__factory";

@@ -21,6 +21,8 @@ export type { Multicall } from "./lib/utils/Multicall";
 export { Multicall__factory } from "./factories/lib/utils/Multicall__factory";
 export type { ReentrancyGuard } from "./lib/utils/ReentrancyGuard";
 export { ReentrancyGuard__factory } from "./factories/lib/utils/ReentrancyGuard__factory";
+export type { SafeTransferLib } from "./lib/utils/SafeTransferLib";
+export { SafeTransferLib__factory } from "./factories/lib/utils/SafeTransferLib__factory";
 export type { P2PIX } from "./p2pix.sol/P2PIX";
 export { P2PIX__factory } from "./factories/p2pix.sol/P2PIX__factory";
 export { Reputation__factory } from "./factories/Reputation__factory";
