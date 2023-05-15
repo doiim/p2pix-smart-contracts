@@ -8,6 +8,11 @@ import type { Owned, OwnedInterface } from "../../../lib/auth/Owned";
 
 const _abi = [
   {
+    inputs: [],
+    name: "Unauthorized",
+    type: "error",
+  },
+  {
     anonymous: false,
     inputs: [
       {

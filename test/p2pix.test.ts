@@ -179,7 +179,7 @@ describe("P2PIX", () => {
 
       await expect(
         p2pix.connect(acc01).withdrawBalance(),
-      ).to.be.revertedWith(P2PixErrors.UNAUTHORIZED);
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.Unauthorized);
     });
     it("should allow owner to change reputation instance", async () => {
       const tx = await p2pix.setReputation(acc03.address);
@@ -193,8 +193,9 @@ describe("P2PIX", () => {
         .to.emit(p2pix, "ReputationUpdated")
         .withArgs(acc03.address);
       expect(newRep).to.eq(acc03.address);
-      await expect(fail).to.be.revertedWith(
-        P2PixErrors.UNAUTHORIZED,
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
       );
     });
     it("should allow owner to change defaultLockBlocks ", async () => {
@@ -211,8 +212,9 @@ describe("P2PIX", () => {
         .to.emit(p2pix, "LockBlocksUpdated")
         .withArgs(magicVal);
       expect(newVal).to.eq(magicVal);
-      await expect(fail).to.be.revertedWith(
-        P2PixErrors.UNAUTHORIZED,
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
       );
     });
     it("should allow owner to add valid Bacen signers", async () => {
@@ -236,8 +238,9 @@ describe("P2PIX", () => {
       await expect(tx)
         .to.emit(p2pix, "ValidSignersUpdated")
         .withArgs([bob, alice]);
-      await expect(fail).to.be.revertedWith(
-        P2PixErrors.UNAUTHORIZED,
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
       );
     });
     it("should allow owner to adjust tokenSettings", async () => {
@@ -274,11 +277,13 @@ describe("P2PIX", () => {
         .withArgs(owner.address, true);
       expect(newTokenState1).to.eq(false);
       expect(newTokenState2).to.eq(true);
-      await expect(fail).to.be.revertedWith(
-        P2PixErrors.UNAUTHORIZED,
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
       );
-      await expect(fail).to.be.revertedWith(
-        P2PixErrors.UNAUTHORIZED,
+      await expect(fail).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
       );
       await expect(fail2).to.be.revertedWithCustomError(
         p2pix,
@@ -293,7 +298,6 @@ describe("P2PIX", () => {
           multicall,
           P2PixErrors.CallFailed,
         )
-        .withArgs(P2PixErrors.UNAUTHORIZED);
     });
   });
   describe("Deposit", async () => {

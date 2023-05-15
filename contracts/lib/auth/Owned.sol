@@ -4,6 +4,8 @@ pragma solidity >=0.8.4;
 /// @notice Simple single owner authorization mixin.
 /// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/auth/Owned.sol)
 abstract contract Owned {
+    error Unauthorized();
+
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -20,7 +22,7 @@ abstract contract Owned {
     address public owner;
 
     modifier onlyOwner() virtual {
-        require(msg.sender == owner, "UNAUTHORIZED");
+        if (msg.sender != owner) revert Unauthorized();
 
         _;
     }
