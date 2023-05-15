@@ -74,17 +74,6 @@ const config: HardhatUserConfig = {
       goerli: process.env.ETHERSCAN_API_KEY || "",
       polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
     },
-    // customChains: [
-    //   {
-    //     // network: {INSERT_NAME},
-    //     // chainId: {INSERT_ID},
-    //     // urls: {
-    //       // apiURL:
-    //         // "{INSERT_URL}",
-    //       // browserURL: "{INSERT_URL}",
-    //     // },
-    //   },
-    // ],
   },
   gasReporter: {
     enabled: !!(

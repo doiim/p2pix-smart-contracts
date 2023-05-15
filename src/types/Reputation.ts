@@ -7,17 +7,11 @@ import type {
   BigNumberish,
   BytesLike,
   CallOverrides,
-  ContractTransaction,
-  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
 } from "ethers";
-import type {
-  FunctionFragment,
-  Result,
-  EventFragment,
-} from "@ethersproject/abi";
+import type { FunctionFragment, Result } from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -32,17 +26,10 @@ export interface ReputationInterface extends utils.Interface {
     "limiter(uint256)": FunctionFragment;
     "magicValue()": FunctionFragment;
     "maxLimit()": FunctionFragment;
-    "owner()": FunctionFragment;
-    "setOwner(address)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic:
-      | "limiter"
-      | "magicValue"
-      | "maxLimit"
-      | "owner"
-      | "setOwner"
+    nameOrSignatureOrTopic: "limiter" | "magicValue" | "maxLimit"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -54,35 +41,13 @@ export interface ReputationInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "maxLimit", values?: undefined): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "setOwner",
-    values: [PromiseOrValue<string>]
-  ): string;
 
   decodeFunctionResult(functionFragment: "limiter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "magicValue", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "maxLimit", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
 
-  events: {
-    "OwnerUpdated(address,address)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
+  events: {};
 }
-
-export interface OwnerUpdatedEventObject {
-  user: string;
-  newOwner: string;
-}
-export type OwnerUpdatedEvent = TypedEvent<
-  [string, string],
-  OwnerUpdatedEventObject
->;
-
-export type OwnerUpdatedEventFilter = TypedEventFilter<OwnerUpdatedEvent>;
 
 export interface Reputation extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -119,13 +84,6 @@ export interface Reputation extends BaseContract {
     magicValue(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     maxLimit(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
   };
 
   limiter(
@@ -137,13 +95,6 @@ export interface Reputation extends BaseContract {
 
   maxLimit(overrides?: CallOverrides): Promise<BigNumber>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  setOwner(
-    newOwner: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     limiter(
       _userCredit: PromiseOrValue<BigNumberish>,
@@ -153,25 +104,9 @@ export interface Reputation extends BaseContract {
     magicValue(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxLimit(overrides?: CallOverrides): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
-  filters: {
-    "OwnerUpdated(address,address)"(
-      user?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
-    OwnerUpdated(
-      user?: PromiseOrValue<string> | null,
-      newOwner?: PromiseOrValue<string> | null
-    ): OwnerUpdatedEventFilter;
-  };
+  filters: {};
 
   estimateGas: {
     limiter(
@@ -182,13 +117,6 @@ export interface Reputation extends BaseContract {
     magicValue(overrides?: CallOverrides): Promise<BigNumber>;
 
     maxLimit(overrides?: CallOverrides): Promise<BigNumber>;
-
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -200,12 +128,5 @@ export interface Reputation extends BaseContract {
     magicValue(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     maxLimit(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    setOwner(
-      newOwner: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
   };
 }
