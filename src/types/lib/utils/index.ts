@@ -3,3 +3,4 @@
 /* eslint-disable */
 export type { Multicall } from "./Multicall";
 export type { ReentrancyGuard } from "./ReentrancyGuard";
+export type { SafeTransferLib } from "./SafeTransferLib";

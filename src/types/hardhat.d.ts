@@ -41,6 +41,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ReentrancyGuard__factory>;
     getContractFactory(
+      name: "SafeTransferLib",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SafeTransferLib__factory>;
+    getContractFactory(
       name: "P2PIX",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.P2PIX__factory>;
@@ -84,6 +88,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ReentrancyGuard>;
+    getContractAt(
+      name: "SafeTransferLib",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SafeTransferLib>;
     getContractAt(
       name: "P2PIX",
       address: string,
