@@ -5,14 +5,14 @@ library DataTypes {
     struct Lock {
         uint256 sellerKey;
         uint256 counter;
-        /// @dev Amount to be paid for relayer.
-        uint256 relayerPremium;
-        /// @dev Amount to be tranfered via PIX.
-        uint256 amount;
         /// @dev If not paid at this block will be expired.
         uint256 expirationBlock;
         uint160 pixTarget;
+        /// @dev Amount to be paid for relayer.
+        uint80 relayerPremium;
         /// @dev Where the tokens are sent the when order gets validated.
+        /// @dev Amount to be tranfered via PIX.
+        uint80 amount;
         address buyerAddress;
         /// @dev Relayer address (msg.sender) that facilitated this transaction.
         /// @dev Relayer's target address that receives `relayerPremium` funds.

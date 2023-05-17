@@ -850,7 +850,7 @@ describe("P2PIX", () => {
       const endtoendID = ethers.constants.HashZero;
       const target = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [target, price, endtoendID],
       );
       const messageHashBytes =
@@ -1257,7 +1257,7 @@ describe("P2PIX", () => {
     it("should revert if lock has expired", async () => {
       const target = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [target, 100, ethers.constants.HashZero],
       );
       const flatSig = await acc01.signMessage(
@@ -1302,7 +1302,7 @@ describe("P2PIX", () => {
       const target = ethers.BigNumber.from("1");
       const hashZero = ethers.constants.HashZero;
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [target, 100, hashZero],
       );
       const flatSig = await acc01.signMessage(
@@ -1352,7 +1352,7 @@ describe("P2PIX", () => {
     it("should revert if signed message has already been used", async () => {
       const target = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [target, 100, ethers.constants.HashZero],
       );
       const flatSig = await owner.signMessage(
@@ -1417,7 +1417,7 @@ describe("P2PIX", () => {
     it("should revert if ecrecovered signer is invalid", async () => {
       const target = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [target, 100, ethers.constants.HashZero],
       );
       const flatSig = await acc03.signMessage(
@@ -1464,7 +1464,7 @@ describe("P2PIX", () => {
       const endtoendID = ethers.constants.HashZero;
       const pixTarget = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [pixTarget, 100, endtoendID],
       );
       // Note: messageToSign is a string, that is 66-bytes long, to sign the
@@ -1632,7 +1632,7 @@ describe("P2PIX", () => {
         acc03Key,
       );
       const messageToSign1 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [pixTarget, 100, endtoendID],
       );
       const flatSig1 = await owner.signMessage(
@@ -1640,7 +1640,7 @@ describe("P2PIX", () => {
       );
       const sig1 = ethers.utils.splitSignature(flatSig1);
       const messageToSign2 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [pixTarget, 50, endtoendID],
       );
       const flatSig2 = await owner.signMessage(
@@ -1648,7 +1648,7 @@ describe("P2PIX", () => {
       );
       const sig2 = ethers.utils.splitSignature(flatSig2);
       const messageToSign3 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [pixTarget, 25, endtoendID],
       );
       const flatSig3 = await owner.signMessage(
@@ -1885,7 +1885,7 @@ describe("P2PIX", () => {
       const endtoendID = ethers.constants.HashZero;
       const pixTarget = ethers.BigNumber.from(101);
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint256", "bytes32"],
+        ["uint160", "uint80", "bytes32"],
         [pixTarget, 1, endtoendID],
       );
       const messageHashBytes =

@@ -29,7 +29,6 @@ import type {
 
 export interface P2PIXInterface extends utils.Interface {
   functions: {
-    "WAD()": FunctionFragment;
     "_castAddrToKey(address)": FunctionFragment;
     "_castKeyToAddr(uint256)": FunctionFragment;
     "allowedERC20s(address)": FunctionFragment;
@@ -40,7 +39,7 @@ export interface P2PIXInterface extends utils.Interface {
     "getLocksStatus(uint256[])": FunctionFragment;
     "getPixTarget(address,address)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
-    "lock(address,address,address,uint256,uint256,bytes32[],uint256[])": FunctionFragment;
+    "lock(address,address,address,uint80,uint80,bytes32[],uint256[])": FunctionFragment;
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
@@ -65,7 +64,6 @@ export interface P2PIXInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "WAD"
       | "_castAddrToKey"
       | "_castKeyToAddr"
       | "allowedERC20s"
@@ -99,7 +97,6 @@ export interface P2PIXInterface extends utils.Interface {
       | "withdrawBalance"
   ): FunctionFragment;
 
-  encodeFunctionData(functionFragment: "WAD", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "_castAddrToKey",
     values: [PromiseOrValue<string>]
@@ -246,7 +243,6 @@ export interface P2PIXInterface extends utils.Interface {
     values?: undefined
   ): string;
 
-  decodeFunctionResult(functionFragment: "WAD", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "_castAddrToKey",
     data: BytesLike
@@ -545,8 +541,6 @@ export interface P2PIX extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    WAD(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     _castAddrToKey(
       _addr: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -632,10 +626,10 @@ export interface P2PIX extends BaseContract {
       ] & {
         sellerKey: BigNumber;
         counter: BigNumber;
-        relayerPremium: BigNumber;
-        amount: BigNumber;
         expirationBlock: BigNumber;
         pixTarget: BigNumber;
+        relayerPremium: BigNumber;
+        amount: BigNumber;
         buyerAddress: string;
         relayerAddress: string;
         token: string;
@@ -736,8 +730,6 @@ export interface P2PIX extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  WAD(overrides?: CallOverrides): Promise<BigNumber>;
-
   _castAddrToKey(
     _addr: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -823,10 +815,10 @@ export interface P2PIX extends BaseContract {
     ] & {
       sellerKey: BigNumber;
       counter: BigNumber;
-      relayerPremium: BigNumber;
-      amount: BigNumber;
       expirationBlock: BigNumber;
       pixTarget: BigNumber;
+      relayerPremium: BigNumber;
+      amount: BigNumber;
       buyerAddress: string;
       relayerAddress: string;
       token: string;
@@ -927,8 +919,6 @@ export interface P2PIX extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    WAD(overrides?: CallOverrides): Promise<BigNumber>;
-
     _castAddrToKey(
       _addr: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1014,10 +1004,10 @@ export interface P2PIX extends BaseContract {
       ] & {
         sellerKey: BigNumber;
         counter: BigNumber;
-        relayerPremium: BigNumber;
-        amount: BigNumber;
         expirationBlock: BigNumber;
         pixTarget: BigNumber;
+        relayerPremium: BigNumber;
+        amount: BigNumber;
         buyerAddress: string;
         relayerAddress: string;
         token: string;
@@ -1231,8 +1221,6 @@ export interface P2PIX extends BaseContract {
   };
 
   estimateGas: {
-    WAD(overrides?: CallOverrides): Promise<BigNumber>;
-
     _castAddrToKey(
       _addr: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1401,8 +1389,6 @@ export interface P2PIX extends BaseContract {
   };
 
   populateTransaction: {
-    WAD(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     _castAddrToKey(
       _addr: PromiseOrValue<string>,
       overrides?: CallOverrides

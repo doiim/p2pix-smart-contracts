@@ -113,10 +113,16 @@ const config: HardhatUserConfig = {
     version: "0.8.19",
     settings: {
       viaIR: true,
+      evmVersion: "paris",
       optimizer: {
         enabled: true,
         runs: 20_000,
         details: {
+          deduplicate: true,
+          cse: true,
+          constantOptimizer: true,
+          peephole: true,
+          jumpdestRemover: true,
           yul: true,
           yulDetails: {
             stackAllocation: true,
