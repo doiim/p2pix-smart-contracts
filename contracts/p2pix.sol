@@ -12,11 +12,15 @@ import { Owned } from "./lib/auth/Owned.sol";
 import { ERC20, SafeTransferLib } from "./lib/utils/SafeTransferLib.sol";
 import { IReputation } from "./lib/interfaces/IReputation.sol";
 import { MerkleProofLib as Merkle } from "./lib/utils/MerkleProofLib.sol";
+import { ECDSA } from "./lib/utils/ECDSA.sol";
 import { ReentrancyGuard } from "./lib/utils/ReentrancyGuard.sol";
 import { EventAndErrors } from "./EventAndErrors.sol";
 import { DataTypes as DT } from "./DataTypes.sol";
+import { Constants } from "./Constants.sol";
+
 
 contract P2PIX is
+    Constants,
     EventAndErrors,
     Owned(msg.sender),
     ReentrancyGuard
@@ -28,53 +32,17 @@ contract P2PIX is
     using DT for DT.Lock;
     using DT for DT.LockStatus;
 
-    /// ███ Constants ██████████████████████████████████████████████████████████
-
-    uint256 private constant _ROOT_UPDATED_EVENT_SIGNATURE =
-        0x0b294da292f26e55fd442b5c0164fbb9013036ff00c5cfdde0efd01c1baaf632;
-    uint256 private constant _ALLOWED_ERC20_UPDATED_EVENT_SIGNATURE =
-        0x5d6e86e5341d57a92c49934296c51542a25015c9b1782a1c2722a940131c3d9a;
-
-    /// @dev Seller casted to key => Seller's allowlist merkleroot.
-    /// mapping(uint256 => bytes32) public sellerAllowList;
-    uint256 private constant _SELLER_ALLOWLIST_SLOT_SEED = 0x74dfee70;
-    /// @dev Tokens allowed to serve as the underlying amount of a deposit.
-    /// mapping(ERC20 => bool) public allowedERC20s;
-    uint256 private constant _ALLOWED_ERC20_SLOT_SEED = 0xcbc9d1c4;
-
-    // BITS LAYOUT
-    // `uint96`  [0...94]   := balance
-    // `uint160` [95...254] := pixTarget
-    // `bool`    [255]       := valid
-
-    /// @dev `balance` max. value = 10**26.
-    /// @dev `pixTarget` keys are restricted to 160 bits.
-    // mapping(uint256 => mapping(ERC20 => uint256)) public sellerBalance;
-    uint256 private constant _SELLER_BALANCE_SLOT_SEED = 0x739094b1;
-
-    /// @dev The bitmask of `sellerBalance` entry.
-    uint256 private constant BITMASK_SB_ENTRY = (1 << 94) - 1;
-    /// @dev The bit position of `pixTarget` in `sellerBalance`.
-    uint256 private constant BITPOS_PIXTARGET = 95;
-    /// @dev The bit position of `valid` in `sellerBalance`.
-    uint256 private constant BITPOS_VALID = 255;
-    /// @dev The bitmask of all 256 bits of `sellerBalance` except for the last one.
-    uint256 private constant BITMASK_VALID = (1 << 255) - 1;
-    
-    /// @dev The scalar of BRZ token.
-    uint256 public constant WAD = 1e18;
-
     /// ███ Storage ████████████████████████████████████████████████████████████
 
     /// @dev List of valid Bacen signature addresses
+    ///     mapping(uint256 => bool) public validBacenSigners;
     /// @dev Value in custom storage slot given by: 
-    /// let slot := sload(shl(12, address)).
-    // mapping(uint256 => bool) public validBacenSigners;
+    ///     let value := sload(shl(12, address)).
     
     /// @dev List of Pix transactions already signed.
+    ///     mapping(bytes32 => bool) public usedTransactions;
     /// @dev Value in custom storage slot given by: 
-    /// let slot := sload(bytes32).
-    // mapping(bytes32 => bool) public usedTransactions;
+    ///     let value := sload(bytes32).
 
     IReputation public reputation;
 
@@ -126,7 +94,7 @@ contract P2PIX is
         uint256 _sellerBalance = sellerBalance(k,t);
 
         uint256 currBal = _sellerBalance & BITMASK_SB_ENTRY;
-        if ((currBal + _amount) > 1e8 ether)
+        if ((currBal + _amount) > MAXBALANCE_UPPERBOUND)
             revert MaxBalExceeded();
 
         setReentrancyGuard();
@@ -210,12 +178,11 @@ contract P2PIX is
         address _seller,
         address _token,
         address _buyerAddress,
-        // address _relayerTarget,
-        uint256 _relayerPremium,
-        uint256 _amount,
+        uint80 _relayerPremium,
+        uint80 _amount,
         bytes32[] calldata merkleProof,
         uint256[] calldata expiredLocks
-    ) public nonReentrant returns (uint256) {
+    ) public nonReentrant returns (uint256 lockID) {
         unlockExpired(expiredLocks);
 
         ERC20 t = ERC20(_token);
@@ -235,58 +202,32 @@ contract P2PIX is
         DT.Lock memory l = DT.Lock(
             k,
             cCounter,
-            _relayerPremium,
-            _amount,
             (block.number + defaultLockBlocks),
             uint160(sellerBalance(k, t) >> BITPOS_PIXTARGET),
+            _relayerPremium,
+            _amount,
             _buyerAddress,
-            // _relayerTarget,
             msg.sender,
             address(t)
         );
 
         if (merkleProof.length != 0) {
-            _merkleVerify(
-                merkleProof,
-                sellerAllowList(k),
-                msg.sender
-            );
+            _merkleVerify( merkleProof, sellerAllowList(k), msg.sender);
+            lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
-            _addLock(bal, _amount, cCounter, l, t, k);
-
-            lockCounter++;
-
-            // Halt execution and output `lockID`.
-            return cCounter;
         } else {
-            if (l.amount <= 1e2 ether) {
-                _addLock(bal, _amount, cCounter, l, t, k);
+            if (l.amount <= REPUTATION_LOWERBOUND) {
+            lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
-                lockCounter++;
+        } else {
+            uint256 userCredit = userRecord[_castAddrToKey(msg.sender)];
+            uint256 spendLimit; (spendLimit) = _limiter(userCredit / WAD);
+            if ( 
+                l.amount > (spendLimit * WAD) || l.amount > LOCKAMOUNT_UPPERBOUND 
+            ) revert AmountNotAllowed();
+            lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
-                // Halt execution and output `lockID`.
-                return cCounter;
-            } else {
-                uint256 userCredit = userRecord[
-                    _castAddrToKey(msg.sender)
-                ];
-
-                uint256 spendLimit;
-                (spendLimit) = _limiter(userCredit / WAD);
-
-                if (
-                    l.amount > (spendLimit * WAD) ||
-                    l.amount > 1e6 ether
-                ) revert AmountNotAllowed();
-
-                _addLock(bal, _amount, cCounter, l, t, k);
-
-                lockCounter++;
-
-                // Halt execution and output `lockID`.
-                return cCounter;
-            }
-        }
+        /*  */}/*  */}
     }
 
     /// @notice Lock release method that liquidate lock
@@ -294,7 +235,7 @@ contract P2PIX is
     /// @dev This method can be called by any public actor
     /// as long the signature provided is valid.
     /// @dev `relayerPremium` gets splitted equaly
-    /// if `relayerTarget` addresses differ.
+    /// if relayer addresses differ.
     /// @dev If the `msg.sender` of this method and `l.relayerAddress` are the same,
     /// `msg.sender` accrues both l.amount and l.relayerPremium as userRecord credit.
     ///  In case of they differing:
@@ -303,7 +244,6 @@ contract P2PIX is
     /// @dev Function sighash: 0x4e1389ed.
     function release(
         uint256 lockID,
-        // address _relayerTarget,
         bytes32 pixTimestamp,
         bytes32 r,
         bytes32 s,
@@ -322,22 +262,13 @@ contract P2PIX is
                 pixTimestamp
             )
         );
-        bytes32 messageDigest = keccak256(
-            abi.encodePacked(
-                "\x19Ethereum Signed Message:\n32",
-                message
-            )
-        );
 
-        if (usedTransactions(message) == true)
-            revert TxAlreadyUsed();
+        if (usedTransactions(message)) revert TxAlreadyUsed();
 
-        uint256 signer = _castAddrToKey(
-            ecrecover(messageDigest, v, r, s)
-        );
-
-        if (!validBacenSigners(signer))
-            revert InvalidSigner();
+        if (!validBacenSigners(_castAddrToKey(
+            ECDSA.recover(
+                ECDSA.toEthSignedMessageHash(message), v, r, s)
+        ))) revert InvalidSigner();
 
         ERC20 t = ERC20(l.token);
 
@@ -410,7 +341,7 @@ contract P2PIX is
 
             uint256 _sellerBalance = sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
 
-            if ((_sellerBalance + l.amount) > 1e8 ether)
+            if ((_sellerBalance + l.amount) > MAXBALANCE_UPPERBOUND)
                 revert MaxBalExceeded();
 
             _addSellerBalance(l.sellerKey, ERC20(l.token), l.amount);
@@ -423,8 +354,8 @@ contract P2PIX is
             uint256 _newUserRecord = (userRecord[userKey] >>
                 1);
 
-            if (_newUserRecord <= 1e2 ether) {
-                userRecord[userKey] = 1e2 ether;
+            if (_newUserRecord <= REPUTATION_LOWERBOUND) {
+                userRecord[userKey] = REPUTATION_LOWERBOUND;
             } else {
                 userRecord[userKey] = _newUserRecord;
             }
@@ -455,9 +386,8 @@ contract P2PIX is
     ) public nonReentrant {
         unlockExpired(expiredLocks);
 
-        if (getValid(msg.sender, token) == true) {
+        if (getValid(msg.sender, token))
             setValidState(token, false);
-        }
 
         uint256 key = _castAddrToKey(msg.sender);
         _decBal(
@@ -623,10 +553,12 @@ contract P2PIX is
         DT.Lock memory _l,
         ERC20 _t,
         uint256 _k
-    ) internal {
+    ) internal returns(uint256 counter){
         mapLocks[_lockID] = _l;
 
         _decBal(_bal, _amount, _t, _k);
+        lockCounter++;
+        counter = _lockID;
 
         emit LockAdded(
             _l.buyerAddress,
@@ -655,16 +587,11 @@ contract P2PIX is
         view
         returns (uint256 _spendLimit)
     {
-        // enconde the fx sighash and args
         bytes memory encodedParams = abi.encodeWithSelector(
             IReputation.limiter.selector,
             _userCredit
         );
-        // cast the uninitialized return values to memory
         bool success;
-        // uint256 returnSize;
-        // uint256 returnValue;
-        // perform staticcall from the stack w yul
         assembly {
             success := staticcall(
                 // gas
@@ -680,11 +607,7 @@ contract P2PIX is
                 // retSize
                 0x20
             )
-            // returnSize := returndatasize()
-            // returnValue := mload(0x00)
-            // _spendLimit := returnValue
             _spendLimit := mload(0x00)
-            // reverts if call does not succeed.
             if iszero(success) {
                 // StaticCallFailed()
                 mstore(0x00, 0xe10bf1cc)

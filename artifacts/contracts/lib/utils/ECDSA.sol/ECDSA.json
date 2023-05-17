@@ -1,0 +1,16 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ECDSA",
+  "sourceName": "contracts/lib/utils/ECDSA.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "InvalidSignature",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea26469706673582212201f6fe8a460e1235bb7e19365d8e3cc56b718d44f5db82f5fa3c90d3c7da59ebf64736f6c63430008130033",
+  "deployedBytecode": "0x600080fdfea26469706673582212201f6fe8a460e1235bb7e19365d8e3cc56b718d44f5db82f5fa3c90d3c7da59ebf64736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
