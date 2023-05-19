@@ -8,23 +8,14 @@ pragma solidity 0.8.19;
 /// |__|           |__|
 ///
 
-import { Owned } from "./lib/auth/Owned.sol";
-import { ERC20, SafeTransferLib } from "./lib/utils/SafeTransferLib.sol";
-import { IReputation } from "./lib/interfaces/IReputation.sol";
-import { MerkleProofLib as Merkle } from "./lib/utils/MerkleProofLib.sol";
-import { ECDSA } from "./lib/utils/ECDSA.sol";
+
+import { OwnerSettings, ERC20, SafeTransferLib } from "./core/OwnerSettings.sol";
+import { BaseUtils } from "./core/BaseUtils.sol";
 import { ReentrancyGuard } from "./lib/utils/ReentrancyGuard.sol";
-import { EventAndErrors } from "./EventAndErrors.sol";
-import { DataTypes as DT } from "./DataTypes.sol";
-import { Constants } from "./Constants.sol";
+import { DataTypes as DT } from "./core/DataTypes.sol";
 
 
-contract P2PIX is
-    Constants,
-    EventAndErrors,
-    Owned(msg.sender),
-    ReentrancyGuard
-{
+contract P2PIX is BaseUtils, ReentrancyGuard {
     // solhint-disable use-forbidden-name
     // solhint-disable no-inline-assembly
     // solhint-disable no-empty-blocks
@@ -34,20 +25,6 @@ contract P2PIX is
 
     /// ███ Storage ████████████████████████████████████████████████████████████
 
-    /// @dev List of valid Bacen signature addresses
-    ///     mapping(uint256 => bool) public validBacenSigners;
-    /// @dev Value in custom storage slot given by: 
-    ///     let value := sload(shl(12, address)).
-    
-    /// @dev List of Pix transactions already signed.
-    ///     mapping(bytes32 => bool) public usedTransactions;
-    /// @dev Value in custom storage slot given by: 
-    ///     let value := sload(bytes32).
-
-    IReputation public reputation;
-
-    /// @dev Default blocks that lock will hold tokens.
-    uint256 public defaultLockBlocks;
     uint256 public lockCounter;
 
     /// @dev List of Locks.
@@ -60,15 +37,18 @@ contract P2PIX is
     constructor(
         uint256 defaultBlocks,
         address[] memory validSigners,
-        IReputation _reputation,
+        address _reputation,
         address[] memory tokens,
         bool[] memory tokenStates
-    ) payable {
-        setDefaultLockBlocks(defaultBlocks);
-        setReputation(_reputation);
-        setValidSigners(validSigners);
-        tokenSettings(tokens, tokenStates);
-    }
+    ) 
+        OwnerSettings(
+            defaultBlocks, 
+            validSigners, 
+            _reputation, 
+            tokens, 
+            tokenStates
+        ) 
+        payable {/*  */}
 
     /// ███ Public FX ██████████████████████████████████████████████████████████
 
@@ -263,12 +243,7 @@ contract P2PIX is
             )
         );
 
-        if (usedTransactions(message)) revert TxAlreadyUsed();
-
-        if (!validBacenSigners(_castAddrToKey(
-            ECDSA.recover(
-                ECDSA.toEthSignedMessageHash(message), v, r, s)
-        ))) revert InvalidSigner();
+        _signerCheck(message, r, s, v);
 
         ERC20 t = ERC20(l.token);
 
@@ -437,100 +412,6 @@ contract P2PIX is
         }
     }
 
-
-    /// ███ Owner Only █████████████████████████████████████████████████████████
-
-    /// @dev Contract's underlying balance withdraw method.
-    /// @dev Function sighash: 0x5fd8c710.
-    function withdrawBalance() external onlyOwner {
-        uint256 balance = address(this).balance;
-        SafeTransferLib.safeTransferETH(msg.sender, balance);
-        emit FundsWithdrawn(msg.sender, balance);
-    }
-
-    function setReputation(IReputation _reputation)
-        public
-        onlyOwner
-    {
-        assembly {
-            sstore(reputation.slot, _reputation)
-        }
-        emit ReputationUpdated(address(_reputation));
-    }
-
-    function setDefaultLockBlocks(uint256 _blocks)
-        public
-        onlyOwner
-    {
-        assembly {
-            sstore(defaultLockBlocks.slot, _blocks)
-        }
-        emit LockBlocksUpdated(_blocks);
-    }
-
-    function setValidSigners(address[] memory _validSigners)
-        public
-        onlyOwner
-    {
-        assembly {
-            let i := add(_validSigners, 0x20)
-            let end := add(i, shl(0x05, mload(_validSigners)))
-            for {/*  */} iszero(returndatasize()) {/*  */} {
-                sstore(shl(12, mload(i)), true)
-                i := add(i, 0x20)
-
-                if iszero(lt(i, end)) {
-                    break
-                }
-            }
-        }
-        emit ValidSignersUpdated(_validSigners);
-    }
-
-    function tokenSettings(
-        address[] memory _tokens,
-        bool[] memory _states
-    ) public onlyOwner {
-        /* Yul Impl */
-        assembly {
-            // first 32 bytes eq to array's length
-            let tLen := mload(_tokens)
-            // NoTokens()
-            if iszero(tLen) {
-                mstore(0x00, 0xdf957883)
-                revert(0x1c, 0x04)
-            }
-            // LengthMismatch()
-            if iszero(eq(tLen, mload(_states))) {
-                mstore(0x00, 0xff633a38)
-                revert(0x1c, 0x04)
-            }
-            let tLoc := add(_tokens, 0x20)
-            let sLoc := add(_states, 0x20)
-            for {
-                let end := add(tLoc, shl(5, tLen))
-            } iszero(eq(tLoc, end)) {
-                tLoc := add(tLoc, 0x20)
-                sLoc := add(sLoc, 0x20)
-            } {
-                // cache hashmap entry in scratch space
-                mstore(0x0c, _ALLOWED_ERC20_SLOT_SEED)
-                mstore(0x00, mload(tLoc))
-               //  let mapSlot := keccak256(0x0c, 0x20)
-                sstore(keccak256(0x0c, 0x20), mload(sLoc))
-                
-                // emit AllowedERC20Updated(address, bool)
-                log3(
-                    0,
-                    0,
-                    _ALLOWED_ERC20_UPDATED_EVENT_SIGNATURE,
-                    mload(tLoc),
-                    mload(sLoc)
-                )
-            }
-        }
-    }
-
     /// ███ Helper FX ██████████████████████████████████████████████████████████
 
     // solhint-disable-next-line no-empty-blocks
@@ -566,74 +447,6 @@ contract P2PIX is
             _l.sellerKey,
             _l.amount
         );
-    }
-
-    function _merkleVerify(
-        bytes32[] calldata _merkleProof,
-        bytes32 root,
-        address _addr
-    ) private pure {
-        if (
-            !Merkle.verify(
-                _merkleProof,
-                root,
-                bytes32(uint256(uint160(_addr)))
-            )
-        ) revert AddressDenied();
-    }
-
-    function _limiter(uint256 _userCredit)
-        internal
-        view
-        returns (uint256 _spendLimit)
-    {
-        bytes memory encodedParams = abi.encodeWithSelector(
-            IReputation.limiter.selector,
-            _userCredit
-        );
-        bool success;
-        assembly {
-            success := staticcall(
-                // gas
-                0x7530,
-                // address
-                sload(reputation.slot),
-                // argsOffset
-                add(encodedParams, 0x20),
-                // argsSize
-                mload(encodedParams),
-                // retOffset
-                0x00,
-                // retSize
-                0x20
-            )
-            _spendLimit := mload(0x00)
-            if iszero(success) {
-                // StaticCallFailed()
-                mstore(0x00, 0xe10bf1cc)
-                revert(0x1c, 0x04)
-            }
-        }
-    }
-
-    function _castToUint(
-        uint96 _amount,
-        uint160 _pixTarget,
-        bool _valid
-    )
-        private
-        pure
-        returns (
-            uint256 _amountCasted,
-            uint256 _pixTargetCasted,
-            uint256 _validCasted
-        )
-    {
-        assembly {
-            _amountCasted := _amount
-            _pixTargetCasted := _pixTarget
-            _validCasted := _valid
-        }
     }
 
     function _decBal(
@@ -811,40 +624,6 @@ contract P2PIX is
         return (sortedIDs, status);
     }
 
-    function allowedERC20s(ERC20 erc20) public view returns (bool state) {
-        assembly {
-            mstore(0x0c, _ALLOWED_ERC20_SLOT_SEED)
-            mstore(0x00, erc20)
-            state := sload(keccak256(0x0c, 0x20))
-        }
-    }
-
-    function _setUsedTransactions(bytes32 message) private {
-        assembly {
-            sstore(message, true)
-        }
-    }
-
-    function usedTransactions(bytes32 message) public view returns(bool used) {
-        assembly {
-            used := sload(message)
-        }
-    }
-
-    function validBacenSigners(uint256 signer) public view returns(bool valid) {
-        assembly {
-            valid := sload(signer)
-        }
-    }
-
-    function sellerAllowList(uint256 sellerKey) public view returns(bytes32 root) {
-        assembly {
-            mstore(0x0c, _SELLER_ALLOWLIST_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
-            root := sload(keccak256(0x00, 0x20))
-        }
-    }
-
     function _setSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 packed) private {
         assembly {
             mstore(0x20, erc20)
@@ -884,28 +663,4 @@ contract P2PIX is
         }
     }
 
-    /// @notice Public method that handles `address`
-    /// to `uint256` safe type casting.
-    /// @dev Function sighash: 0x4b2ae980.
-    function _castAddrToKey(address _addr)
-        public
-        pure
-        returns (uint256 _key)
-    {
-        // _key = uint256(uint160(address(_addr))) << 12;
-        assembly {
-            _key := shl(12, _addr)
-        }
-    }
-
-    function _castKeyToAddr(uint256 _key)
-        public
-        pure
-        returns (address _addr)
-    {
-        // _addr = address(uint160(uint256(_key >> 12)));
-        assembly {
-            _addr := shr(12, _key)
-        }
-    }
 }

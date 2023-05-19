@@ -7,7 +7,7 @@ import type { Provider } from "@ethersproject/providers";
 import type {
   EventAndErrors,
   EventAndErrorsInterface,
-} from "../EventAndErrors";
+} from "../../core/EventAndErrors";
 
 const _abi = [
   {
