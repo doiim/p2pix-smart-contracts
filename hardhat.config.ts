@@ -4,6 +4,7 @@ import { config as dotenvConfig } from "dotenv";
 import "hardhat-tracer";
 import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
+import "hardhat-contract-sizer";
 import { resolve } from "path";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
