@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "DataTypes",
+  "sourceName": "contracts/core/DataTypes.sol",
+  "abi": [],
+  "bytecode": "0x60808060405234601757603a9081601d823930815050f35b600080fdfe600080fdfea264697066735822122078bdfdfbb98192401098df5a6389aadd2cb5cf76b3e1f5af04f14038376f40f464736f6c63430008130033",
+  "deployedBytecode": "0x600080fdfea264697066735822122078bdfdfbb98192401098df5a6389aadd2cb5cf76b3e1f5af04f14038376f40f464736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
