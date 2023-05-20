@@ -241,7 +241,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
         ERC20 t = ERC20(l.token);
 
-        /// @todo shouldi cache it tho: would it be cheaper to just keep reading from storage?
         // We cache values before zeroing them out.
         uint256 lockAmount = l.amount;
         // uint256 totalAmount = (lockAmount - l.relayerPremium);
@@ -399,8 +398,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
     function _addLock(
         uint256 _bal,
-        /// @todo cant i simply get the amount via the lock in storage? would it be cheaper than using
-        /// a function parameter?
         uint256 _amount,
         uint256 _lockID,
         DT.Lock memory _l,
