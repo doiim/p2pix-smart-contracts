@@ -625,17 +625,17 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
           price,
+          // acc02.address,
+          // 0,
           [],
           [],
         );
       const fail2 = p2pix.lock(
         zero,
         zero,
-        zero,
-        0,
+        // zero,
+        // 0,
         price,
         [],
         [],
@@ -665,8 +665,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price.mul(ethers.BigNumber.from(2)),
           [],
           [],
@@ -692,8 +692,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           1000,
           [
             ethers.utils.keccak256(
@@ -725,8 +725,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price.mul(BigNumber.from("2")),
           [],
           [],
@@ -752,8 +752,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price,
           proof,
           [],
@@ -771,7 +771,7 @@ describe("P2PIX", () => {
       await expect(tx)
         .to.emit(p2pix, "LockAdded")
         .withArgs(
-          acc02.address,
+          acc01.address,
           ethers.constants.One,
           key,
           price,
@@ -779,14 +779,14 @@ describe("P2PIX", () => {
       expect(tx).to.be.ok;
       expect(storage.sellerKey).to.eq(key);
       expect(storage.counter).to.eq(1);
-      expect(storage.relayerPremium).to.eq(
-        ethers.constants.Zero,
-      );
+      // expect(storage.relayerPremium).to.eq(
+        // ethers.constants.Zero,
+      // );
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
-      expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerAddress).to.eq(acc01.address);
+      expect(storage.buyerAddress).to.eq(acc01.address);
+      // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
     });
     it("should create a lock, update storage and emit events via the reputation path 1", async () => {
@@ -805,8 +805,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price,
           [],
           [],
@@ -828,19 +828,19 @@ describe("P2PIX", () => {
       expect(castBack).to.eq(owner.address);
       expect(storage.sellerKey).to.eq(key);
       expect(storage.counter).to.eq(1);
-      expect(storage.relayerPremium).to.eq(
-        ethers.constants.Zero,
-      );
+      // expect(storage.relayerPremium).to.eq(
+        // ethers.constants.Zero,
+      // );
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
-      expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerAddress).to.eq(acc01.address);
+      expect(storage.buyerAddress).to.eq(acc01.address);
+      // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
 
       await expect(tx)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc02.address, 1, key, storage.amount);
+        .withArgs(acc01.address, 1, key, storage.amount);
     });
     it("should create a lock, update storage and emit events via the reputation path 2", async () => {
       const root = ethers.constants.HashZero;
@@ -872,8 +872,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          price,
+          // acc02.address,
+          // price,
           price,
           [],
           [],
@@ -892,8 +892,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price.add(ethers.constants.One),
           [],
           [],
@@ -915,21 +915,21 @@ describe("P2PIX", () => {
       expect(castBack).to.eq(owner.address);
       expect(storage.sellerKey).to.eq(key);
       expect(storage.counter).to.eq(2);
-      expect(storage.relayerPremium).to.eq(
-        ethers.constants.Zero,
-      );
+      // expect(storage.relayerPremium).to.eq(
+        // ethers.constants.Zero,
+      // );
       expect(storage.amount).to.eq(
         price.add(ethers.constants.One),
       );
       expect(storage.expirationBlock).to.eq(expiration);
       expect(storage.pixTarget).to.eq(target);
-      expect(storage.buyerAddress).to.eq(acc02.address);
-      expect(storage.relayerAddress).to.eq(acc01.address);
+      expect(storage.buyerAddress).to.eq(acc01.address);
+      // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
 
       await expect(tx)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc02.address, 2, key, storage.amount);
+        .withArgs(acc01.address, 2, key, storage.amount);
     });
     // edge case test
     it("should create multiple locks", async () => {
@@ -948,8 +948,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           newPrice,
           proof,
           [],
@@ -966,8 +966,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           100,
           [],
           [],
@@ -984,8 +984,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc03.address,
-          0,
+          // acc03.address,
+          // 0,
           100,
           [],
           [],
@@ -1074,10 +1074,10 @@ describe("P2PIX", () => {
       expect(storage2.counter).to.eq(2);
       expect(storage3.counter).to.eq(3);
 
-      expect(ethers.constants.Zero)
-        .to.eq(storage1.relayerPremium)
-        .and.to.eq(storage2.relayerPremium)
-        .and.to.eq(storage3.relayerPremium);
+      // expect(ethers.constants.Zero)
+      //   .to.eq(storage1.relayerPremium)
+      //   .and.to.eq(storage2.relayerPremium)
+      //   .and.to.eq(storage3.relayerPremium);
 
       expect(storage1.amount).to.eq(newPrice);
       expect(ethers.BigNumber.from(100))
@@ -1093,7 +1093,7 @@ describe("P2PIX", () => {
         .and.to.eq(storage2.pixTarget)
         .and.to.eq(storage3.pixTarget);
 
-      expect(acc02.address)
+      expect(acc01.address)
         .to.eq(storage1.buyerAddress)
         .and.to.eq(storage2.buyerAddress);
       expect(storage3.buyerAddress).to.eq(acc03.address);
@@ -1103,10 +1103,10 @@ describe("P2PIX", () => {
       //   .and.to.eq(storage2.relayerTarget)
       //   .and.to.eq(storage3.relayerTarget);
 
-      expect(acc01.address)
-        .to.eq(storage1.relayerAddress)
-        .and.to.eq(storage2.relayerAddress);
-      expect(storage3.relayerAddress).to.eq(acc03.address);
+      // expect(acc01.address)
+      //   .to.eq(storage1.relayerAddress)
+      //   .and.to.eq(storage2.relayerAddress);
+      // expect(storage3.relayerAddress).to.eq(acc03.address);
 
       expect(erc20.address)
         .to.eq(storage1.token)
@@ -1115,10 +1115,10 @@ describe("P2PIX", () => {
 
       await expect(tx1)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc02.address, 1, key, storage1.amount);
+        .withArgs(acc01.address, 1, key, storage1.amount);
       await expect(tx2)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc02.address, 2, key, storage2.amount);
+        .withArgs(acc01.address, 2, key, storage2.amount);
       await expect(tx3)
         .to.emit(p2pix, "LockAdded")
         .withArgs(acc03.address, 3, key, storage3.amount);
@@ -1277,8 +1277,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1322,8 +1322,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1372,8 +1372,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1393,8 +1393,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1438,8 +1438,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1498,8 +1498,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           100,
           [],
           [],
@@ -1576,7 +1576,7 @@ describe("P2PIX", () => {
       await expect(tx)
         .to.emit(p2pix, "LockReleased")
         .withArgs(
-          acc02.address,
+          acc03.address,
           ethers.constants.One,
           storage1.amount,
         );
@@ -1604,14 +1604,12 @@ describe("P2PIX", () => {
       expect(used).to.eq(true);
       expect(userRecordA).to.eq(zero);
       expect(userRecord1).to.eq(zero);
-      expect(userRecordB).to.eq(ethers.BigNumber.from(6));
-      expect(userRecord2).to.eq(ethers.BigNumber.from(100));
+      expect(userRecordB).to.eq(ethers.BigNumber.from(50));
+      expect(userRecord2).to.eq(ethers.BigNumber.from(50));
       await expect(tx).to.changeTokenBalances(
         erc20,
         [acc03.address, acc01.address, acc02.address ],
-        [3, 3, 94],
-        // acc02 is acting both as buyer and relayerTarget
-        // (i.e., 94 + 3 = 97)
+        [100, 0, 0],
       );
     });
     // edge case test
@@ -1668,8 +1666,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           100,
           [],
           [],
@@ -1679,8 +1677,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          6,
+          // acc02.address,
+          // 6,
           50,
           [],
           [],
@@ -1690,8 +1688,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          10,
+          // acc02.address,
+          // 10,
           25,
           [],
           [],
@@ -1795,19 +1793,19 @@ describe("P2PIX", () => {
       expect(tx2).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "LockReleased")
-        .withArgs(acc02.address, lockID, storage1.amount);
+        .withArgs(acc03.address, lockID, storage1.amount);
       await expect(tx1)
         .to.emit(p2pix, "LockReleased")
-        .withArgs(acc02.address, lockID2, storage2.amount);
+        .withArgs(acc03.address, lockID2, storage2.amount);
       await expect(tx2)
         .to.emit(p2pix, "LockReleased")
-        .withArgs(acc02.address, lockID3, storage3.amount);
+        .withArgs(acc03.address, lockID3, storage3.amount);
       expect(used1).to.eq(true);
       expect(used2).to.eq(true);
       expect(used3).to.eq(true);
       expect(0).to.eq(acc01Record1).and.to.eq(acc03Record1);
-      expect(acc01Record2).to.eq(6); // 0 + 6
-      expect(acc03Record2).to.eq(185); // 100 + 50 + 25 + 10
+      expect(acc01Record2).to.eq(75); // 50 + 25 + 0
+      expect(acc03Record2).to.eq(100); // 50 + 25 + 25
 
       const addresses = [
         acc01.address,
@@ -1817,9 +1815,9 @@ describe("P2PIX", () => {
       ];
 
       const balances = [
-        [0, 100, 0, "-100"],
-        [3, 44, 3, "-50"],
-        [0, 15, 10, "-25"],
+        [0, 0, 100, "-100"],
+        [0, 0, 50, "-50"],
+        [0, 0, 25, "-25"],
       ];
 
       for (let i = 0; i < 3; i++) {
@@ -1867,8 +1865,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           1,
           [],
           [],
@@ -1907,8 +1905,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           1,
           [],
           [],
@@ -1944,8 +1942,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           1,
           [],
           [],
@@ -2009,8 +2007,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price,
           proof,
           [],
@@ -2050,8 +2048,8 @@ describe("P2PIX", () => {
       const tx1 = await p2pix.lock(
         owner.address,
         erc20.address,
-        acc02.address,
-        0,
+        // acc02.address,
+        // 0,
         100,
         [],
         [lockID],
@@ -2064,7 +2062,7 @@ describe("P2PIX", () => {
       expect(tx1).to.be.ok;
       await expect(tx1)
         .to.emit(p2pix, "LockReturned")
-        .withArgs(acc02.address, lockID);
+        .withArgs(acc01.address, lockID);
       expect(remaining).to.eq(
         price.sub(ethers.BigNumber.from(100)),
       );
@@ -2085,8 +2083,8 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.address,
-          acc02.address,
-          0,
+          // acc02.address,
+          // 0,
           price,
           proof,
           [],
@@ -2105,7 +2103,7 @@ describe("P2PIX", () => {
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "LockReturned")
-        .withArgs(acc02.address, lockID);
+        .withArgs(acc01.address, lockID);
       expect(remaining).to.eq(0);
     });
   });
