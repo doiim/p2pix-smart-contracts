@@ -39,7 +39,7 @@ export interface P2PIXInterface extends utils.Interface {
     "getLocksStatus(uint256[])": FunctionFragment;
     "getPixTarget(address,address)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
-    "lock(address,address,address,uint80,uint80,bytes32[],uint256[])": FunctionFragment;
+    "lock(address,address,uint80,bytes32[],uint256[])": FunctionFragment;
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
@@ -148,8 +148,6 @@ export interface P2PIXInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BytesLike>[],
       PromiseOrValue<BigNumberish>[]
@@ -599,8 +597,6 @@ export interface P2PIX extends BaseContract {
     lock(
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
-      _buyerAddress: PromiseOrValue<string>,
-      _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BigNumberish>[],
@@ -616,23 +612,19 @@ export interface P2PIX extends BaseContract {
       [
         BigNumber,
         BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         string,
         string,
-        string
+        BigNumber,
+        BigNumber,
+        BigNumber
       ] & {
+        amount: BigNumber;
+        pixTarget: BigNumber;
+        token: string;
+        buyerAddress: string;
         sellerKey: BigNumber;
         counter: BigNumber;
         expirationBlock: BigNumber;
-        pixTarget: BigNumber;
-        relayerPremium: BigNumber;
-        amount: BigNumber;
-        buyerAddress: string;
-        relayerAddress: string;
-        token: string;
       }
     >;
 
@@ -788,8 +780,6 @@ export interface P2PIX extends BaseContract {
   lock(
     _seller: PromiseOrValue<string>,
     _token: PromiseOrValue<string>,
-    _buyerAddress: PromiseOrValue<string>,
-    _relayerPremium: PromiseOrValue<BigNumberish>,
     _amount: PromiseOrValue<BigNumberish>,
     merkleProof: PromiseOrValue<BytesLike>[],
     expiredLocks: PromiseOrValue<BigNumberish>[],
@@ -802,26 +792,14 @@ export interface P2PIX extends BaseContract {
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      string,
-      string,
-      string
-    ] & {
+    [BigNumber, BigNumber, string, string, BigNumber, BigNumber, BigNumber] & {
+      amount: BigNumber;
+      pixTarget: BigNumber;
+      token: string;
+      buyerAddress: string;
       sellerKey: BigNumber;
       counter: BigNumber;
       expirationBlock: BigNumber;
-      pixTarget: BigNumber;
-      relayerPremium: BigNumber;
-      amount: BigNumber;
-      buyerAddress: string;
-      relayerAddress: string;
-      token: string;
     }
   >;
 
@@ -977,8 +955,6 @@ export interface P2PIX extends BaseContract {
     lock(
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
-      _buyerAddress: PromiseOrValue<string>,
-      _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BigNumberish>[],
@@ -994,23 +970,19 @@ export interface P2PIX extends BaseContract {
       [
         BigNumber,
         BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
         string,
         string,
-        string
+        BigNumber,
+        BigNumber,
+        BigNumber
       ] & {
+        amount: BigNumber;
+        pixTarget: BigNumber;
+        token: string;
+        buyerAddress: string;
         sellerKey: BigNumber;
         counter: BigNumber;
         expirationBlock: BigNumber;
-        pixTarget: BigNumber;
-        relayerPremium: BigNumber;
-        amount: BigNumber;
-        buyerAddress: string;
-        relayerAddress: string;
-        token: string;
       }
     >;
 
@@ -1279,8 +1251,6 @@ export interface P2PIX extends BaseContract {
     lock(
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
-      _buyerAddress: PromiseOrValue<string>,
-      _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BigNumberish>[],
@@ -1447,8 +1417,6 @@ export interface P2PIX extends BaseContract {
     lock(
       _seller: PromiseOrValue<string>,
       _token: PromiseOrValue<string>,
-      _buyerAddress: PromiseOrValue<string>,
-      _relayerPremium: PromiseOrValue<BigNumberish>,
       _amount: PromiseOrValue<BigNumberish>,
       merkleProof: PromiseOrValue<BytesLike>[],
       expiredLocks: PromiseOrValue<BigNumberish>[],

@@ -22,13 +22,11 @@ export interface Deploys {
 export interface Lock {
   sellerKey: BigNumber;
   counter: BigNumber;
-  relayerPremium: BigNumber;
-  amount: BigNumber;
   expirationBlock: BigNumber;
   pixTarget: BigNumber;
-  buyerAddress: string;
-  relayerAddress: string;
   token: string;
+  buyerAddress: string;
+  amount: BigNumber;
 }
 
 export interface Call {

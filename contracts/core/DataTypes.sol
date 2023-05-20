@@ -3,22 +3,15 @@ pragma solidity 0.8.19;
 
 library DataTypes {
     struct Lock {
+        uint80 amount;
+        uint160 pixTarget;
+        address token;
+        /// @dev Amount to be tranfered via PIX.
+        address buyerAddress;
         uint256 sellerKey;
         uint256 counter;
         /// @dev If not paid at this block will be expired.
         uint256 expirationBlock;
-        uint160 pixTarget;
-        /// @dev Amount to be paid for relayer.
-        uint80 relayerPremium;
-        /// @dev Where the tokens are sent the when order gets validated.
-        /// @dev Amount to be tranfered via PIX.
-        uint80 amount;
-        address buyerAddress;
-        /// @dev Relayer address (msg.sender) that facilitated this transaction.
-        /// @dev Relayer's target address that receives `relayerPremium` funds.
-        /// @dev Reputation points accruer.
-        address relayerAddress;
-        address token;
     }
 
     // prettier-ignore

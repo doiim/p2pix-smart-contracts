@@ -144,8 +144,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
     /// @dev There can only exist a lock per each `_amount` partitioned
     /// from the total `remaining` value.
     /// @dev Locks can only be performed in valid orders.
-    /// @param _buyerAddress The address of the buyer of a `_depositID`.
-    /// @param _relayerPremium The refund/premium owed to a relayer.
     /// @param _amount The deposit's remaining amount wished to be locked.
     /// @param merkleProof This value should be:
     /// - Provided as a pass if the `msg.sender` is in the seller's allowlist;
@@ -157,8 +155,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
     function lock(
         address _seller,
         address _token,
-        address _buyerAddress,
-        uint80 _relayerPremium,
         uint80 _amount,
         bytes32[] calldata merkleProof,
         uint256[] calldata expiredLocks
@@ -180,19 +176,17 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
         ) revert NotExpired();
 
         DT.Lock memory l = DT.Lock(
+            _amount,
+            uint160(sellerBalance(k, t) >> BITPOS_PIXTARGET),
+            address(t),
+            msg.sender,
             k,
             cCounter,
-            (block.number + defaultLockBlocks),
-            uint160(sellerBalance(k, t) >> BITPOS_PIXTARGET),
-            _relayerPremium,
-            _amount,
-            _buyerAddress,
-            msg.sender,
-            address(t)
+            (block.number + defaultLockBlocks)
         );
 
         if (merkleProof.length != 0) {
-            _merkleVerify( merkleProof, sellerAllowList(k), msg.sender);
+            _merkleVerify(merkleProof, sellerAllowList(k), msg.sender);
             lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
         } else {
@@ -247,52 +241,27 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
         ERC20 t = ERC20(l.token);
 
+        /// @todo shouldi cache it tho: would it be cheaper to just keep reading from storage?
         // We cache values before zeroing them out.
         uint256 lockAmount = l.amount;
-        uint256 totalAmount = (lockAmount - l.relayerPremium);
+        // uint256 totalAmount = (lockAmount - l.relayerPremium);
 
         l.amount = 0;
         l.expirationBlock = 0;
         _setUsedTransactions(message);
 
-        if (msg.sender != l.relayerAddress) {
-            userRecord[_castAddrToKey(msg.sender)] += l
-                .relayerPremium;
-            userRecord[
-                _castAddrToKey(l.relayerAddress)
-            ] += lockAmount;
+        if (msg.sender != l.buyerAddress) {
+            userRecord[_castAddrToKey(msg.sender)] += (lockAmount >> 1);
+            userRecord[_castAddrToKey(l.buyerAddress)] += (lockAmount >> 1);
         } else {
-            userRecord[_castAddrToKey(msg.sender)] += (l
-                .relayerPremium + lockAmount);
+            userRecord[_castAddrToKey(msg.sender)] += lockAmount;
         }
 
         SafeTransferLib.safeTransfer(
             t,
             l.buyerAddress,
-            totalAmount
+            lockAmount
         );
-
-        // Method doesn't check for zero address.
-        if (l.relayerPremium != 0) {
-            if (msg.sender != l.relayerAddress) {
-                SafeTransferLib.safeTransfer(
-                    t,
-                    l.relayerAddress,
-                    (l.relayerPremium >> 1)
-                );
-                SafeTransferLib.safeTransfer(
-                    t,
-                    msg.sender,
-                    (l.relayerPremium >> 1)
-                );
-            } else {
-                SafeTransferLib.safeTransfer(
-                    t,
-                    msg.sender,
-                    l.relayerPremium
-                );
-            }
-        }
 
         emit LockReleased(l.buyerAddress, lockID, lockAmount);
     }
@@ -314,7 +283,8 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
             _notExpired(l);
 
-            uint256 _sellerBalance = sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
+            uint256 _sellerBalance = 
+            sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
 
             if ((_sellerBalance + l.amount) > MAXBALANCE_UPPERBOUND)
                 revert MaxBalExceeded();
@@ -324,7 +294,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
             l.amount = 0;
 
             uint256 userKey = _castAddrToKey(
-                l.relayerAddress
+                l.buyerAddress
             );
             uint256 _newUserRecord = (userRecord[userKey] >>
                 1);
@@ -429,6 +399,8 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
     function _addLock(
         uint256 _bal,
+        /// @todo cant i simply get the amount via the lock in storage? would it be cheaper than using
+        /// a function parameter?
         uint256 _amount,
         uint256 _lockID,
         DT.Lock memory _l,
