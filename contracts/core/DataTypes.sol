@@ -3,15 +3,13 @@ pragma solidity 0.8.19;
 
 library DataTypes {
     struct Lock {
-        uint80 amount;
-        uint160 pixTarget;
-        address token;
-        /// @dev Amount to be tranfered via PIX.
-        address buyerAddress;
         uint256 sellerKey;
         uint256 counter;
-        /// @dev If not paid at this block will be expired.
         uint256 expirationBlock;
+        bytes32 pixTarget;
+        uint80 amount;
+        address token;
+        address buyerAddress;
     }
 
     // prettier-ignore

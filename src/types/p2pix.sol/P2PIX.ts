@@ -33,12 +33,15 @@ export interface P2PIXInterface extends utils.Interface {
     "_castKeyToAddr(uint256)": FunctionFragment;
     "allowedERC20s(address)": FunctionFragment;
     "defaultLockBlocks()": FunctionFragment;
-    "deposit(address,uint96,uint160,bool,bytes32)": FunctionFragment;
+    "deposit(address,uint96,string,bool,bytes32)": FunctionFragment;
     "getBalance(address,address)": FunctionFragment;
     "getBalances(address[],address)": FunctionFragment;
     "getLocksStatus(uint256[])": FunctionFragment;
     "getPixTarget(address,address)": FunctionFragment;
+    "getPixTargetString(address,address)": FunctionFragment;
+    "getStr(string)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
+    "isTrustedForwarder(address)": FunctionFragment;
     "lock(address,address,uint80,bytes32[],uint256[])": FunctionFragment;
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
@@ -46,11 +49,11 @@ export interface P2PIXInterface extends utils.Interface {
     "release(uint256,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
     "reputation()": FunctionFragment;
     "sellerAllowList(uint256)": FunctionFragment;
-    "sellerBalance(uint256,address)": FunctionFragment;
     "setDefaultLockBlocks(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
     "setReputation(address)": FunctionFragment;
     "setRoot(address,bytes32)": FunctionFragment;
+    "setTrustedFowarders(address[],bool[])": FunctionFragment;
     "setValidSigners(address[])": FunctionFragment;
     "setValidState(address,bool)": FunctionFragment;
     "tokenSettings(address[],bool[])": FunctionFragment;
@@ -73,7 +76,10 @@ export interface P2PIXInterface extends utils.Interface {
       | "getBalances"
       | "getLocksStatus"
       | "getPixTarget"
+      | "getPixTargetString"
+      | "getStr"
       | "getValid"
+      | "isTrustedForwarder"
       | "lock"
       | "lockCounter"
       | "mapLocks"
@@ -81,11 +87,11 @@ export interface P2PIXInterface extends utils.Interface {
       | "release"
       | "reputation"
       | "sellerAllowList"
-      | "sellerBalance"
       | "setDefaultLockBlocks"
       | "setOwner"
       | "setReputation"
       | "setRoot"
+      | "setTrustedFowarders"
       | "setValidSigners"
       | "setValidState"
       | "tokenSettings"
@@ -118,7 +124,7 @@ export interface P2PIXInterface extends utils.Interface {
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<boolean>,
       PromiseOrValue<BytesLike>
     ]
@@ -140,8 +146,20 @@ export interface P2PIXInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getPixTargetString",
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getStr",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getValid",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isTrustedForwarder",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "lock",
@@ -181,10 +199,6 @@ export interface P2PIXInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "sellerBalance",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setDefaultLockBlocks",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -199,6 +213,10 @@ export interface P2PIXInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setRoot",
     values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTrustedFowarders",
+    values: [PromiseOrValue<string>[], PromiseOrValue<boolean>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "setValidSigners",
@@ -271,7 +289,16 @@ export interface P2PIXInterface extends utils.Interface {
     functionFragment: "getPixTarget",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPixTargetString",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getStr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getValid", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isTrustedForwarder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "lockCounter",
@@ -286,10 +313,6 @@ export interface P2PIXInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sellerBalance",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setDefaultLockBlocks",
     data: BytesLike
   ): Result;
@@ -299,6 +322,10 @@ export interface P2PIXInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setRoot", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setTrustedFowarders",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setValidSigners",
     data: BytesLike
@@ -342,6 +369,7 @@ export interface P2PIXInterface extends utils.Interface {
     "OwnerUpdated(address,address)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
     "RootUpdated(address,bytes32)": EventFragment;
+    "TrustedForwarderUpdated(address,bool)": EventFragment;
     "ValidSet(address,address,bool)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
@@ -357,6 +385,7 @@ export interface P2PIXInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TrustedForwarderUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
@@ -489,6 +518,18 @@ export type RootUpdatedEvent = TypedEvent<
 
 export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
 
+export interface TrustedForwarderUpdatedEventObject {
+  forwarder: string;
+  state: boolean;
+}
+export type TrustedForwarderUpdatedEvent = TypedEvent<
+  [string, boolean],
+  TrustedForwarderUpdatedEventObject
+>;
+
+export type TrustedForwarderUpdatedEventFilter =
+  TypedEventFilter<TrustedForwarderUpdatedEvent>;
+
 export interface ValidSetEventObject {
   seller: string;
   token: string;
@@ -559,7 +600,7 @@ export interface P2PIX extends BaseContract {
     deposit(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<BigNumberish>,
+      _pixTarget: PromiseOrValue<string>,
       _valid: PromiseOrValue<boolean>,
       allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -586,13 +627,29 @@ export interface P2PIX extends BaseContract {
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<[BigNumber] & { pixTarget: BigNumber }>;
+    ): Promise<[string] & { pixTarget: string }>;
+
+    getPixTargetString(
+      seller: PromiseOrValue<string>,
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[string] & { pixTarget: string }>;
+
+    getStr(
+      str: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[string] & { strEnc: string }>;
 
     getValid(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean] & { valid: boolean }>;
+
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     lock(
       _seller: PromiseOrValue<string>,
@@ -609,22 +666,14 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        amount: BigNumber;
-        pixTarget: BigNumber;
-        token: string;
-        buyerAddress: string;
+      [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
         sellerKey: BigNumber;
         counter: BigNumber;
         expirationBlock: BigNumber;
+        pixTarget: string;
+        amount: BigNumber;
+        token: string;
+        buyerAddress: string;
       }
     >;
 
@@ -646,12 +695,6 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string] & { root: string }>;
 
-    sellerBalance(
-      sellerKey: PromiseOrValue<BigNumberish>,
-      erc20: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { packed: BigNumber }>;
-
     setDefaultLockBlocks(
       _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -670,6 +713,12 @@ export interface P2PIX extends BaseContract {
     setRoot(
       addr: PromiseOrValue<string>,
       merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -742,7 +791,7 @@ export interface P2PIX extends BaseContract {
   deposit(
     _token: PromiseOrValue<string>,
     _amount: PromiseOrValue<BigNumberish>,
-    _pixTarget: PromiseOrValue<BigNumberish>,
+    _pixTarget: PromiseOrValue<string>,
     _valid: PromiseOrValue<boolean>,
     allowlistRoot: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -769,11 +818,27 @@ export interface P2PIX extends BaseContract {
     seller: PromiseOrValue<string>,
     token: PromiseOrValue<string>,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<string>;
+
+  getPixTargetString(
+    seller: PromiseOrValue<string>,
+    token: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  getStr(
+    str: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   getValid(
     seller: PromiseOrValue<string>,
     token: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isTrustedForwarder(
+    arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -792,14 +857,14 @@ export interface P2PIX extends BaseContract {
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, string, string, BigNumber, BigNumber, BigNumber] & {
-      amount: BigNumber;
-      pixTarget: BigNumber;
-      token: string;
-      buyerAddress: string;
+    [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
       sellerKey: BigNumber;
       counter: BigNumber;
       expirationBlock: BigNumber;
+      pixTarget: string;
+      amount: BigNumber;
+      token: string;
+      buyerAddress: string;
     }
   >;
 
@@ -821,12 +886,6 @@ export interface P2PIX extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  sellerBalance(
-    sellerKey: PromiseOrValue<BigNumberish>,
-    erc20: PromiseOrValue<string>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
   setDefaultLockBlocks(
     _blocks: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -845,6 +904,12 @@ export interface P2PIX extends BaseContract {
   setRoot(
     addr: PromiseOrValue<string>,
     merkleroot: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setTrustedFowarders(
+    forwarders: PromiseOrValue<string>[],
+    states: PromiseOrValue<boolean>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -917,7 +982,7 @@ export interface P2PIX extends BaseContract {
     deposit(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<BigNumberish>,
+      _pixTarget: PromiseOrValue<string>,
       _valid: PromiseOrValue<boolean>,
       allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -944,11 +1009,27 @@ export interface P2PIX extends BaseContract {
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<string>;
+
+    getPixTargetString(
+      seller: PromiseOrValue<string>,
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getStr(
+      str: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     getValid(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -967,22 +1048,14 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber
-      ] & {
-        amount: BigNumber;
-        pixTarget: BigNumber;
-        token: string;
-        buyerAddress: string;
+      [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
         sellerKey: BigNumber;
         counter: BigNumber;
         expirationBlock: BigNumber;
+        pixTarget: string;
+        amount: BigNumber;
+        token: string;
+        buyerAddress: string;
       }
     >;
 
@@ -1004,12 +1077,6 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    sellerBalance(
-      sellerKey: PromiseOrValue<BigNumberish>,
-      erc20: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     setDefaultLockBlocks(
       _blocks: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1028,6 +1095,12 @@ export interface P2PIX extends BaseContract {
     setRoot(
       addr: PromiseOrValue<string>,
       merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1175,6 +1248,15 @@ export interface P2PIX extends BaseContract {
       merkleRoot?: PromiseOrValue<BytesLike> | null
     ): RootUpdatedEventFilter;
 
+    "TrustedForwarderUpdated(address,bool)"(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
+    TrustedForwarderUpdated(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
+
     "ValidSet(address,address,bool)"(
       seller?: PromiseOrValue<string> | null,
       token?: null,
@@ -1213,7 +1295,7 @@ export interface P2PIX extends BaseContract {
     deposit(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<BigNumberish>,
+      _pixTarget: PromiseOrValue<string>,
       _valid: PromiseOrValue<boolean>,
       allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1242,9 +1324,25 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getPixTargetString(
+      seller: PromiseOrValue<string>,
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getStr(
+      str: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getValid(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1282,12 +1380,6 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    sellerBalance(
-      sellerKey: PromiseOrValue<BigNumberish>,
-      erc20: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     setDefaultLockBlocks(
       _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1306,6 +1398,12 @@ export interface P2PIX extends BaseContract {
     setRoot(
       addr: PromiseOrValue<string>,
       merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1379,7 +1477,7 @@ export interface P2PIX extends BaseContract {
     deposit(
       _token: PromiseOrValue<string>,
       _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<BigNumberish>,
+      _pixTarget: PromiseOrValue<string>,
       _valid: PromiseOrValue<boolean>,
       allowlistRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1408,9 +1506,25 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getPixTargetString(
+      seller: PromiseOrValue<string>,
+      token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getStr(
+      str: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getValid(
       seller: PromiseOrValue<string>,
       token: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1448,12 +1562,6 @@ export interface P2PIX extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    sellerBalance(
-      sellerKey: PromiseOrValue<BigNumberish>,
-      erc20: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     setDefaultLockBlocks(
       _blocks: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1472,6 +1580,12 @@ export interface P2PIX extends BaseContract {
     setRoot(
       addr: PromiseOrValue<string>,
       merkleroot: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -57,12 +57,18 @@ interface EventAndErrors {
         address indexed token,
         bool indexed state
     );
+    /// @dev 0xbee55516e29d3969d3cb8eb01351eb3c52d06f9e2435bd5a8bfe3647e185df92
+    event TrustedForwarderUpdated(
+        address indexed forwarder, 
+        bool indexed state
+    );
     /// @dev 0xe127cf589a3879da0156d4a24f43b44f65cfa3570de594806b0bfa2fcf06884f
     event ReputationUpdated(address reputation);
     /// @dev 0x70fa43ca70216ad905ade86b9e650a691b2ce5a01980d0a81bdd8324141b8511
     event LockBlocksUpdated(uint256 blocks);
     /// @dev 0x14a422d2412784a5749d03da98921fe468c98577b767851389a9f58ea5a363d7
     event ValidSignersUpdated(address[] signers);
+
 
     /// ███ Errors ████████████████████████████████████████████████████████████
 

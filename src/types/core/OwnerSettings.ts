@@ -31,12 +31,14 @@ export interface OwnerSettingsInterface extends utils.Interface {
   functions: {
     "allowedERC20s(address)": FunctionFragment;
     "defaultLockBlocks()": FunctionFragment;
+    "isTrustedForwarder(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "reputation()": FunctionFragment;
     "sellerAllowList(uint256)": FunctionFragment;
     "setDefaultLockBlocks(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
     "setReputation(address)": FunctionFragment;
+    "setTrustedFowarders(address[],bool[])": FunctionFragment;
     "setValidSigners(address[])": FunctionFragment;
     "tokenSettings(address[],bool[])": FunctionFragment;
     "validBacenSigners(uint256)": FunctionFragment;
@@ -47,12 +49,14 @@ export interface OwnerSettingsInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "allowedERC20s"
       | "defaultLockBlocks"
+      | "isTrustedForwarder"
       | "owner"
       | "reputation"
       | "sellerAllowList"
       | "setDefaultLockBlocks"
       | "setOwner"
       | "setReputation"
+      | "setTrustedFowarders"
       | "setValidSigners"
       | "tokenSettings"
       | "validBacenSigners"
@@ -66,6 +70,10 @@ export interface OwnerSettingsInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "defaultLockBlocks",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isTrustedForwarder",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -87,6 +95,10 @@ export interface OwnerSettingsInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "setReputation",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTrustedFowarders",
+    values: [PromiseOrValue<string>[], PromiseOrValue<boolean>[]]
   ): string;
   encodeFunctionData(
     functionFragment: "setValidSigners",
@@ -113,6 +125,10 @@ export interface OwnerSettingsInterface extends utils.Interface {
     functionFragment: "defaultLockBlocks",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "isTrustedForwarder",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "reputation", data: BytesLike): Result;
   decodeFunctionResult(
@@ -126,6 +142,10 @@ export interface OwnerSettingsInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "setOwner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setReputation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setTrustedFowarders",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -157,6 +177,7 @@ export interface OwnerSettingsInterface extends utils.Interface {
     "OwnerUpdated(address,address)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
     "RootUpdated(address,bytes32)": EventFragment;
+    "TrustedForwarderUpdated(address,bool)": EventFragment;
     "ValidSet(address,address,bool)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
@@ -172,6 +193,7 @@ export interface OwnerSettingsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "OwnerUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TrustedForwarderUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
@@ -304,6 +326,18 @@ export type RootUpdatedEvent = TypedEvent<
 
 export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
 
+export interface TrustedForwarderUpdatedEventObject {
+  forwarder: string;
+  state: boolean;
+}
+export type TrustedForwarderUpdatedEvent = TypedEvent<
+  [string, boolean],
+  TrustedForwarderUpdatedEventObject
+>;
+
+export type TrustedForwarderUpdatedEventFilter =
+  TypedEventFilter<TrustedForwarderUpdatedEvent>;
+
 export interface ValidSetEventObject {
   seller: string;
   token: string;
@@ -361,6 +395,11 @@ export interface OwnerSettings extends BaseContract {
 
     defaultLockBlocks(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     reputation(overrides?: CallOverrides): Promise<[string]>;
@@ -382,6 +421,12 @@ export interface OwnerSettings extends BaseContract {
 
     setReputation(
       _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -413,6 +458,11 @@ export interface OwnerSettings extends BaseContract {
 
   defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
+  isTrustedForwarder(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   reputation(overrides?: CallOverrides): Promise<string>;
@@ -434,6 +484,12 @@ export interface OwnerSettings extends BaseContract {
 
   setReputation(
     _reputation: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  setTrustedFowarders(
+    forwarders: PromiseOrValue<string>[],
+    states: PromiseOrValue<boolean>[],
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -465,6 +521,11 @@ export interface OwnerSettings extends BaseContract {
 
     defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     reputation(overrides?: CallOverrides): Promise<string>;
@@ -486,6 +547,12 @@ export interface OwnerSettings extends BaseContract {
 
     setReputation(
       _reputation: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -605,6 +672,15 @@ export interface OwnerSettings extends BaseContract {
       merkleRoot?: PromiseOrValue<BytesLike> | null
     ): RootUpdatedEventFilter;
 
+    "TrustedForwarderUpdated(address,bool)"(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
+    TrustedForwarderUpdated(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
+
     "ValidSet(address,address,bool)"(
       seller?: PromiseOrValue<string> | null,
       token?: null,
@@ -630,6 +706,11 @@ export interface OwnerSettings extends BaseContract {
 
     defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     reputation(overrides?: CallOverrides): Promise<BigNumber>;
@@ -651,6 +732,12 @@ export interface OwnerSettings extends BaseContract {
 
     setReputation(
       _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -683,6 +770,11 @@ export interface OwnerSettings extends BaseContract {
 
     defaultLockBlocks(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    isTrustedForwarder(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     reputation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -704,6 +796,12 @@ export interface OwnerSettings extends BaseContract {
 
     setReputation(
       _reputation: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setTrustedFowarders(
+      forwarders: PromiseOrValue<string>[],
+      states: PromiseOrValue<boolean>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

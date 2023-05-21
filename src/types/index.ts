@@ -19,6 +19,8 @@ export type { Owned } from "./lib/auth/Owned";
 export { Owned__factory } from "./factories/lib/auth/Owned__factory";
 export type { IReputation } from "./lib/interfaces/IReputation";
 export { IReputation__factory } from "./factories/lib/interfaces/IReputation__factory";
+export type { ERC2771Context } from "./lib/metatx/ERC2771Context";
+export { ERC2771Context__factory } from "./factories/lib/metatx/ERC2771Context__factory";
 export type { MockToken } from "./lib/mock/mockToken.sol/MockToken";
 export { MockToken__factory } from "./factories/lib/mock/mockToken.sol/MockToken__factory";
 export type { ERC20 } from "./lib/tokens/ERC20";

@@ -11,11 +11,11 @@ pragma solidity 0.8.19;
 
 import { OwnerSettings, ERC20, SafeTransferLib } from "./core/OwnerSettings.sol";
 import { BaseUtils } from "./core/BaseUtils.sol";
-import { ReentrancyGuard } from "./lib/utils/ReentrancyGuard.sol";
 import { DataTypes as DT } from "./core/DataTypes.sol";
 
 
-contract P2PIX is BaseUtils, ReentrancyGuard {
+
+contract P2PIX is BaseUtils {
     // solhint-disable use-forbidden-name
     // solhint-disable no-inline-assembly
     // solhint-disable no-empty-blocks
@@ -62,19 +62,20 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
     function deposit(
         address _token,
         uint96 _amount,
-        uint160 _pixTarget,
+        string memory _pixTarget,
         bool _valid,
         bytes32 allowlistRoot
     ) public {
         ERC20 t = ERC20(_token);
         uint256 k = _castAddrToKey(msg.sender);
 
-        if (_pixTarget == 0) revert EmptyPixTarget();
+        if (bytes(_pixTarget).length == 0) revert EmptyPixTarget();
         if (!allowedERC20s(t)) revert TokenDenied();
-        uint256 _sellerBalance = sellerBalance(k,t);
+        uint256 _sellerBalance = __sellerBalance(k,t);
 
         uint256 currBal = _sellerBalance & BITMASK_SB_ENTRY;
-        if ((currBal + _amount) > MAXBALANCE_UPPERBOUND)
+        uint256 _newBal = uint256(currBal + _amount); 
+        if (_newBal > MAXBALANCE_UPPERBOUND)
             revert MaxBalExceeded();
 
         setReentrancyGuard();
@@ -83,21 +84,14 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
             setRoot(msg.sender, allowlistRoot);
         }
 
-        uint256 amountCasted;
-        uint256 pixTargetCasted;
-        uint256 validCasted;
-        (
-            amountCasted,
-            pixTargetCasted,
-            validCasted
-        ) = _castToUint(_amount, _pixTarget, _valid);
+        bytes32 pixTargetCasted = getStr(_pixTarget);
+        uint256 validCasted = _castBool(_valid);
 
         _setSellerBalance(
             k, 
             t, 
-            ((currBal + amountCasted) |
-            (pixTargetCasted << BITPOS_PIXTARGET) |
-            (validCasted << BITPOS_VALID))
+            (_newBal | (validCasted << BITPOS_VALID)),
+            pixTargetCasted
         );
 
         SafeTransferLib.safeTransferFrom(
@@ -118,19 +112,16 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
     /// @dev Function sighash: 0x72fada5c.
     function setValidState(ERC20 token, bool state) public {
         uint256 key = _castAddrToKey(msg.sender);
-        uint256 _sellerBalance = sellerBalance(key, token);
+        uint256 _sellerBalance = __sellerBalance(key, token);
 
         if (_sellerBalance != 0) {
-            uint256 _valid;
-            assembly {
-                _valid := state
-            }
+            uint256 _valid = _castBool(state);
 
             _sellerBalance =
-                (_sellerBalance & BITMASK_VALID) |
+                (_sellerBalance & BITMASK_SB_ENTRY) |
                 (_valid << BITPOS_VALID);
 
-            _setSellerBalance(key, token, _sellerBalance);
+            _setValidState(key, token, _sellerBalance);
 
             emit ValidSet(msg.sender, address(token), state);
         } else revert NotInitialized();
@@ -175,18 +166,24 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
             mapLocks[cCounter].expirationBlock >= block.number
         ) revert NotExpired();
 
+        address sender; uint256 forwarder;
+        (sender, forwarder) = _isTrustedForwarder();
+
         DT.Lock memory l = DT.Lock(
-            _amount,
-            uint160(sellerBalance(k, t) >> BITPOS_PIXTARGET),
-            address(t),
-            msg.sender,
             k,
             cCounter,
-            (block.number + defaultLockBlocks)
+            (block.number + defaultLockBlocks),
+            getPixTarget(_seller, t),
+            _amount,
+            address(t),
+            sender
         );
 
+        // transaction forwarding must leave `merkleProof` empty;
+        // otherwise, the trustedForwarder must be previously added 
+        // to a seller whitelist.
         if (merkleProof.length != 0) {
-            _merkleVerify(merkleProof, sellerAllowList(k), msg.sender);
+            _merkleVerify(merkleProof, sellerAllowList(k), sender);
             lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
         } else {
@@ -194,14 +191,18 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
             lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
         } else {
+            if (forwarder != 0) {
+                lockID = _addLock(bal, _amount, cCounter, l, t, k);
+        } else {
             uint256 userCredit = userRecord[_castAddrToKey(msg.sender)];
             uint256 spendLimit; (spendLimit) = _limiter(userCredit / WAD);
             if ( 
-                l.amount > (spendLimit * WAD) || l.amount > LOCKAMOUNT_UPPERBOUND 
+                l.amount > (spendLimit * WAD) || 
+                l.amount > LOCKAMOUNT_UPPERBOUND 
             ) revert AmountNotAllowed();
             lockID = _addLock(bal, _amount, cCounter, l, t, k);
 
-        /*  */}/*  */}
+        /*  */}/*  */}/*  */}
     }
 
     /// @notice Lock release method that liquidate lock
@@ -241,20 +242,23 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
         ERC20 t = ERC20(l.token);
 
-        // We cache values before zeroing them out.
+        // We cache lockAmount value before zeroing it out.
         uint256 lockAmount = l.amount;
-        // uint256 totalAmount = (lockAmount - l.relayerPremium);
 
         l.amount = 0;
         l.expirationBlock = 0;
         _setUsedTransactions(message);
 
+        address sender; uint256 forwarder;
+        (sender, forwarder) = _isTrustedForwarder();
+        
+        if (forwarder == 0) { 
         if (msg.sender != l.buyerAddress) {
             userRecord[_castAddrToKey(msg.sender)] += (lockAmount >> 1);
             userRecord[_castAddrToKey(l.buyerAddress)] += (lockAmount >> 1);
         } else {
             userRecord[_castAddrToKey(msg.sender)] += lockAmount;
-        }
+        }}
 
         SafeTransferLib.safeTransfer(
             t,
@@ -283,7 +287,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
             _notExpired(l);
 
             uint256 _sellerBalance = 
-            sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
+            __sellerBalance(l.sellerKey, ERC20(l.token)) & BITMASK_SB_ENTRY;
 
             if ((_sellerBalance + l.amount) > MAXBALANCE_UPPERBOUND)
                 revert MaxBalExceeded();
@@ -335,7 +339,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
 
         uint256 key = _castAddrToKey(msg.sender);
         _decBal(
-            (sellerBalance(key, token) & BITMASK_SB_ENTRY),
+            (__sellerBalance(key, token) & BITMASK_SB_ENTRY),
             amount,
             token,
             key
@@ -407,7 +411,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
         mapLocks[_lockID] = _l;
 
         _decBal(_bal, _amount, _t, _k);
-        lockCounter++;
+        ++lockCounter;
         counter = _lockID;
 
         emit LockAdded(
@@ -448,9 +452,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
         view
         returns (uint256 bal)
     {
-        // bal =
-        // sellerBalance[_castAddrToKey(seller)][token] &
-        // BITMASK_SB_ENTRY;
         assembly {
             for {
                 /*  */
@@ -462,7 +463,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
                 mstore(0x00, seller)
                 bal := and(
                     BITMASK_SB_ENTRY,
-                    sload(keccak256(0x0c, 0x34))
+                    sload(add(keccak256(0x0c, 0x34), 0x01))
                 )
                 break
             }
@@ -474,10 +475,6 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
         view
         returns (bool valid)
     {
-        // uint256 b = sellerBalance[
-        // _castAddrToKey(seller)
-        // ][token];
-        // ] >> BITPOS_VALID) & BITMASK_SB_ENTRY;
         assembly {
             for {
                 /*  */
@@ -491,7 +488,7 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
                     BITMASK_SB_ENTRY,
                     shr(
                         BITPOS_VALID,
-                        sload(keccak256(0x0c, 0x34))
+                        sload(add(keccak256(0x0c, 0x34), 0x01))
                     )
                 )
                 break
@@ -502,12 +499,8 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
     function getPixTarget(address seller, ERC20 token)
         public
         view
-        returns (uint160 pixTarget)
+        returns (bytes32 pixTarget)
     {
-        // pixTarget = uint160(
-        // sellerBalance[_castAddrToKey(seller)][token] >>
-        // BITPOS_PIXTARGET
-        // );
         assembly {
             for {
                 /*  */
@@ -517,13 +510,15 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
                 mstore(0x20, token)
                 mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
                 mstore(0x00, seller)
-                pixTarget := shr(
-                    BITPOS_PIXTARGET,
-                    sload(keccak256(0x0c, 0x34))
-                )
+                pixTarget := sload(keccak256(0x0c, 0x34))
                 break
             }
         }
+    }
+
+    function getPixTargetString(address seller, ERC20 token) public view returns (string memory pixTarget) {
+        bytes32 _pixEnc = getPixTarget(seller, token);
+        pixTarget =  string(abi.encodePacked(_pixEnc));
     }
 
     function getBalances(
@@ -593,42 +588,53 @@ contract P2PIX is BaseUtils, ReentrancyGuard {
         return (sortedIDs, status);
     }
 
-    function _setSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 packed) private {
+    function _setSellerBalance(uint256 _sellerKey, ERC20 _erc20, uint256 _packed, bytes32 _pixTarget) private {
         assembly {
-            mstore(0x20, erc20)
+            mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
-            sstore(keccak256(0x0c, 0x34), packed)
+            mstore(0x00, shr(12, _sellerKey))
+            let _loc := keccak256(0x0c, 0x34)
+            sstore(add(_loc, 0x01), _packed)
+            sstore(_loc, _pixTarget)
         }
     }
 
-    function _addSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 amount) private {
+    function _setValidState(uint256 _sellerKey, ERC20 _erc20, uint256 _packed) private  {
         assembly {
-            mstore(0x20, erc20)
+            mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
-            let slot := keccak256(0x0c, 0x34)
-            sstore(slot, add(sload(slot), amount))
+            mstore(0x00, shr(12, _sellerKey))
+            let _loc := keccak256(0x0c, 0x34)
+            sstore(add(_loc, 0x01), _packed)
         }
     }
 
-    function _decSellerBalance(uint256 sellerKey, ERC20 erc20, uint256 amount) private {
+    function _addSellerBalance(uint256 _sellerKey, ERC20 _erc20, uint256 _amount) private {
         assembly {
-            mstore(0x20, erc20)
+            mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
-            let slot := keccak256(0x0c, 0x34)
-            sstore(slot, sub(sload(slot), amount))
+            mstore(0x00, shr(12, _sellerKey))
+            let _loc := add(keccak256(0x0c, 0x34), 0x01)
+            sstore(_loc, add(sload(_loc), _amount))
         }
     }
 
-    function sellerBalance(uint256 sellerKey, ERC20 erc20) public view returns(uint256 packed) {
+    function _decSellerBalance(uint256 _sellerKey, ERC20 _erc20, uint256 _amount) private {
         assembly {
-            mstore(0x20, erc20)
+            mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
-            packed := sload(keccak256(0x0c, 0x34))
+            mstore(0x00, shr(12, _sellerKey))
+            let _loc := add(keccak256(0x0c, 0x34), 0x01)
+            sstore(_loc, sub(sload(_loc), _amount))
+        }
+    }
 
+    function __sellerBalance(uint256 _sellerKey, ERC20 _erc20) private view returns(uint256 _packed) {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(12, _sellerKey))
+            _packed := sload(add(keccak256(0x0c, 0x34), 0x01))
         }
     }
 

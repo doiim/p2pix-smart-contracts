@@ -23,7 +23,7 @@ export interface Lock {
   sellerKey: BigNumber;
   counter: BigNumber;
   expirationBlock: BigNumber;
-  pixTarget: BigNumber;
+  pixTarget: string;
   token: string;
   buyerAddress: string;
   amount: BigNumber;

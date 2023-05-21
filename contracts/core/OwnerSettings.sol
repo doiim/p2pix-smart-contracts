@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import { ERC2771Context as ERC2771 } from "../lib/metatx/ERC2771Context.sol";
 import { ERC20, SafeTransferLib } from "../lib/utils/SafeTransferLib.sol";
 import { IReputation } from "../lib/interfaces/IReputation.sol";
 import { EventAndErrors } from "./EventAndErrors.sol";
@@ -10,7 +11,8 @@ import { Owned } from "../lib/auth/Owned.sol";
 abstract contract OwnerSettings is
     Constants,
     EventAndErrors,
-    Owned(msg.sender)
+    Owned(msg.sender),
+    ERC2771
 {
     /// ███ Storage ████████████████████████████████████████████████████████████
 
@@ -39,6 +41,48 @@ abstract contract OwnerSettings is
     }
 
     /// ███ Owner Only █████████████████████████████████████████████████████████
+
+    function setTrustedFowarders(
+        address[] memory forwarders,
+        bool[] memory states
+    ) external onlyOwner {
+        assembly {
+            // first 32 bytes eq to array's length
+            let fLen := mload(forwarders)
+            // halts execution if forwarders.length eq 0
+            if iszero(fLen) {
+                invalid()
+            }
+            // revert with `LengthMismatch()`
+            if iszero(eq(fLen, mload(states))) {
+                mstore(0x00, 0xff633a38)
+                revert(0x1c, 0x04)
+            }
+            let fLoc := add(forwarders, 0x20)
+            let sLoc := add(states, 0x20)
+            for {
+                let end := add(fLoc, shl(5, fLen))
+            } iszero(eq(fLoc, end)) {
+                fLoc := add(fLoc, 0x20)
+                sLoc := add(sLoc, 0x20)
+            } {
+                // cache hashmap entry in scratch space
+                mstore(0x20, isTrustedForwarder.slot)
+                mstore(0x00, mload(fLoc))
+                //  let mapSlot := keccak256(0x00, 0x40)
+                sstore(keccak256(0x00, 0x40), mload(sLoc))
+
+                // emit TrustedForwarderUpdated(address, bool)
+                log3(
+                    0,
+                    0,
+                    _TRUSTED_FORWARDER_UPDATED_EVENT_SIGNATURE,
+                    mload(fLoc),
+                    mload(sLoc)
+                )
+            }
+        }
+    }
 
     /// @dev Contract's underlying balance withdraw method.
     /// @dev Function sighash: 0x5fd8c710.

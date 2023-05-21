@@ -12,7 +12,7 @@ contract Reputation is IReputation {
     // prettier-ignore
     // solhint-disable no-inline-assembly
     // solhint-disable-next-line no-empty-blocks
-    constructor(/*  */) {/*  */}
+    constructor(/*  */) payable {/*  */}
 
     function limiter(
         uint256 _userCredit
