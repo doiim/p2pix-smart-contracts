@@ -38,8 +38,6 @@ abstract contract Constants {
     uint256 constant BITMASK_SB_ENTRY = (1 << 94) - 1;
     /// @dev The bit position of `valid` in `sellerBalance`.
     uint256 constant BITPOS_VALID = 95;
-    /// @dev The bitmask of all 256 bits of `sellerBalance` except for the last one.
-    // uint256 constant BITMASK_VALID = (1 << 255) - 1;
 
     /// @dev The scalar of BRZ token.
     uint256 constant WAD = 1e18;
