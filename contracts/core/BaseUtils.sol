@@ -2,10 +2,15 @@
 pragma solidity 0.8.19;
 
 import { OwnerSettings } from "./OwnerSettings.sol";
+
 import { ECDSA } from "../lib/utils/ECDSA.sol";
 import { MerkleProofLib as Merkle } from "../lib/utils/MerkleProofLib.sol";
+import { ReentrancyGuard } from "../lib/utils/ReentrancyGuard.sol";
 
-abstract contract BaseUtils is OwnerSettings {
+abstract contract BaseUtils is
+    OwnerSettings,
+    ReentrancyGuard
+{
     /// ███ Storage ████████████████████████████████████████████████████████████
 
     /// @dev List of Pix transactions already signed.
@@ -67,23 +72,23 @@ abstract contract BaseUtils is OwnerSettings {
         ) revert AddressDenied();
     }
 
-    function _castToUint(
-        uint96 _amount,
-        uint160 _pixTarget,
+    function _castBool(
         bool _valid
-    )
-        internal
-        pure
-        returns (
-            uint256 _amountCasted,
-            uint256 _pixTargetCasted,
-            uint256 _validCasted
-        )
-    {
+    ) internal pure returns (uint256 _validCasted) {
         assembly {
-            _amountCasted := _amount
-            _pixTargetCasted := _pixTarget
             _validCasted := _valid
+        }
+    }
+
+    function getStr(
+        string memory str
+    ) public pure returns (bytes32 strEnc) {
+        bytes memory enc = bytes(abi.encodePacked(str));
+        assembly {
+            if lt(0x20, mload(enc)) {
+                invalid()
+            }
+            strEnc := mload(add(enc, 0x20))
         }
     }
 

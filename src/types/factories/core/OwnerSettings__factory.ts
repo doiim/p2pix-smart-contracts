@@ -343,6 +343,25 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "state",
+        type: "bool",
+      },
+    ],
+    name: "TrustedForwarderUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "seller",
         type: "address",
       },
@@ -402,6 +421,25 @@ const _abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -487,6 +525,24 @@ const _abi = [
       },
     ],
     name: "setReputation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "forwarders",
+        type: "address[]",
+      },
+      {
+        internalType: "bool[]",
+        name: "states",
+        type: "bool[]",
+      },
+    ],
+    name: "setTrustedFowarders",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

@@ -302,7 +302,7 @@ describe("P2PIX", () => {
   });
   describe("Deposit", async () => {
     it("should revert if ERC20 is not allowed", async () => {
-      const pTarget = ethers.BigNumber.from(7331);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       const root = ethers.utils.keccak256(
         ethers.utils.toUtf8Bytes("root"),
       );
@@ -326,7 +326,7 @@ describe("P2PIX", () => {
       const tx = p2pix.deposit(
         erc20.address,
         1,
-        0,
+        "",
         true,
         root,
       );
@@ -337,7 +337,7 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if amount exceeds the balance limit", async () => {
-      const pTarget = ethers.BigNumber.from(7331);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       const root = ethers.utils.keccak256(
         ethers.utils.toUtf8Bytes("root"),
       );
@@ -355,7 +355,7 @@ describe("P2PIX", () => {
       );
     });
     it("should create deposit, update storage and emit event", async () => {
-      const pTarget = ethers.BigNumber.from(7331);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       // we use `hashZero` to avoid updating seller's allowlist settings
       const root = ethers.constants.HashZero;
       await erc20.approve(p2pix.address, price);
@@ -387,6 +387,7 @@ describe("P2PIX", () => {
         erc20.address,
       );
 
+
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "DepositAdded")
@@ -397,7 +398,7 @@ describe("P2PIX", () => {
         ["-100000000000000000000", price],
       );
       expect(storage).to.eq(price);
-      expect(pixTarget).to.eq(pTarget);
+      expect(pixTarget).to.eq(await p2pix.callStatic.getStr(pTarget));
       expect(valid).to.eq(true);
       expect(allowList).to.eq(root);
       expect(balances[0]).to.eq(price);
@@ -418,9 +419,9 @@ describe("P2PIX", () => {
         acc03.address,
       );
 
-      const pTarget = ethers.BigNumber.from(7331);
-      const pTarget2 = ethers.BigNumber.from(1337);
-      const pTarget3 = ethers.BigNumber.from(3731);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
+      const pTarget2 = "12312333321";
+      const pTarget3 = "43999999999";
       // we mock the allowlist root here only to test storage update. In depth
       // allowlist test coverage in both "Lock" and "Allowlist Settings" unit tests.
       const root = ethers.utils.keccak256(
@@ -588,29 +589,29 @@ describe("P2PIX", () => {
       expect(prices[3]).to.eq(balances[3]);
 
       expect(storage1).to.eq(price);
-      expect(pixTarget1).to.eq(pTarget);
+      expect(pixTarget1).to.eq(await p2pix.callStatic.getStr(pTarget));
       expect(valid1).to.eq(true);
       expect(allowList1).to.eq(root);
 
       expect(storage2).to.eq(price2);
-      expect(pixTarget2).to.eq(pTarget2);
+      expect(pixTarget2).to.eq(await p2pix.callStatic.getStr(pTarget2));
       expect(valid2).to.eq(false);
       expect(allowList2).to.eq(nullRoot);
 
       expect(storage3).to.eq(price3);
-      expect(pixTarget3).to.eq(pTarget3);
+      expect(pixTarget3).to.eq(await p2pix.callStatic.getStr(pTarget3));
       expect(valid3).to.eq(true);
       expect(allowList3).to.eq(root);
 
       expect(storage4).to.eq(price4);
-      expect(pixTarget4).to.eq(pTarget);
+      expect(pixTarget4).to.eq(await p2pix.callStatic.getStr(pTarget));
       expect(valid4).to.eq(false);
       expect(allowList4).to.eq(nullRoot);
     });
   });
   describe("Lock", async () => {
     it("should revert if deposit is invalid", async () => {
-      const pTarget = ethers.BigNumber.from(7331);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -652,7 +653,7 @@ describe("P2PIX", () => {
     });
     it("should revert if wished amount is greater than balance's remaining amount", async () => {
       await erc20.approve(p2pix.address, price);
-      const pTarget = ethers.BigNumber.from(1337);
+      const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       await p2pix.deposit(
         erc20.address,
         price,
@@ -683,7 +684,7 @@ describe("P2PIX", () => {
       await p2pix.deposit(
         erc20.address,
         price,
-        ethers.BigNumber.from("1337"),
+        "7ce3339x4133301u8f63pn71a5333118",
         true,
         merkleRoot,
       );
@@ -716,7 +717,7 @@ describe("P2PIX", () => {
       await p2pix.deposit(
         erc20.address,
         price.mul(BigNumber.from("3")),
-        ethers.BigNumber.from("1"),
+        "1",
         true,
         merkleRoot,
       );
@@ -738,7 +739,7 @@ describe("P2PIX", () => {
       );
     });
     it("should create a lock, update storage and emit events via the allowlist path", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = "333";
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -784,14 +785,14 @@ describe("P2PIX", () => {
       // );
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(target);
+      expect(storage.pixTarget).to.eq(await p2pix.callStatic.getStr(target));
       expect(storage.buyerAddress).to.eq(acc01.address);
       // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
     });
     it("should create a lock, update storage and emit events via the reputation path 1", async () => {
       const root = ethers.constants.HashZero;
-      const target = ethers.BigNumber.from(101);
+      const target = "101";
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -833,7 +834,7 @@ describe("P2PIX", () => {
       // );
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(target);
+      expect(storage.pixTarget).to.eq(await p2pix.callStatic.getStr(target));
       expect(storage.buyerAddress).to.eq(acc01.address);
       // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
@@ -848,10 +849,10 @@ describe("P2PIX", () => {
         .mul(ethers.constants.Two)
         .add(ethers.constants.One);
       const endtoendID = ethers.constants.HashZero;
-      const target = ethers.BigNumber.from(101);
+      const target = "101";
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [target, price, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(target), price, endtoendID],
       );
       const messageHashBytes =
         ethers.utils.arrayify(messageToSign);
@@ -922,7 +923,7 @@ describe("P2PIX", () => {
         price.add(ethers.constants.One),
       );
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(target);
+      expect(storage.pixTarget).to.eq(await p2pix.callStatic.getStr(target));
       expect(storage.buyerAddress).to.eq(acc01.address);
       // expect(storage.relayerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.address);
@@ -934,7 +935,7 @@ describe("P2PIX", () => {
     // edge case test
     it("should create multiple locks", async () => {
       const newPrice = price.div(ethers.BigNumber.from(2));
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -1088,7 +1089,7 @@ describe("P2PIX", () => {
       expect(storage2.expirationBlock).to.eq(expiration2);
       expect(storage3.expirationBlock).to.eq(expiration3);
 
-      expect(target)
+      expect(await p2pix.callStatic.getStr(target))
         .to.eq(storage1.pixTarget)
         .and.to.eq(storage2.pixTarget)
         .and.to.eq(storage3.pixTarget);
@@ -1138,7 +1139,7 @@ describe("P2PIX", () => {
       await p2pix.deposit(
         erc20.address,
         price,
-        ethers.BigNumber.from(10101),
+        ethers.BigNumber.from(10101).toString(),
         true,
         merkleRoot,
       );
@@ -1165,7 +1166,7 @@ describe("P2PIX", () => {
     it("should cancel multiple balances", async () => {
       const hashZero = ethers.constants.HashZero;
       await erc20.mint([acc01.address, acc02.address], price);
-      const target = ethers.BigNumber.from("1");
+      const target = ethers.BigNumber.from("1").toString();
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -1255,7 +1256,7 @@ describe("P2PIX", () => {
   });
   describe("Release", async () => {
     it("should revert if lock has expired", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       const messageToSign = ethers.utils.solidityKeccak256(
         ["uint160", "uint80", "bytes32"],
         [target, 100, ethers.constants.HashZero],
@@ -1299,11 +1300,11 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if lock has already been released", async () => {
-      const target = ethers.BigNumber.from("1");
+      const target = ethers.BigNumber.from("1").toString();
       const hashZero = ethers.constants.HashZero;
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [target, 100, hashZero],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(target), 100, hashZero],
       );
       const flatSig = await acc01.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1350,10 +1351,10 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if signed message has already been used", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [target, 100, ethers.constants.HashZero],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(target), 100, ethers.constants.HashZero],
       );
       const flatSig = await owner.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1415,10 +1416,10 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if ecrecovered signer is invalid", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [target, 100, ethers.constants.HashZero],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(target), 100, ethers.constants.HashZero],
       );
       const flatSig = await acc03.signMessage(
         ethers.utils.arrayify(messageToSign),
@@ -1462,10 +1463,10 @@ describe("P2PIX", () => {
     it("should release lock, update storage and emit events", async () => {
       const zero = ethers.constants.Zero;
       const endtoendID = ethers.constants.HashZero;
-      const pixTarget = ethers.BigNumber.from(101);
+      const pixTarget = ethers.BigNumber.from(101).toString();
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [pixTarget, 100, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(pixTarget), 100, endtoendID],
       );
       // Note: messageToSign is a string, that is 66-bytes long, to sign the
       //       binary value, we must convert it to the 32 byte Array that
@@ -1615,7 +1616,7 @@ describe("P2PIX", () => {
     // edge case test
     it("should release multiple locks", async () => {
       const endtoendID = ethers.constants.HashZero;
-      const pixTarget = ethers.BigNumber.from(101);
+      const pixTarget = ethers.BigNumber.from(101).toString();
       const root = ethers.constants.HashZero;
       const acc01Key = await p2pix.callStatic._castAddrToKey(
         acc01.address,
@@ -1630,24 +1631,24 @@ describe("P2PIX", () => {
         acc03Key,
       );
       const messageToSign1 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [pixTarget, 100, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(pixTarget), 100, endtoendID],
       );
       const flatSig1 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign1),
       );
       const sig1 = ethers.utils.splitSignature(flatSig1);
       const messageToSign2 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [pixTarget, 50, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(pixTarget), 50, endtoendID],
       );
       const flatSig2 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign2),
       );
       const sig2 = ethers.utils.splitSignature(flatSig2);
       const messageToSign3 = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [pixTarget, 25, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(pixTarget), 25, endtoendID],
       );
       const flatSig3 = await owner.signMessage(
         ethers.utils.arrayify(messageToSign3),
@@ -1851,7 +1852,7 @@ describe("P2PIX", () => {
   });
   describe("Unexpire Locks", async () => {
     it("should revert if lock isn't expired", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -1881,10 +1882,10 @@ describe("P2PIX", () => {
     });
     it("should revert if lock has already been released", async () => {
       const endtoendID = ethers.constants.HashZero;
-      const pixTarget = ethers.BigNumber.from(101);
+      const pixTarget = ethers.BigNumber.from(101).toString();
       const messageToSign = ethers.utils.solidityKeccak256(
-        ["uint160", "uint80", "bytes32"],
-        [pixTarget, 1, endtoendID],
+        ["bytes32", "uint80", "bytes32"],
+        [await p2pix.callStatic.getStr(pixTarget), 1, endtoendID],
       );
       const messageHashBytes =
         ethers.utils.arrayify(messageToSign);
@@ -1928,7 +1929,7 @@ describe("P2PIX", () => {
       );
     });
     it("should unlock expired locks, update storage and emit events", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -1992,7 +1993,7 @@ describe("P2PIX", () => {
       );
     });
     it("should unlock expired through lock function", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       // test method through lock fx
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
@@ -2068,7 +2069,7 @@ describe("P2PIX", () => {
       );
     });
     it("should unlock expired through withdraw function", async () => {
-      const target = ethers.constants.One;
+      const target = ethers.constants.One.toString();
       // test method through withdraw fx
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
@@ -2110,7 +2111,7 @@ describe("P2PIX", () => {
 
   describe("Seller Withdraw", async () => {
     it("should revert if the wished amount is invalid", async () => {
-      const target = ethers.BigNumber.from(101);
+      const target = ethers.BigNumber.from(101).toString();
       await erc20.approve(p2pix.address, price);
       await p2pix.deposit(
         erc20.address,
@@ -2138,7 +2139,7 @@ describe("P2PIX", () => {
       const dep = await p2pix.deposit(
         erc20.address,
         price,
-        ethers.BigNumber.from(101),
+        ethers.BigNumber.from(101).toString(),
         true,
         merkleRoot,
       );

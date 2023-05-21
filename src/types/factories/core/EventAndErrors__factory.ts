@@ -319,6 +319,25 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "state",
+        type: "bool",
+      },
+    ],
+    name: "TrustedForwarderUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "seller",
         type: "address",
       },

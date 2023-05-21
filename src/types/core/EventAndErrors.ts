@@ -33,6 +33,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
     "LockReturned(address,uint256)": EventFragment;
     "ReputationUpdated(address)": EventFragment;
     "RootUpdated(address,bytes32)": EventFragment;
+    "TrustedForwarderUpdated(address,bool)": EventFragment;
     "ValidSet(address,address,bool)": EventFragment;
     "ValidSignersUpdated(address[])": EventFragment;
   };
@@ -47,6 +48,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LockReturned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ReputationUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RootUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TrustedForwarderUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ValidSignersUpdated"): EventFragment;
 }
@@ -167,6 +169,18 @@ export type RootUpdatedEvent = TypedEvent<
 >;
 
 export type RootUpdatedEventFilter = TypedEventFilter<RootUpdatedEvent>;
+
+export interface TrustedForwarderUpdatedEventObject {
+  forwarder: string;
+  state: boolean;
+}
+export type TrustedForwarderUpdatedEvent = TypedEvent<
+  [string, boolean],
+  TrustedForwarderUpdatedEventObject
+>;
+
+export type TrustedForwarderUpdatedEventFilter =
+  TypedEventFilter<TrustedForwarderUpdatedEvent>;
 
 export interface ValidSetEventObject {
   seller: string;
@@ -308,6 +322,15 @@ export interface EventAndErrors extends BaseContract {
       seller?: PromiseOrValue<string> | null,
       merkleRoot?: PromiseOrValue<BytesLike> | null
     ): RootUpdatedEventFilter;
+
+    "TrustedForwarderUpdated(address,bool)"(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
+    TrustedForwarderUpdated(
+      forwarder?: PromiseOrValue<string> | null,
+      state?: PromiseOrValue<boolean> | null
+    ): TrustedForwarderUpdatedEventFilter;
 
     "ValidSet(address,address,bool)"(
       seller?: PromiseOrValue<string> | null,

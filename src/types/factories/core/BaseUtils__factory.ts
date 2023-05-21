@@ -89,6 +89,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "Reentrancy",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "StaticCallFailed",
     type: "error",
   },
@@ -340,6 +345,25 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
+        name: "forwarder",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "bool",
+        name: "state",
+        type: "bool",
+      },
+    ],
+    name: "TrustedForwarderUpdated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
         name: "seller",
         type: "address",
       },
@@ -443,6 +467,44 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "string",
+        name: "str",
+        type: "string",
+      },
+    ],
+    name: "getStr",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "strEnc",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "isTrustedForwarder",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "owner",
     outputs: [
@@ -522,6 +584,24 @@ const _abi = [
       },
     ],
     name: "setReputation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address[]",
+        name: "forwarders",
+        type: "address[]",
+      },
+      {
+        internalType: "bool[]",
+        name: "states",
+        type: "bool[]",
+      },
+    ],
+    name: "setTrustedFowarders",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
