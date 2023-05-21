@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { OwnerSettings } from "./OwnerSettings.sol";
+import { ERC20, OwnerSettings } from "./OwnerSettings.sol";
 
 import { ECDSA } from "../lib/utils/ECDSA.sol";
 import { MerkleProofLib as Merkle } from "../lib/utils/MerkleProofLib.sol";
@@ -92,6 +92,76 @@ abstract contract BaseUtils is
         }
     }
 
+    function _setSellerBalance(
+        uint256 _sellerKey,
+        ERC20 _erc20,
+        uint256 _packed,
+        bytes32 _pixTarget
+    ) internal {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(0xc, _sellerKey))
+            let _loc := keccak256(0x0c, 0x34)
+            sstore(add(_loc, 0x01), _packed)
+            sstore(_loc, _pixTarget)
+        }
+    }
+
+    function _setValidState(
+        uint256 _sellerKey,
+        ERC20 _erc20,
+        uint256 _packed
+    ) internal {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(0xc, _sellerKey))
+            let _loc := keccak256(0x0c, 0x34)
+            sstore(add(_loc, 0x01), _packed)
+        }
+    }
+
+    function _addSellerBalance(
+        uint256 _sellerKey,
+        ERC20 _erc20,
+        uint256 _amount
+    ) internal {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(0xc, _sellerKey))
+            let _loc := add(keccak256(0x0c, 0x34), 0x01)
+            sstore(_loc, add(sload(_loc), _amount))
+        }
+    }
+
+    function _decSellerBalance(
+        uint256 _sellerKey,
+        ERC20 _erc20,
+        uint256 _amount
+    ) internal {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(0xc, _sellerKey))
+            let _loc := add(keccak256(0x0c, 0x34), 0x01)
+            sstore(_loc, sub(sload(_loc), _amount))
+        }
+    }
+
+    function __sellerBalance(
+        uint256 _sellerKey,
+        ERC20 _erc20
+    ) internal view returns (uint256 _packed) {
+        assembly {
+            mstore(0x20, _erc20)
+            mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
+            mstore(0x00, shr(0xc, _sellerKey))
+            _packed := sload(add(keccak256(0x0c, 0x34), 0x01))
+        }
+    }
+
     /// @notice Public method that handles `address`
     /// to `uint256` safe type casting.
     /// @dev Function sighash: 0x4b2ae980.
@@ -100,7 +170,7 @@ abstract contract BaseUtils is
     ) public pure returns (uint256 _key) {
         // _key = uint256(uint160(address(_addr))) << 12;
         assembly {
-            _key := shl(12, _addr)
+            _key := shl(0xc, _addr)
         }
     }
 
@@ -109,7 +179,7 @@ abstract contract BaseUtils is
     ) public pure returns (address _addr) {
         // _addr = address(uint160(uint256(_key >> 12)));
         assembly {
-            _addr := shr(12, _key)
+            _addr := shr(0xc, _key)
         }
     }
 }
