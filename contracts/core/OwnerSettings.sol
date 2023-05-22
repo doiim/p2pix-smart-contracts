@@ -31,7 +31,7 @@ abstract contract OwnerSettings is
         uint256 defaultBlocks,
         address[] memory validSigners,
         address _reputation,
-        address[] memory tokens,
+        ERC20[] memory tokens,
         bool[] memory tokenStates
     ) {
         setDefaultLockBlocks(defaultBlocks);
@@ -133,7 +133,7 @@ abstract contract OwnerSettings is
     }
 
     function tokenSettings(
-        address[] memory _tokens,
+        ERC20[] memory _tokens,
         bool[] memory _states
     ) public onlyOwner {
         /* Yul Impl */

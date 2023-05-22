@@ -39,7 +39,7 @@ contract P2PIX is BaseUtils {
         uint256 defaultBlocks,
         address[] memory validSigners,
         address _reputation,
-        address[] memory tokens,
+        ERC20[] memory tokens,
         bool[] memory tokenStates
     ) 
         OwnerSettings(
@@ -98,7 +98,7 @@ contract P2PIX is BaseUtils {
 
         clearReentrancyGuard();
 
-        emit DepositAdded(msg.sender, address(args.token), args.amount);
+        emit DepositAdded(msg.sender, args.token, args.amount);
     }
 
     /// @notice Enables seller to invalidate future
@@ -117,7 +117,7 @@ contract P2PIX is BaseUtils {
 
             _setValidState(msg.sender, token, _sellerBalance);
 
-            emit ValidSet(msg.sender, address(token), state);
+            emit ValidSet(msg.sender, token, state);
         } else revert NotInitialized();
     }
 
@@ -184,7 +184,7 @@ contract P2PIX is BaseUtils {
             (block.number + defaultLockBlocks),
             _pixTarget,
             args.amount,
-            address(args.token),
+            args.token,
             sender,
             args.seller
         );
@@ -270,12 +270,12 @@ contract P2PIX is BaseUtils {
             _notExpired(l);
 
             uint256 _sellerBalance = 
-            __sellerBalance(l.seller, ERC20(l.token)) & BITMASK_SB_ENTRY;
+            __sellerBalance(l.seller, l.token) & BITMASK_SB_ENTRY;
 
             if ((_sellerBalance + l.amount) > MAXBALANCE_UPPERBOUND)
                 revert MaxBalExceeded();
 
-            _addSellerBalance(l.seller, ERC20(l.token), l.amount);
+            _addSellerBalance(l.seller, l.token, l.amount);
 
             l.amount = 0;
 
@@ -336,7 +336,7 @@ contract P2PIX is BaseUtils {
 
         emit DepositWithdrawn(
             msg.sender,
-            address(token),
+            token,
             amount
         );
     }
