@@ -20,6 +20,7 @@ contract P2PIX is BaseUtils {
 
     using DT for DT.DepositArgs;
     using DT for DT.LockArgs;
+    using DT for DT.ReleaseArgs;
     using DT for DT.Lock;
     using DT for DT.LockStatus;
 
@@ -206,13 +207,9 @@ contract P2PIX is BaseUtils {
     /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
     /// @dev Function sighash: 0x4e1389ed.
     function release(
-        uint256 lockID,
-        bytes32 pixTimestamp,
-        bytes32 r,
-        bytes32 s,
-        uint8 v
+        DT.ReleaseArgs calldata args
     ) public nonReentrant {
-        DT.Lock storage l = mapLocks[lockID];
+        DT.Lock storage l = mapLocks[args.lockID];
 
         if (l.amount == 0) revert AlreadyReleased();
         if (l.expirationBlock < block.number)
@@ -222,11 +219,11 @@ contract P2PIX is BaseUtils {
             abi.encodePacked(
                 l.pixTarget,
                 l.amount,
-                pixTimestamp
+                args.pixTimestamp
             )
         );
 
-        _signerCheck(message, r, s, v);
+        _signerCheck(message, args.signature);
 
         ERC20 t = ERC20(l.token);
 
@@ -254,7 +251,7 @@ contract P2PIX is BaseUtils {
             lockAmount
         );
 
-        emit LockReleased(l.buyerAddress, lockID, lockAmount);
+        emit LockReleased(l.buyerAddress, args.lockID, lockAmount);
     }
 
     /// @notice Unlocks expired locks.

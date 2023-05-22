@@ -218,7 +218,7 @@ abstract contract OwnerSettings is
         assembly {
             success := staticcall(
                 // gas
-                0x7530,
+                gas(),
                 // address
                 sload(reputation.slot),
                 // argsOffset

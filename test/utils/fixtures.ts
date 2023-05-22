@@ -12,7 +12,7 @@ import {
   Reputation,
 } from "../../src/types";
 
-import { Call, RepFixture, P2PixAndReputation, DepositArgs, LockArgs } from "./interfaces";
+import { Call, RepFixture, P2PixAndReputation, DepositArgs, LockArgs, ReleaseArgs } from "./interfaces";
 
 
 // exported constants
@@ -30,6 +30,12 @@ export const createLockArgs = (seller: string, token: string, amount: BigNumber,
   amount,
   merkleProof,
   expiredLocks,
+});
+
+export const createReleaseArgs = (lockID: BigNumber, pixTimestamp: string, signature: string): ReleaseArgs => ({
+  lockID,
+  pixTimestamp,
+  signature,
 });
 
 export const getSignerAddrs = (

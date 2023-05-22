@@ -31,6 +31,12 @@ export interface LockArgs {
   expiredLocks: BigNumber[];
 }
 
+export interface ReleaseArgs {
+  lockID: BigNumber;
+  pixTimestamp: string;
+  signature: string;
+}
+
 export interface Lock {
   counter: BigNumber;
   expirationBlock: BigNumber;

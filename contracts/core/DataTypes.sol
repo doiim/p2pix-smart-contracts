@@ -20,6 +20,12 @@ library DataTypes {
         uint256[] expiredLocks;
     }
 
+    struct ReleaseArgs {
+        uint256 lockID;
+        bytes32 pixTimestamp;
+        bytes signature;
+    }
+
     struct Lock {
         uint256 counter;
         uint256 expirationBlock;
