@@ -140,7 +140,7 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "address",
+        internalType: "contract ERC20",
         name: "token",
         type: "address",
       },
@@ -165,7 +165,7 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "address",
+        internalType: "contract ERC20",
         name: "token",
         type: "address",
       },
@@ -367,7 +367,7 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "address",
+        internalType: "contract ERC20",
         name: "token",
         type: "address",
       },
@@ -563,7 +563,7 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address[]",
+        internalType: "contract ERC20[]",
         name: "_tokens",
         type: "address[]",
       },

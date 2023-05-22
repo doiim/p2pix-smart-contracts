@@ -31,7 +31,7 @@ library DataTypes {
         uint256 expirationBlock;
         bytes32 pixTarget;
         uint80 amount;
-        address token;
+        ERC20 token;
         address buyerAddress;
         address seller;
     }
