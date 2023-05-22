@@ -217,9 +217,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "uint256",
+        internalType: "address",
         name: "seller",
-        type: "uint256",
+        type: "address",
       },
       {
         indexed: false,
@@ -533,9 +533,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
+        internalType: "address",
         name: "sellerKey",
-        type: "uint256",
+        type: "address",
       },
     ],
     name: "sellerAllowList",

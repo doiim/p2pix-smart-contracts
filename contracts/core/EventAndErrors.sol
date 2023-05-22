@@ -28,7 +28,7 @@ interface EventAndErrors {
     event LockAdded(
         address indexed buyer,
         uint256 indexed lockID,
-        uint256 seller,
+        address seller,
         uint256 amount
     );
     /// @dev 0x364537f14276f2a0ce9905588413f96454cbb8fb2e4f5308389307c1098bede8
