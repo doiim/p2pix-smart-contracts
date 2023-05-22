@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { ethers, network } from "hardhat";
 import hre from "hardhat";
 
-import { Deploys } from "../test/utils/fixtures";
+import { Deploys } from "../test/utils/interfaces";
 
 let deploysJson: Deploys;
 

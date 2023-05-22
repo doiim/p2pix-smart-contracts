@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { ERC20, OwnerSettings } from "./OwnerSettings.sol";
+import { ERC20, OwnerSettings } from "contracts/core/OwnerSettings.sol";
 
-import { ECDSA } from "../lib/utils/ECDSA.sol";
-import { MerkleProofLib as Merkle } from "../lib/utils/MerkleProofLib.sol";
-import { ReentrancyGuard } from "../lib/utils/ReentrancyGuard.sol";
+import { ECDSA } from "contracts/lib/utils/ECDSA.sol";
+import { MerkleProofLib as Merkle } from "contracts/lib/utils/MerkleProofLib.sol";
+import { ReentrancyGuard } from "contracts/lib/utils/ReentrancyGuard.sol";
 
 abstract contract BaseUtils is
     OwnerSettings,
@@ -93,7 +93,7 @@ abstract contract BaseUtils is
     }
 
     function _setSellerBalance(
-        uint256 _sellerKey,
+        address _sellerKey,
         ERC20 _erc20,
         uint256 _packed,
         bytes32 _pixTarget
@@ -101,7 +101,7 @@ abstract contract BaseUtils is
         assembly {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(0xc, _sellerKey))
+            mstore(0x00, _sellerKey)
             let _loc := keccak256(0x0c, 0x34)
             sstore(add(_loc, 0x01), _packed)
             sstore(_loc, _pixTarget)
@@ -109,55 +109,55 @@ abstract contract BaseUtils is
     }
 
     function _setValidState(
-        uint256 _sellerKey,
+        address _sellerKey,
         ERC20 _erc20,
         uint256 _packed
     ) internal {
         assembly {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(0xc, _sellerKey))
+            mstore(0x00, _sellerKey)
             let _loc := keccak256(0x0c, 0x34)
             sstore(add(_loc, 0x01), _packed)
         }
     }
 
     function _addSellerBalance(
-        uint256 _sellerKey,
+        address _sellerKey,
         ERC20 _erc20,
         uint256 _amount
     ) internal {
         assembly {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(0xc, _sellerKey))
+            mstore(0x00, _sellerKey)
             let _loc := add(keccak256(0x0c, 0x34), 0x01)
             sstore(_loc, add(sload(_loc), _amount))
         }
     }
 
     function _decSellerBalance(
-        uint256 _sellerKey,
+        address _sellerKey,
         ERC20 _erc20,
         uint256 _amount
     ) internal {
         assembly {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(0xc, _sellerKey))
+            mstore(0x00, _sellerKey)
             let _loc := add(keccak256(0x0c, 0x34), 0x01)
             sstore(_loc, sub(sload(_loc), _amount))
         }
     }
 
     function __sellerBalance(
-        uint256 _sellerKey,
+        address _sellerKey,
         ERC20 _erc20
     ) internal view returns (uint256 _packed) {
         assembly {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
-            mstore(0x00, shr(0xc, _sellerKey))
+            mstore(0x00, _sellerKey)
             _packed := sload(add(keccak256(0x0c, 0x34), 0x01))
         }
     }

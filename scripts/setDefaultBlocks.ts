@@ -2,7 +2,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
-import { Deploys } from "../test/utils/fixtures";
+import { Deploys } from "../test/utils/interfaces";
 import { P2PIX__factory } from "../src/types";
 
 let deploysJson: Deploys;

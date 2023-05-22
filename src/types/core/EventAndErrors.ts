@@ -27,7 +27,7 @@ export interface EventAndErrorsInterface extends utils.Interface {
     "DepositAdded(address,address,uint256)": EventFragment;
     "DepositWithdrawn(address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,uint256)": EventFragment;
-    "LockAdded(address,uint256,uint256,uint256)": EventFragment;
+    "LockAdded(address,uint256,address,uint256)": EventFragment;
     "LockBlocksUpdated(uint256)": EventFragment;
     "LockReleased(address,uint256,uint256)": EventFragment;
     "LockReturned(address,uint256)": EventFragment;
@@ -104,11 +104,11 @@ export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
 export interface LockAddedEventObject {
   buyer: string;
   lockID: BigNumber;
-  seller: BigNumber;
+  seller: string;
   amount: BigNumber;
 }
 export type LockAddedEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
+  [string, BigNumber, string, BigNumber],
   LockAddedEventObject
 >;
 
@@ -273,7 +273,7 @@ export interface EventAndErrors extends BaseContract {
     ): FundsWithdrawnEventFilter;
     FundsWithdrawn(owner?: null, amount?: null): FundsWithdrawnEventFilter;
 
-    "LockAdded(address,uint256,uint256,uint256)"(
+    "LockAdded(address,uint256,address,uint256)"(
       buyer?: PromiseOrValue<string> | null,
       lockID?: PromiseOrValue<BigNumberish> | null,
       seller?: null,

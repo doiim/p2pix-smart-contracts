@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import { ERC2771Context as ERC2771 } from "../lib/metatx/ERC2771Context.sol";
-import { ERC20, SafeTransferLib } from "../lib/utils/SafeTransferLib.sol";
-import { IReputation } from "../lib/interfaces/IReputation.sol";
-import { EventAndErrors } from "./EventAndErrors.sol";
-import { Constants } from "./Constants.sol";
-import { Owned } from "../lib/auth/Owned.sol";
+import { ERC2771Context as ERC2771 } from "contracts/lib/metatx/ERC2771Context.sol";
+import { ERC20, SafeTransferLib } from "contracts/lib/utils/SafeTransferLib.sol";
+import { IReputation } from "contracts/lib/interfaces/IReputation.sol";
+import { EventAndErrors } from "contracts/core/EventAndErrors.sol";
+import { Constants } from "contracts/core/Constants.sol";
+import { Owned } from "contracts/lib/auth/Owned.sol";
 
 abstract contract OwnerSettings is
     Constants,
@@ -121,7 +121,7 @@ abstract contract OwnerSettings is
             } iszero(returndatasize()) {
                 /*  */
             } {
-                sstore(shl(12, mload(i)), true)
+                sstore(shl(0xc, mload(i)), true)
                 i := add(i, 0x20)
 
                 if iszero(lt(i, end)) {
@@ -187,11 +187,11 @@ abstract contract OwnerSettings is
     }
 
     function sellerAllowList(
-        uint256 sellerKey
+        address sellerKey
     ) public view returns (bytes32 root) {
         assembly {
             mstore(0x0c, _SELLER_ALLOWLIST_SLOT_SEED)
-            mstore(0x00, shr(12, sellerKey))
+            mstore(0x00, sellerKey)
             root := sload(keccak256(0x00, 0x20))
         }
     }

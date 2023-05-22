@@ -27,13 +27,59 @@ import type {
   PromiseOrValue,
 } from "../common";
 
+export declare namespace DataTypes {
+  export type DepositArgsStruct = {
+    pixTarget: PromiseOrValue<string>;
+    allowlistRoot: PromiseOrValue<BytesLike>;
+    token: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    valid: PromiseOrValue<boolean>;
+  };
+
+  export type DepositArgsStructOutput = [
+    string,
+    string,
+    string,
+    BigNumber,
+    boolean
+  ] & {
+    pixTarget: string;
+    allowlistRoot: string;
+    token: string;
+    amount: BigNumber;
+    valid: boolean;
+  };
+
+  export type LockArgsStruct = {
+    seller: PromiseOrValue<string>;
+    token: PromiseOrValue<string>;
+    amount: PromiseOrValue<BigNumberish>;
+    merkleProof: PromiseOrValue<BytesLike>[];
+    expiredLocks: PromiseOrValue<BigNumberish>[];
+  };
+
+  export type LockArgsStructOutput = [
+    string,
+    string,
+    BigNumber,
+    string[],
+    BigNumber[]
+  ] & {
+    seller: string;
+    token: string;
+    amount: BigNumber;
+    merkleProof: string[];
+    expiredLocks: BigNumber[];
+  };
+}
+
 export interface P2PIXInterface extends utils.Interface {
   functions: {
     "_castAddrToKey(address)": FunctionFragment;
     "_castKeyToAddr(uint256)": FunctionFragment;
     "allowedERC20s(address)": FunctionFragment;
     "defaultLockBlocks()": FunctionFragment;
-    "deposit(address,uint96,string,bool,bytes32)": FunctionFragment;
+    "deposit((string,bytes32,address,uint96,bool))": FunctionFragment;
     "getBalance(address,address)": FunctionFragment;
     "getBalances(address[],address)": FunctionFragment;
     "getLocksStatus(uint256[])": FunctionFragment;
@@ -42,13 +88,13 @@ export interface P2PIXInterface extends utils.Interface {
     "getStr(string)": FunctionFragment;
     "getValid(address,address)": FunctionFragment;
     "isTrustedForwarder(address)": FunctionFragment;
-    "lock(address,address,uint80,bytes32[],uint256[])": FunctionFragment;
+    "lock((address,address,uint80,bytes32[],uint256[]))": FunctionFragment;
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
     "release(uint256,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
     "reputation()": FunctionFragment;
-    "sellerAllowList(uint256)": FunctionFragment;
+    "sellerAllowList(address)": FunctionFragment;
     "setDefaultLockBlocks(uint256)": FunctionFragment;
     "setOwner(address)": FunctionFragment;
     "setReputation(address)": FunctionFragment;
@@ -121,13 +167,7 @@ export interface P2PIXInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "deposit",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [DataTypes.DepositArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "getBalance",
@@ -163,13 +203,7 @@ export interface P2PIXInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "lock",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>[],
-      PromiseOrValue<BigNumberish>[]
-    ]
+    values: [DataTypes.LockArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "lockCounter",
@@ -196,7 +230,7 @@ export interface P2PIXInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "sellerAllowList",
-    values: [PromiseOrValue<BigNumberish>]
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "setDefaultLockBlocks",
@@ -362,7 +396,7 @@ export interface P2PIXInterface extends utils.Interface {
     "DepositAdded(address,address,uint256)": EventFragment;
     "DepositWithdrawn(address,address,uint256)": EventFragment;
     "FundsWithdrawn(address,uint256)": EventFragment;
-    "LockAdded(address,uint256,uint256,uint256)": EventFragment;
+    "LockAdded(address,uint256,address,uint256)": EventFragment;
     "LockBlocksUpdated(uint256)": EventFragment;
     "LockReleased(address,uint256,uint256)": EventFragment;
     "LockReturned(address,uint256)": EventFragment;
@@ -441,11 +475,11 @@ export type FundsWithdrawnEventFilter = TypedEventFilter<FundsWithdrawnEvent>;
 export interface LockAddedEventObject {
   buyer: string;
   lockID: BigNumber;
-  seller: BigNumber;
+  seller: string;
   amount: BigNumber;
 }
 export type LockAddedEvent = TypedEvent<
-  [string, BigNumber, BigNumber, BigNumber],
+  [string, BigNumber, string, BigNumber],
   LockAddedEventObject
 >;
 
@@ -598,11 +632,7 @@ export interface P2PIX extends BaseContract {
     defaultLockBlocks(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     deposit(
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<string>,
-      _valid: PromiseOrValue<boolean>,
-      allowlistRoot: PromiseOrValue<BytesLike>,
+      args: DataTypes.DepositArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -652,11 +682,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<[boolean]>;
 
     lock(
-      _seller: PromiseOrValue<string>,
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      merkleProof: PromiseOrValue<BytesLike>[],
-      expiredLocks: PromiseOrValue<BigNumberish>[],
+      args: DataTypes.LockArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -666,14 +692,14 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
-        sellerKey: BigNumber;
+      [BigNumber, BigNumber, string, BigNumber, string, string, string] & {
         counter: BigNumber;
         expirationBlock: BigNumber;
         pixTarget: string;
         amount: BigNumber;
         token: string;
         buyerAddress: string;
+        seller: string;
       }
     >;
 
@@ -691,7 +717,7 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<[string]>;
 
     sellerAllowList(
-      sellerKey: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[string] & { root: string }>;
 
@@ -789,11 +815,7 @@ export interface P2PIX extends BaseContract {
   defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
   deposit(
-    _token: PromiseOrValue<string>,
-    _amount: PromiseOrValue<BigNumberish>,
-    _pixTarget: PromiseOrValue<string>,
-    _valid: PromiseOrValue<boolean>,
-    allowlistRoot: PromiseOrValue<BytesLike>,
+    args: DataTypes.DepositArgsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -843,11 +865,7 @@ export interface P2PIX extends BaseContract {
   ): Promise<boolean>;
 
   lock(
-    _seller: PromiseOrValue<string>,
-    _token: PromiseOrValue<string>,
-    _amount: PromiseOrValue<BigNumberish>,
-    merkleProof: PromiseOrValue<BytesLike>[],
-    expiredLocks: PromiseOrValue<BigNumberish>[],
+    args: DataTypes.LockArgsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -857,14 +875,14 @@ export interface P2PIX extends BaseContract {
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
-      sellerKey: BigNumber;
+    [BigNumber, BigNumber, string, BigNumber, string, string, string] & {
       counter: BigNumber;
       expirationBlock: BigNumber;
       pixTarget: string;
       amount: BigNumber;
       token: string;
       buyerAddress: string;
+      seller: string;
     }
   >;
 
@@ -882,7 +900,7 @@ export interface P2PIX extends BaseContract {
   reputation(overrides?: CallOverrides): Promise<string>;
 
   sellerAllowList(
-    sellerKey: PromiseOrValue<BigNumberish>,
+    sellerKey: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -980,11 +998,7 @@ export interface P2PIX extends BaseContract {
     defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit(
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<string>,
-      _valid: PromiseOrValue<boolean>,
-      allowlistRoot: PromiseOrValue<BytesLike>,
+      args: DataTypes.DepositArgsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1034,11 +1048,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<boolean>;
 
     lock(
-      _seller: PromiseOrValue<string>,
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      merkleProof: PromiseOrValue<BytesLike>[],
-      expiredLocks: PromiseOrValue<BigNumberish>[],
+      args: DataTypes.LockArgsStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1048,14 +1058,14 @@ export interface P2PIX extends BaseContract {
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber, string, BigNumber, string, string] & {
-        sellerKey: BigNumber;
+      [BigNumber, BigNumber, string, BigNumber, string, string, string] & {
         counter: BigNumber;
         expirationBlock: BigNumber;
         pixTarget: string;
         amount: BigNumber;
         token: string;
         buyerAddress: string;
+        seller: string;
       }
     >;
 
@@ -1073,7 +1083,7 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<string>;
 
     sellerAllowList(
-      sellerKey: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -1189,7 +1199,7 @@ export interface P2PIX extends BaseContract {
     ): FundsWithdrawnEventFilter;
     FundsWithdrawn(owner?: null, amount?: null): FundsWithdrawnEventFilter;
 
-    "LockAdded(address,uint256,uint256,uint256)"(
+    "LockAdded(address,uint256,address,uint256)"(
       buyer?: PromiseOrValue<string> | null,
       lockID?: PromiseOrValue<BigNumberish> | null,
       seller?: null,
@@ -1293,11 +1303,7 @@ export interface P2PIX extends BaseContract {
     defaultLockBlocks(overrides?: CallOverrides): Promise<BigNumber>;
 
     deposit(
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<string>,
-      _valid: PromiseOrValue<boolean>,
-      allowlistRoot: PromiseOrValue<BytesLike>,
+      args: DataTypes.DepositArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1347,11 +1353,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<BigNumber>;
 
     lock(
-      _seller: PromiseOrValue<string>,
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      merkleProof: PromiseOrValue<BytesLike>[],
-      expiredLocks: PromiseOrValue<BigNumberish>[],
+      args: DataTypes.LockArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1376,7 +1378,7 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<BigNumber>;
 
     sellerAllowList(
-      sellerKey: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1475,11 +1477,7 @@ export interface P2PIX extends BaseContract {
     defaultLockBlocks(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     deposit(
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      _pixTarget: PromiseOrValue<string>,
-      _valid: PromiseOrValue<boolean>,
-      allowlistRoot: PromiseOrValue<BytesLike>,
+      args: DataTypes.DepositArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1529,11 +1527,7 @@ export interface P2PIX extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     lock(
-      _seller: PromiseOrValue<string>,
-      _token: PromiseOrValue<string>,
-      _amount: PromiseOrValue<BigNumberish>,
-      merkleProof: PromiseOrValue<BytesLike>[],
-      expiredLocks: PromiseOrValue<BigNumberish>[],
+      args: DataTypes.LockArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1558,7 +1552,7 @@ export interface P2PIX extends BaseContract {
     reputation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     sellerAllowList(
-      sellerKey: PromiseOrValue<BigNumberish>,
+      sellerKey: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
