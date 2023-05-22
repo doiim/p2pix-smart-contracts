@@ -162,6 +162,23 @@ contract P2PIX is BaseUtils {
         (sender, forwarder) = _isTrustedForwarder();
         bytes32 _pixTarget = getPixTarget(args.seller, args.token);
 
+        // transaction forwarding must leave `merkleProof` empty;
+        // otherwise, the trustedForwarder must be previously added 
+        // to a seller whitelist.
+        if (args.merkleProof.length != 0) {
+            _merkleVerify( args.merkleProof, sellerAllowList(args.seller), sender);
+
+        } else if (args.amount > REPUTATION_LOWERBOUND && forwarder == 0) {
+            
+            uint256 spendLimit; uint256 userCredit = 
+            userRecord[_castAddrToKey(msg.sender)];
+            (spendLimit) = _limiter(userCredit / WAD);
+            if ( 
+                args.amount > (spendLimit * WAD) || 
+                args.amount > LOCKAMOUNT_UPPERBOUND 
+            ) revert AmountNotAllowed();
+        }
+
         DT.Lock memory l = DT.Lock(
             lockID,
             (block.number + defaultLockBlocks),
@@ -172,29 +189,7 @@ contract P2PIX is BaseUtils {
             args.seller
         );
 
-        if (args.merkleProof.length != 0) {
-            _merkleVerify(args.merkleProof, sellerAllowList(args.seller), sender);
-            _addLock(bal, l);
-
-        } else {
-            if (l.amount <= REPUTATION_LOWERBOUND) {
-            _addLock(bal, l);
-
-        } else {
-            if (forwarder != 0) {
-            _addLock(bal, l);
-        
-        } else {
-            uint256 spendLimit; uint256 userCredit = 
-            userRecord[_castAddrToKey(msg.sender)];
-            (spendLimit) = _limiter(userCredit / WAD);
-            if ( 
-                l.amount > (spendLimit * WAD) || 
-                l.amount > LOCKAMOUNT_UPPERBOUND 
-            ) revert AmountNotAllowed();
-            _addLock(bal, l);
-
-        /*  */}/*  */}/*  */}
+        _addLock(bal, l);
     }
 
     /// @notice Lock release method that liquidate lock
