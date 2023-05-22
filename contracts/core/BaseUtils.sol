@@ -35,9 +35,7 @@ abstract contract BaseUtils is
 
     function _signerCheck(
         bytes32 _message,
-        bytes32 _r,
-        bytes32 _s,
-        uint8 _v
+        bytes calldata _signature
     ) internal view {
         if (usedTransactions(_message))
             revert TxAlreadyUsed();
@@ -45,13 +43,11 @@ abstract contract BaseUtils is
         if (
             !validBacenSigners(
                 _castAddrToKey(
-                    ECDSA.recover(
+                    ECDSA.recoverCalldata(
                         ECDSA.toEthSignedMessageHash(
                             _message
                         ),
-                        _v,
-                        _r,
-                        _s
+                        _signature
                     )
                 )
             )

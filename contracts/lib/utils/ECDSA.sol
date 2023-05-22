@@ -15,26 +15,43 @@ library ECDSA {
         0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0;
 
     /// @dev Recovers the signer's address from a message digest `hash`,
-    /// and the signature defined by `v`, `r`, `s`.
-    function recover(
+    /// and the `signature`.
+    ///
+    /// This function does NOT accept EIP-2098 short form signatures.
+    /// Use `recover(bytes32 hash, bytes32 r, bytes32 vs)` for EIP-2098
+    /// short form signatures instead.
+    function recoverCalldata(
         bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
+        bytes calldata signature
     ) internal view returns (address result) {
         /// @solidity memory-safe-assembly
         assembly {
             // Copy the free memory pointer so that we can restore it later.
             let m := mload(0x40)
+            // Directly copy `r` and `s` from the calldata.
+            calldatacopy(0x40, signature.offset, 0x40)
+            // Store the `hash` in the scratch space.
             mstore(0x00, hash)
-            mstore(0x20, and(v, 0xff))
-            mstore(0x40, r)
-            mstore(0x60, s)
+            // Compute `v` and store it in the scratch space.
+            mstore(
+                0x20,
+                byte(
+                    0,
+                    calldataload(add(signature.offset, 0x40))
+                )
+            )
             pop(
                 staticcall(
                     gas(), // Amount of gas left for the transaction.
-                    // If `s` in lower half order, such that the signature is not malleable.
-                    lt(s, add(_MALLEABILITY_THRESHOLD, 1)), // Address of `ecrecover`.
+                    and(
+                        // If the signature is exactly 65 bytes in length.
+                        eq(signature.length, 65),
+                        // If `s` in lower half order, such that the signature is not malleable.
+                        lt(
+                            mload(0x60),
+                            add(_MALLEABILITY_THRESHOLD, 1)
+                        )
+                    ), // Address of `ecrecover`.
                     0x00, // Start of input.
                     0x80, // Size of input.
                     0x00, // Start of output.

@@ -71,6 +71,18 @@ export declare namespace DataTypes {
     merkleProof: string[];
     expiredLocks: BigNumber[];
   };
+
+  export type ReleaseArgsStruct = {
+    lockID: PromiseOrValue<BigNumberish>;
+    pixTimestamp: PromiseOrValue<BytesLike>;
+    signature: PromiseOrValue<BytesLike>;
+  };
+
+  export type ReleaseArgsStructOutput = [BigNumber, string, string] & {
+    lockID: BigNumber;
+    pixTimestamp: string;
+    signature: string;
+  };
 }
 
 export interface P2PIXInterface extends utils.Interface {
@@ -92,7 +104,7 @@ export interface P2PIXInterface extends utils.Interface {
     "lockCounter()": FunctionFragment;
     "mapLocks(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
-    "release(uint256,bytes32,bytes32,bytes32,uint8)": FunctionFragment;
+    "release((uint256,bytes32,bytes))": FunctionFragment;
     "reputation()": FunctionFragment;
     "sellerAllowList(address)": FunctionFragment;
     "setDefaultLockBlocks(uint256)": FunctionFragment;
@@ -216,13 +228,7 @@ export interface P2PIXInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "release",
-    values: [
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BigNumberish>
-    ]
+    values: [DataTypes.ReleaseArgsStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "reputation",
@@ -706,11 +712,7 @@ export interface P2PIX extends BaseContract {
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     release(
-      lockID: PromiseOrValue<BigNumberish>,
-      pixTimestamp: PromiseOrValue<BytesLike>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      v: PromiseOrValue<BigNumberish>,
+      args: DataTypes.ReleaseArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -889,11 +891,7 @@ export interface P2PIX extends BaseContract {
   owner(overrides?: CallOverrides): Promise<string>;
 
   release(
-    lockID: PromiseOrValue<BigNumberish>,
-    pixTimestamp: PromiseOrValue<BytesLike>,
-    r: PromiseOrValue<BytesLike>,
-    s: PromiseOrValue<BytesLike>,
-    v: PromiseOrValue<BigNumberish>,
+    args: DataTypes.ReleaseArgsStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1072,11 +1070,7 @@ export interface P2PIX extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     release(
-      lockID: PromiseOrValue<BigNumberish>,
-      pixTimestamp: PromiseOrValue<BytesLike>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      v: PromiseOrValue<BigNumberish>,
+      args: DataTypes.ReleaseArgsStruct,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1367,11 +1361,7 @@ export interface P2PIX extends BaseContract {
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     release(
-      lockID: PromiseOrValue<BigNumberish>,
-      pixTimestamp: PromiseOrValue<BytesLike>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      v: PromiseOrValue<BigNumberish>,
+      args: DataTypes.ReleaseArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1541,11 +1531,7 @@ export interface P2PIX extends BaseContract {
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     release(
-      lockID: PromiseOrValue<BigNumberish>,
-      pixTimestamp: PromiseOrValue<BytesLike>,
-      r: PromiseOrValue<BytesLike>,
-      s: PromiseOrValue<BytesLike>,
-      v: PromiseOrValue<BigNumberish>,
+      args: DataTypes.ReleaseArgsStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
