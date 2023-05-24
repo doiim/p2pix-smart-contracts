@@ -297,7 +297,7 @@ contract P2PIX is BaseUtils {
             }
         }
 
-        assembly {
+        assembly ("memory-safe") {
             if lt(i, locksSize) {
                 // LoopOverflow()
                 mstore(0x00, 0xdfb035c9)
@@ -344,7 +344,7 @@ contract P2PIX is BaseUtils {
     function setRoot(address addr, bytes32 merkleroot)
         public
     {
-        assembly {
+        assembly ("memory-safe") {
             // if (addr != msg.sender)  
             if iszero(eq(addr, caller())) {
                 // revert OnlySeller()
@@ -404,7 +404,7 @@ contract P2PIX is BaseUtils {
         ERC20 _t,
         address _k
     ) private {
-        assembly {
+        assembly ("memory-safe") {
             if iszero(
                 iszero(
                     or(
@@ -428,7 +428,7 @@ contract P2PIX is BaseUtils {
         view
         returns (uint256 bal)
     {
-        assembly {
+        assembly ("memory-safe") {
             for {
                 /*  */
             } iszero(returndatasize()) {
@@ -451,7 +451,7 @@ contract P2PIX is BaseUtils {
         view
         returns (bool valid)
     {
-        assembly {
+        assembly ("memory-safe") {
             for {
                 /*  */
             } iszero(returndatasize()) {
@@ -477,7 +477,7 @@ contract P2PIX is BaseUtils {
         view
         returns (bytes32 pixTarget)
     {
-        assembly {
+        assembly ("memory-safe") {
             for {
                 /*  */
             } iszero(returndatasize()) {

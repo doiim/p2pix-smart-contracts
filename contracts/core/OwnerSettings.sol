@@ -46,7 +46,7 @@ abstract contract OwnerSettings is
         address[] memory forwarders,
         bool[] memory states
     ) external onlyOwner {
-        assembly {
+        assembly ("memory-safe") {
             // first 32 bytes eq to array's length
             let fLen := mload(forwarders)
             // halts execution if forwarders.length eq 0
@@ -95,7 +95,7 @@ abstract contract OwnerSettings is
     function setReputation(
         IReputation _reputation
     ) public onlyOwner {
-        assembly {
+        assembly ("memory-safe") {
             sstore(reputation.slot, _reputation)
         }
         emit ReputationUpdated(address(_reputation));
@@ -104,7 +104,7 @@ abstract contract OwnerSettings is
     function setDefaultLockBlocks(
         uint256 _blocks
     ) public onlyOwner {
-        assembly {
+        assembly ("memory-safe") {
             sstore(defaultLockBlocks.slot, _blocks)
         }
         emit LockBlocksUpdated(_blocks);
@@ -113,7 +113,7 @@ abstract contract OwnerSettings is
     function setValidSigners(
         address[] memory _validSigners
     ) public onlyOwner {
-        assembly {
+        assembly ("memory-safe") {
             let i := add(_validSigners, 0x20)
             let end := add(i, shl(0x05, mload(_validSigners)))
             for {
@@ -137,7 +137,7 @@ abstract contract OwnerSettings is
         bool[] memory _states
     ) public onlyOwner {
         /* Yul Impl */
-        assembly {
+        assembly ("memory-safe") {
             // first 32 bytes eq to array's length
             let tLen := mload(_tokens)
             // NoTokens()
@@ -181,7 +181,7 @@ abstract contract OwnerSettings is
     function validBacenSigners(
         uint256 signer
     ) public view returns (bool valid) {
-        assembly {
+        assembly ("memory-safe") {
             valid := sload(signer)
         }
     }
@@ -189,7 +189,7 @@ abstract contract OwnerSettings is
     function sellerAllowList(
         address sellerKey
     ) public view returns (bytes32 root) {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x0c, _SELLER_ALLOWLIST_SLOT_SEED)
             mstore(0x00, sellerKey)
             root := sload(keccak256(0x00, 0x20))
@@ -199,7 +199,7 @@ abstract contract OwnerSettings is
     function allowedERC20s(
         ERC20 erc20
     ) public view returns (bool state) {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x0c, _ALLOWED_ERC20_SLOT_SEED)
             mstore(0x00, erc20)
             state := sload(keccak256(0x0c, 0x20))
@@ -215,7 +215,7 @@ abstract contract OwnerSettings is
             _userCredit
         );
         bool success;
-        assembly {
+        assembly ("memory-safe") {
             success := staticcall(
                 // gas
                 gas(),
