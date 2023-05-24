@@ -5,7 +5,8 @@
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
-# **/artifacts
+artifacts
+**/artifacts
 artifacts/build-info
 **/build
 **/ref
@@ -16,6 +17,8 @@ artifacts/build-info
 **/.coverage_contracts
 **/dist
 **/node_modules
+.deps
+src/types
 
 # files
 *.env
