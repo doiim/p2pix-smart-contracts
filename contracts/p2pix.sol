@@ -150,10 +150,12 @@ contract P2PIX is BaseUtils {
         uint256 bal = getBalance(args.seller, args.token);
         if (bal < args.amount) revert NotEnoughTokens();
 
-        uint256 c = lockCounter + 1;
+        unchecked { 
+            lockID = ++lockCounter;
+        }
 
         if (
-            mapLocks[c].expirationBlock >= block.number
+            mapLocks[lockID].expirationBlock >= block.number
         ) revert NotExpired();
 
         address sender; uint256 forwarder;
@@ -161,7 +163,7 @@ contract P2PIX is BaseUtils {
         bytes32 _pixTarget = getPixTarget(args.seller, args.token);
 
         DT.Lock memory l = DT.Lock(
-            c,
+            lockID,
             (block.number + defaultLockBlocks),
             _pixTarget,
             args.amount,
@@ -172,15 +174,16 @@ contract P2PIX is BaseUtils {
 
         if (args.merkleProof.length != 0) {
             _merkleVerify(args.merkleProof, sellerAllowList(args.seller), sender);
-            lockID = _addLock(bal, l);
+            _addLock(bal, l);
 
         } else {
             if (l.amount <= REPUTATION_LOWERBOUND) {
-            lockID = _addLock(bal, l);
+            _addLock(bal, l);
 
         } else {
             if (forwarder != 0) {
-                lockID = _addLock(bal, l);
+            _addLock(bal, l);
+        
         } else {
             uint256 spendLimit; uint256 userCredit = 
             userRecord[_castAddrToKey(msg.sender)];
@@ -189,7 +192,7 @@ contract P2PIX is BaseUtils {
                 l.amount > (spendLimit * WAD) || 
                 l.amount > LOCKAMOUNT_UPPERBOUND 
             ) revert AmountNotAllowed();
-            lockID = _addLock(bal, l);
+            _addLock(bal, l);
 
         /*  */}/*  */}/*  */}
     }
@@ -387,12 +390,10 @@ contract P2PIX is BaseUtils {
     function _addLock(
         uint256 _bal,
         DT.Lock memory _l
-    ) internal returns(uint256 counter){
+    ) internal {
         mapLocks[_l.counter] = _l;
 
         _decBal(_bal, _l.amount, ERC20(_l.token), _l.seller);
-        ++lockCounter;
-        counter = _l.counter;
 
         emit LockAdded(
             _l.buyerAddress,
