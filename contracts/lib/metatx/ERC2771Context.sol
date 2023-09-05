@@ -39,7 +39,7 @@ abstract contract Context {
 /// @dev Context variant with ERC2771 support.
 abstract contract ERC2771Context is Context {
     // address private immutable _trustedForwarder;
-    mapping(address => bool) public isTrustedForwarder;
+    mapping(address => bool) public trustedForwarders;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     // constructor(address trustedForwarder) {
@@ -53,7 +53,7 @@ abstract contract ERC2771Context is Context {
         override
         returns (address sender)
     {
-        if (isTrustedForwarder[msg.sender]) {
+        if (trustedForwarders[msg.sender]) {
             // The assembly code is more direct than the Solidity version using `abi.decode`.
             /// @solidity memory-safe-assembly
             assembly {
@@ -67,15 +67,8 @@ abstract contract ERC2771Context is Context {
         }
     }
 
-    function _isTrustedForwarder()
-        internal
-        view
-        returns (address _sender, uint256 _forwarder)
-    {
-        _sender = _msgSender();
-        _forwarder = (_sender != msg.sender)
-            ? uint256(1)
-            : uint256(0);
+    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
+      return trustedForwarders[forwarder];
     }
 
     function _msgData()
@@ -85,7 +78,7 @@ abstract contract ERC2771Context is Context {
         override
         returns (bytes calldata)
     {
-        if (isTrustedForwarder[msg.sender]) {
+        if (isTrustedForwarder(msg.sender)) {
             return msg.data[:msg.data.length - 20];
         } else {
             return super._msgData();
