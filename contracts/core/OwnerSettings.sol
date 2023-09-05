@@ -67,7 +67,7 @@ abstract contract OwnerSettings is
                 sLoc := add(sLoc, 0x20)
             } {
                 // cache hashmap entry in scratch space
-                mstore(0x20, isTrustedForwarder.slot)
+                mstore(0x20, trustedForwarders.slot)
                 mstore(0x00, mload(fLoc))
                 //  let mapSlot := keccak256(0x00, 0x40)
                 sstore(keccak256(0x00, 0x40), mload(sLoc))

@@ -158,20 +158,18 @@ contract P2PIX is BaseUtils {
             mapLocks[lockID].expirationBlock >= block.number
         ) revert NotExpired();
 
-        address sender; uint256 forwarder;
-        (sender, forwarder) = _isTrustedForwarder();
         bytes32 _pixTarget = getPixTarget(args.seller, args.token);
 
         // transaction forwarding must leave `merkleProof` empty;
         // otherwise, the trustedForwarder must be previously added 
         // to a seller whitelist.
         if (args.merkleProof.length != 0) {
-            _merkleVerify( args.merkleProof, sellerAllowList(args.seller), sender);
+            _merkleVerify( args.merkleProof, sellerAllowList(args.seller), _msgSender());
 
-        } else if (args.amount > REPUTATION_LOWERBOUND && forwarder == 0) {
+        } else if ( args.amount > REPUTATION_LOWERBOUND && msg.sender == _msgSender() ) {
             
             uint256 spendLimit; uint256 userCredit = 
-            userRecord[_castAddrToKey(msg.sender)];
+            userRecord[_castAddrToKey(_msgSender())];
             (spendLimit) = _limiter(userCredit / WAD);
             if ( 
                 args.amount > (spendLimit * WAD) || 
@@ -185,7 +183,7 @@ contract P2PIX is BaseUtils {
             _pixTarget,
             args.amount,
             args.token,
-            sender,
+            _msgSender(),
             args.seller
         );
 
@@ -231,11 +229,8 @@ contract P2PIX is BaseUtils {
         l.amount = 0;
         l.expirationBlock = 0;
         _setUsedTransactions(message);
-
-        address sender; uint256 forwarder;
-        (sender, forwarder) = _isTrustedForwarder();
         
-        if (forwarder == 0) { 
+        if (_msgSender() == msg.sender) { 
         if (msg.sender != l.buyerAddress) {
             userRecord[_castAddrToKey(msg.sender)] += (lockAmount >> 1);
             userRecord[_castAddrToKey(l.buyerAddress)] += (lockAmount >> 1);
