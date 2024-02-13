@@ -1,6 +1,28 @@
-# Reputation
+# Solidity API
 
-## Methods
+## Reputation
+
+### maxLimit
+
+```solidity
+uint256 maxLimit
+```
+
+_Asymptote numerator constant value for the `limiter` fx._
+
+### magicValue
+
+```solidity
+uint256 magicValue
+```
+
+_Denominator's constant operand for the `limiter` fx._
+
+### constructor
+
+```solidity
+constructor() public payable
+```
 
 ### limiter
 
@@ -8,81 +30,12 @@
 function limiter(uint256 _userCredit) external pure returns (uint256 _spendLimit)
 ```
 
-#### Parameters
-
-| Name         | Type    | Description |
-| ------------ | ------- | ----------- |
-| \_userCredit | uint256 | undefined   |
-
-#### Returns
-
-| Name         | Type    | Description |
-| ------------ | ------- | ----------- |
-| \_spendLimit | uint256 | undefined   |
-
-### magicValue
+### sqrt
 
 ```solidity
-function magicValue() external view returns (uint256)
+function sqrt(uint256 x) internal pure returns (uint256 z)
 ```
 
-_Denominator&#39;s constant operand for the `limiter` fx. _
+Taken from Solmate's FixedPointMathLib.
+(https://github.com/transmissions11/solmate/blob/main/src/utils/FixedPointMathLib.sol)
 
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### maxLimit
-
-```solidity
-function maxLimit() external view returns (uint256)
-```
-
-_Asymptote numerator constant value for the `limiter` fx._
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### owner
-
-```solidity
-function owner() external view returns (address)
-```
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
-
-### setOwner
-
-```solidity
-function setOwner(address newOwner) external nonpayable
-```
-
-#### Parameters
-
-| Name     | Type    | Description |
-| -------- | ------- | ----------- |
-| newOwner | address | undefined   |
-
-## Events
-
-### OwnerUpdated
-
-```solidity
-event OwnerUpdated(address indexed user, address indexed newOwner)
-```
-
-#### Parameters
-
-| Name               | Type    | Description |
-| ------------------ | ------- | ----------- |
-| user `indexed`     | address | undefined   |
-| newOwner `indexed` | address | undefined   |
