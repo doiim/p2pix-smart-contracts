@@ -57,24 +57,24 @@ const main = async () => {
 
   /* UNCOMMENT WHEN DEPLOYING TO MAINNET/PUBLIC TESTNETS */
   //verify
-  await hre.run("verify:verify", {
-    address: p2pix.address,
-    constructorArguments: [
-      10,
-      deploysJson.signers,
-      reputation.address,
-      [deploysJson.token],
-      [true],
-    ],
-  });
-  await hre.run("verify:verify", {
-    address: reputation.address,
-    constructorArguments: [],
-  });
-  await hre.run("verify:verify", {
-    address: mutlicall.address,
-    constructorArguments: [],
-  });
+  // await hre.run("verify:verify", {
+  //   address: p2pix.address,
+  //   constructorArguments: [
+  //     10,
+  //     deploysJson.signers,
+  //     reputation.address,
+  //     [deploysJson.token],
+  //     [true],
+  //   ],
+  // });
+  // await hre.run("verify:verify", {
+  //   address: reputation.address,
+  //   constructorArguments: [],
+  // });
+  // await hre.run("verify:verify", {
+  //   address: mutlicall.address,
+  //   constructorArguments: [],
+  // });
 };
 
 main()

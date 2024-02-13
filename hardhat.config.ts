@@ -37,6 +37,8 @@ const chainIds = {
   sepolia: 11155111,
   goerli: 5,
   "polygon-mumbai": 80001,
+  rootstock:30,
+  rsktestnet:31,
 };
 
 function getChainConfig(
@@ -48,6 +50,12 @@ function getChainConfig(
       jsonRpcUrl =
         "https://polygon-mumbai.g.alchemy.com/v2/" +
         alchemyApiKey;
+      break;
+    case "rsktestnet":
+      jsonRpcUrl = "https://public-node.testnet.rsk.co/";
+      break;
+    case "rootstock":
+      jsonRpcUrl = "https://public-node.rsk.co/"
       break;
     default:
       jsonRpcUrl =
@@ -103,6 +111,8 @@ const config: HardhatUserConfig = {
     goerli: getChainConfig("goerli"),
     sepolia: getChainConfig("sepolia"),
     "polygon-mumbai": getChainConfig("polygon-mumbai"),
+    rootstock: getChainConfig("rootstock"),
+    rsktestnet: getChainConfig("rsktestnet"),
   },
   paths: {
     artifacts: "./artifacts",

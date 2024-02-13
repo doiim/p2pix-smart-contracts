@@ -42,10 +42,10 @@ const main = async () => {
 
   /* UNCOMMENT WHEN DEPLOYING TO MAINNET/PUBLIC TESTNETS */
   // verify
-  await hre.run("verify:verify", {
-    address: erc20.address,
-    constructorArguments: [supply],
-  });
+  // await hre.run("verify:verify", {
+  //   address: erc20.address,
+  //   constructorArguments: [supply],
+  // });
 };
 
 main()
