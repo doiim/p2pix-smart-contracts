@@ -21,16 +21,12 @@ contract P2PIX is BaseUtils {
     using DT for DT.Lock;
     using DT for DT.LockStatus;
 
-    /// ███ Storage ████████████████████████████████████████████████████████████
-
     uint256 public lockCounter;
 
     /// @dev List of Locks.
     mapping(uint256 => DT.Lock) public mapLocks;
     /// @dev Stores an relayer's last computed credit.
     mapping(uint256 => uint256) public userRecord;
-
-    /// ███ Constructor ████████████████████████████████████████████████████████
 
     constructor(
         uint256 defaultBlocks,
@@ -48,15 +44,13 @@ contract P2PIX is BaseUtils {
         ) 
         payable {/*  */}
 
-    /// ███ Public FX ██████████████████████████████████████████████████████████
-
     /// @notice Creates a deposit order based on a seller's
     /// offer of an amount of ERC20 tokens.
     /// @notice Seller needs to send his tokens to the P2PIX smart contract.
     /// @param pixTarget Pix key destination provided by the offer's seller.
     /// @param allowlistRoot Optional allow list merkleRoot update `bytes32` value.
     /// as the deposit identifier.
-    /// @dev Function sighash: 0xbfe07da6.
+    /// @dev Function sighash: 0x5e918943
     function deposit(
         string calldata pixTarget,
         bytes32 allowlistRoot,
@@ -104,8 +98,8 @@ contract P2PIX is BaseUtils {
 
     /// @notice Enables seller to invalidate future
     /// locks made to his/her token offering order.
-    /// @dev This function does not affect any ongoing active locks.
-    /// @dev Function sighash: 0x72fada5c.
+    /// @notice This function does not affect any ongoing active locks.
+    /// @dev Function sighash: 0x6d82d9e0
     function setValidState(ERC20 token, bool state) public {
         uint256 _sellerBalance = __sellerBalance(msg.sender, token);
 
@@ -124,22 +118,22 @@ contract P2PIX is BaseUtils {
 
     /// @notice Public method designed to lock an remaining amount of
     /// the deposit order of a seller.
-    /// @dev Transaction forwarding must leave `merkleProof` empty;
+    /// @notice Transaction forwarding must leave `merkleProof` empty;
     /// otherwise, the trustedForwarder must be previously added 
     /// to a seller whitelist.
-    /// @dev This method can be performed either by:
+    /// @notice This method can be performed either by:
     /// - An user allowed via the seller's allowlist;
     /// - An user with enough userRecord to lock the wished amount;
-    /// @dev There can only exist a lock per each `_amount` partitioned
+    /// @notice There can only exist a lock per each `amount` partitioned
     /// from the total `remaining` value.
-    /// @dev Locks can only be performed in valid orders.
+    /// @notice Locks can only be performed in valid orders.
     /// @param amount The deposit's remaining amount wished to be locked.
     /// @param merkleProof Provided as a pass if the `msg.sender` is in the
     /// seller's allowlist; Left empty otherwise;
-    /// @param expiredLocks An array of `bytes32` identifiers to be
+    /// @param expiredLocks An array of identifiers to be
     /// provided so to unexpire locks using this transaction gas push.
-    /// @return lockID The `bytes32` value returned as the lock identifier.
-    /// @dev Function sighash: 0x03aaf306.
+    /// @return lockID The lock identifier.
+    /// @dev Function sighash: 0xdc43221c
     function lock(
         address seller,
         ERC20 token,
@@ -196,16 +190,16 @@ contract P2PIX is BaseUtils {
 
     /// @notice Lock release method that liquidate lock
     /// orders and distributes relayer fees.
-    /// @dev This method can be called by any public actor
+    /// @notice This method can be called by any public actor
     /// as long the signature provided is valid.
-    /// @dev `relayerPremium` gets splitted equaly
+    /// @notice `relayerPremium` gets splitted equaly
     /// if relayer addresses differ.
-    /// @dev If the `msg.sender` of this method and `l.relayerAddress` are the same,
+    /// @notice If the `msg.sender` of this method and `l.relayerAddress` are the same,
     /// `msg.sender` accrues both l.amount and l.relayerPremium as userRecord credit.
     ///  In case of they differing:
     /// - `lock` caller gets accrued with `l.amount` as userRecord credit;
     /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
-    /// @dev Function sighash: 0x4e1389ed.
+    /// @dev Function sighash: 0x11fc7f9a
     function release(
         uint256 lockID,
         bytes32 pixTimestamp,
@@ -254,11 +248,11 @@ contract P2PIX is BaseUtils {
     }
 
     /// @notice Unlocks expired locks.
-    /// @dev Triggered in the callgraph by both `lock` and `withdraw` functions.
-    /// @dev This method can also have any public actor as its `tx.origin`.
-    /// @dev For each successfull unexpired lock recovered,
+    /// @notice Triggered in the callgraph by both `lock` and `withdraw` functions.
+    /// @notice This method can also have any public actor as its `tx.origin`.
+    /// @notice For each successfull unexpired lock recovered,
     /// `userRecord[_castAddrToKey(l.relayerAddress)]` is decreased by half of its value.
-    /// @dev Function sighash: 0x8e2749d6.
+    /// @dev Function sighash: 0xb0983d39
     function unlockExpired(uint256[] calldata lockIDs)
         public
     {
@@ -308,9 +302,9 @@ contract P2PIX is BaseUtils {
     }
 
     /// @notice Seller's expired deposit fund sweeper.
-    /// @dev A seller may use this method to recover
+    /// @notice A seller may use this method to recover
     /// tokens from expired deposits.
-    /// @dev Function sighash: 0x36317972.
+    /// @dev Function sighash: 0xfb8c5ef0
     function withdraw(
         ERC20 token,
         uint256 amount,
@@ -368,15 +362,12 @@ contract P2PIX is BaseUtils {
         }
     }
 
-    /// ███ Helper FX ██████████████████████████████████████████████████████████
-
     // solhint-disable-next-line no-empty-blocks
     receive() external payable {}
 
     /// @notice Private view auxiliar logic that reverts
     /// on a not expired lock passed as argument of the function.
     /// @dev Called exclusively by the `unlockExpired` method.
-    /// @dev Function sighash: 0x74e2a0bb.
     function _notExpired(DT.Lock storage _l) private view {
         if (_l.expirationBlock > block.number)
             revert NotExpired();
@@ -517,7 +508,7 @@ contract P2PIX is BaseUtils {
     }
 
     /// @notice External getter that returns the status of a lockIDs array.
-    /// @dev Call will not revert if provided with an empty array as parameter.
+    /// @notice Call will not revert if provided with an empty array as parameter.
     /// @dev Function sighash: 0x49ef8448
     function getLocksStatus(uint256[] memory ids)
         external

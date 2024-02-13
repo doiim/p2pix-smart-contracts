@@ -6,6 +6,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import "hardhat-contract-sizer";
 import { resolve } from "path";
+import "solidity-docgen";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
@@ -146,6 +147,9 @@ const config: HardhatUserConfig = {
     outDir: "src/types",
     target: "ethers-v5",
   },
+  docgen: {
+    pages: "files",
+  }
 };
 
 export default config;

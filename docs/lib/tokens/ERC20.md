@@ -1,230 +1,128 @@
-# ERC20
+# Solidity API
 
-_Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC20.sol)Modified from Uniswap (https://github.com/Uniswap/uniswap-v2-core/blob/master/contracts/UniswapV2ERC20.sol)_
+## ERC20
 
 Modern and gas efficient ERC20 + EIP-2612 implementation.
 
 _Do not manually set balances without updating totalSupply, as the sum of all user balances must not exceed it._
 
-## Methods
-
-### DOMAIN_SEPARATOR
+### Transfer
 
 ```solidity
-function DOMAIN_SEPARATOR() external view returns (bytes32)
+event Transfer(address from, address to, uint256 amount)
 ```
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | bytes32 | undefined   |
-
-### allowance
-
-```solidity
-function allowance(address, address) external view returns (uint256)
-```
-
-#### Parameters
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
-| \_1  | address | undefined   |
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### approve
-
-```solidity
-function approve(address spender, uint256 amount) external nonpayable returns (bool)
-```
-
-#### Parameters
-
-| Name    | Type    | Description |
-| ------- | ------- | ----------- |
-| spender | address | undefined   |
-| amount  | uint256 | undefined   |
-
-#### Returns
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| \_0  | bool | undefined   |
-
-### balanceOf
-
-```solidity
-function balanceOf(address) external view returns (uint256)
-```
-
-#### Parameters
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### decimals
-
-```solidity
-function decimals() external view returns (uint8)
-```
-
-#### Returns
-
-| Name | Type  | Description |
-| ---- | ----- | ----------- |
-| \_0  | uint8 | undefined   |
-
-### name
-
-```solidity
-function name() external view returns (string)
-```
-
-#### Returns
-
-| Name | Type   | Description |
-| ---- | ------ | ----------- |
-| \_0  | string | undefined   |
-
-### nonces
-
-```solidity
-function nonces(address) external view returns (uint256)
-```
-
-#### Parameters
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | address | undefined   |
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### permit
-
-```solidity
-function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonpayable
-```
-
-#### Parameters
-
-| Name     | Type    | Description |
-| -------- | ------- | ----------- |
-| owner    | address | undefined   |
-| spender  | address | undefined   |
-| value    | uint256 | undefined   |
-| deadline | uint256 | undefined   |
-| v        | uint8   | undefined   |
-| r        | bytes32 | undefined   |
-| s        | bytes32 | undefined   |
-
-### symbol
-
-```solidity
-function symbol() external view returns (string)
-```
-
-#### Returns
-
-| Name | Type   | Description |
-| ---- | ------ | ----------- |
-| \_0  | string | undefined   |
-
-### totalSupply
-
-```solidity
-function totalSupply() external view returns (uint256)
-```
-
-#### Returns
-
-| Name | Type    | Description |
-| ---- | ------- | ----------- |
-| \_0  | uint256 | undefined   |
-
-### transfer
-
-```solidity
-function transfer(address to, uint256 amount) external nonpayable returns (bool)
-```
-
-#### Parameters
-
-| Name   | Type    | Description |
-| ------ | ------- | ----------- |
-| to     | address | undefined   |
-| amount | uint256 | undefined   |
-
-#### Returns
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| \_0  | bool | undefined   |
-
-### transferFrom
-
-```solidity
-function transferFrom(address from, address to, uint256 amount) external nonpayable returns (bool)
-```
-
-#### Parameters
-
-| Name   | Type    | Description |
-| ------ | ------- | ----------- |
-| from   | address | undefined   |
-| to     | address | undefined   |
-| amount | uint256 | undefined   |
-
-#### Returns
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| \_0  | bool | undefined   |
-
-## Events
 
 ### Approval
 
 ```solidity
-event Approval(address indexed owner, address indexed spender, uint256 amount)
+event Approval(address owner, address spender, uint256 amount)
 ```
 
-#### Parameters
-
-| Name              | Type    | Description |
-| ----------------- | ------- | ----------- |
-| owner `indexed`   | address | undefined   |
-| spender `indexed` | address | undefined   |
-| amount            | uint256 | undefined   |
-
-### Transfer
+### name
 
 ```solidity
-event Transfer(address indexed from, address indexed to, uint256 amount)
+string name
 ```
 
-#### Parameters
+### symbol
 
-| Name           | Type    | Description |
-| -------------- | ------- | ----------- |
-| from `indexed` | address | undefined   |
-| to `indexed`   | address | undefined   |
-| amount         | uint256 | undefined   |
+```solidity
+string symbol
+```
+
+### decimals
+
+```solidity
+uint8 decimals
+```
+
+### totalSupply
+
+```solidity
+uint256 totalSupply
+```
+
+### balanceOf
+
+```solidity
+mapping(address => uint256) balanceOf
+```
+
+### allowance
+
+```solidity
+mapping(address => mapping(address => uint256)) allowance
+```
+
+### INITIAL_CHAIN_ID
+
+```solidity
+uint256 INITIAL_CHAIN_ID
+```
+
+### INITIAL_DOMAIN_SEPARATOR
+
+```solidity
+bytes32 INITIAL_DOMAIN_SEPARATOR
+```
+
+### nonces
+
+```solidity
+mapping(address => uint256) nonces
+```
+
+### constructor
+
+```solidity
+constructor(string _name, string _symbol, uint8 _decimals) internal
+```
+
+### approve
+
+```solidity
+function approve(address spender, uint256 amount) public virtual returns (bool)
+```
+
+### transfer
+
+```solidity
+function transfer(address to, uint256 amount) public virtual returns (bool)
+```
+
+### transferFrom
+
+```solidity
+function transferFrom(address from, address to, uint256 amount) public virtual returns (bool)
+```
+
+### permit
+
+```solidity
+function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual
+```
+
+### DOMAIN_SEPARATOR
+
+```solidity
+function DOMAIN_SEPARATOR() public view virtual returns (bytes32)
+```
+
+### computeDomainSeparator
+
+```solidity
+function computeDomainSeparator() internal view virtual returns (bytes32)
+```
+
+### _mint
+
+```solidity
+function _mint(address to, uint256 amount) internal virtual
+```
+
+### _burn
+
+```solidity
+function _burn(address from, uint256 amount) internal virtual
+```
+
