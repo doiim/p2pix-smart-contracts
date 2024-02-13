@@ -18,9 +18,6 @@ contract P2PIX is BaseUtils {
     // solhint-disable no-inline-assembly
     // solhint-disable no-empty-blocks
 
-    using DT for DT.DepositArgs;
-    using DT for DT.LockArgs;
-    using DT for DT.ReleaseArgs;
     using DT for DT.Lock;
     using DT for DT.LockStatus;
 
@@ -55,50 +52,54 @@ contract P2PIX is BaseUtils {
 
     /// @notice Creates a deposit order based on a seller's
     /// offer of an amount of ERC20 tokens.
-    /// @dev Seller needs to send his tokens to the P2PIX smart contract.
-/*     /// @param _pixTarget Pix key destination provided by the offer's seller. */
-/*     /// @param allowlistRoot Optional allow list merkleRoot update `bytes32` value. */
-/*     /// as the deposit identifier. */
+    /// @notice Seller needs to send his tokens to the P2PIX smart contract.
+    /// @param pixTarget Pix key destination provided by the offer's seller.
+    /// @param allowlistRoot Optional allow list merkleRoot update `bytes32` value.
+    /// as the deposit identifier.
     /// @dev Function sighash: 0xbfe07da6.
     function deposit(
-        DT.DepositArgs calldata args
+        string calldata pixTarget,
+        bytes32 allowlistRoot,
+        ERC20 token,
+        uint96 amount,
+        bool valid
     ) public {
 
-        if (bytes(args.pixTarget).length == 0) revert EmptyPixTarget();
-        if (!allowedERC20s(args.token)) revert TokenDenied();
-        uint256 _sellerBalance = __sellerBalance(msg.sender, args.token);
+        if (bytes(pixTarget).length == 0) revert EmptyPixTarget();
+        if (!allowedERC20s(token)) revert TokenDenied();
+        uint256 _sellerBalance = __sellerBalance(msg.sender, token);
 
         uint256 currBal = _sellerBalance & BITMASK_SB_ENTRY;
-        uint256 _newBal = uint256(currBal + args.amount); 
+        uint256 _newBal = uint256(currBal + amount); 
         if (_newBal > MAXBALANCE_UPPERBOUND)
             revert MaxBalExceeded();
 
         setReentrancyGuard();
 
-        if (args.allowlistRoot != 0) {
-            setRoot(msg.sender, args.allowlistRoot);
+        if (allowlistRoot != 0) {
+            setRoot(msg.sender, allowlistRoot);
         }
 
-        bytes32 pixTargetCasted = getStr(args.pixTarget);
-        uint256 validCasted = _castBool(args.valid);
+        bytes32 pixTargetCasted = getStr(pixTarget);
+        uint256 validCasted = _castBool(valid);
 
         _setSellerBalance(
             msg.sender, 
-            args.token, 
+            token, 
             (_newBal | (validCasted << BITPOS_VALID)),
             pixTargetCasted
         );
 
         SafeTransferLib.safeTransferFrom(
-            args.token,
+            token,
             msg.sender,
             address(this),
-            args.amount
+            amount
         );
 
         clearReentrancyGuard();
 
-        emit DepositAdded(msg.sender, args.token, args.amount);
+        emit DepositAdded(msg.sender, token, amount);
     }
 
     /// @notice Enables seller to invalidate future
@@ -132,23 +133,26 @@ contract P2PIX is BaseUtils {
     /// @dev There can only exist a lock per each `_amount` partitioned
     /// from the total `remaining` value.
     /// @dev Locks can only be performed in valid orders.
-/*     /// @param _amount The deposit's remaining amount wished to be locked. */
-/*     /// @param merkleProof This value should be: */
-/*     /// - Provided as a pass if the `msg.sender` is in the seller's allowlist; */
-/*     /// - Left empty otherwise; */
-/*     /// @param expiredLocks An array of `bytes32` identifiers to be */
-/*     /// provided so to unexpire locks using this transaction gas push. */
+    /// @param amount The deposit's remaining amount wished to be locked.
+    /// @param merkleProof Provided as a pass if the `msg.sender` is in the
+    /// seller's allowlist; Left empty otherwise;
+    /// @param expiredLocks An array of `bytes32` identifiers to be
+    /// provided so to unexpire locks using this transaction gas push.
     /// @return lockID The `bytes32` value returned as the lock identifier.
     /// @dev Function sighash: 0x03aaf306.
     function lock(
-        DT.LockArgs calldata args
+        address seller,
+        ERC20 token,
+        uint80 amount,
+        bytes32[] calldata merkleProof,
+        uint256[] calldata expiredLocks
     ) public nonReentrant returns (uint256 lockID) {
-        unlockExpired(args.expiredLocks);
+        unlockExpired(expiredLocks);
 
-        if (!getValid(args.seller, args.token)) revert InvalidDeposit();
+        if (!getValid(seller, token)) revert InvalidDeposit();
 
-        uint256 bal = getBalance(args.seller, args.token);
-        if (bal < args.amount) revert NotEnoughTokens();
+        uint256 bal = getBalance(seller, token);
+        if (bal < amount) revert NotEnoughTokens();
 
         unchecked { 
             lockID = ++lockCounter;
@@ -158,22 +162,22 @@ contract P2PIX is BaseUtils {
             mapLocks[lockID].expirationBlock >= block.number
         ) revert NotExpired();
 
-        bytes32 _pixTarget = getPixTarget(args.seller, args.token);
+        bytes32 _pixTarget = getPixTarget(seller, token);
 
         // transaction forwarding must leave `merkleProof` empty;
         // otherwise, the trustedForwarder must be previously added 
         // to a seller whitelist.
-        if (args.merkleProof.length != 0) {
-            _merkleVerify( args.merkleProof, sellerAllowList(args.seller), _msgSender());
+        if (merkleProof.length != 0) {
+            _merkleVerify( merkleProof, sellerAllowList(seller), _msgSender());
 
-        } else if ( args.amount > REPUTATION_LOWERBOUND && msg.sender == _msgSender() ) {
+        } else if ( amount > REPUTATION_LOWERBOUND && msg.sender == _msgSender() ) {
             
             uint256 spendLimit; uint256 userCredit = 
             userRecord[_castAddrToKey(_msgSender())];
             (spendLimit) = _limiter(userCredit / WAD);
             if ( 
-                args.amount > (spendLimit * WAD) || 
-                args.amount > LOCKAMOUNT_UPPERBOUND 
+                amount > (spendLimit * WAD) || 
+                amount > LOCKAMOUNT_UPPERBOUND 
             ) revert AmountNotAllowed();
         }
 
@@ -181,10 +185,10 @@ contract P2PIX is BaseUtils {
             lockID,
             (block.number + defaultLockBlocks),
             _pixTarget,
-            args.amount,
-            args.token,
+            amount,
+            token,
             _msgSender(),
-            args.seller
+            seller
         );
 
         _addLock(bal, l);
@@ -203,9 +207,11 @@ contract P2PIX is BaseUtils {
     /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
     /// @dev Function sighash: 0x4e1389ed.
     function release(
-        DT.ReleaseArgs calldata args
+        uint256 lockID,
+        bytes32 pixTimestamp,
+        bytes calldata signature
     ) public nonReentrant {
-        DT.Lock storage l = mapLocks[args.lockID];
+        DT.Lock storage l = mapLocks[lockID];
 
         if (l.amount == 0) revert AlreadyReleased();
         if (l.expirationBlock < block.number)
@@ -215,11 +221,11 @@ contract P2PIX is BaseUtils {
             abi.encodePacked(
                 l.pixTarget,
                 l.amount,
-                args.pixTimestamp
+                pixTimestamp
             )
         );
 
-        _signerCheck(message, args.signature);
+        _signerCheck(message, signature);
 
         ERC20 t = ERC20(l.token);
 
@@ -244,7 +250,7 @@ contract P2PIX is BaseUtils {
             lockAmount
         );
 
-        emit LockReleased(l.buyerAddress, args.lockID, lockAmount);
+        emit LockReleased(l.buyerAddress, lockID, lockAmount);
     }
 
     /// @notice Unlocks expired locks.
