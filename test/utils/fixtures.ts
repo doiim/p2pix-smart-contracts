@@ -16,28 +16,6 @@ import { Call, RepFixture, P2PixAndReputation, DepositArgs, LockArgs, ReleaseArg
 
 
 // exported constants
-export const createDepositArgs = (pixTarget: string, allowlistRoot: string, token: string, amount: BigNumber, valid:boolean): DepositArgs => ({
-  pixTarget,
-  allowlistRoot,
-  token,
-  amount,
-  valid,
-});
-
-export const createLockArgs = (seller: string, token: string, amount: BigNumber, merkleProof: string[], expiredLocks: BigNumber[]): LockArgs => ({
-  seller,
-  token,
-  amount,
-  merkleProof,
-  expiredLocks,
-});
-
-export const createReleaseArgs = (lockID: BigNumber, pixTimestamp: string, signature: string): ReleaseArgs => ({
-  lockID,
-  pixTimestamp,
-  signature,
-});
-
 export const getSignerAddrs = (
   amount: number,
   addrs: SignerWithAddress[],
