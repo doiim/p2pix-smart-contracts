@@ -57,7 +57,7 @@ contract P2PIX is BaseUtils {
         ERC20 token,
         uint96 amount,
         bool valid
-    ) public {
+    ) public nonReentrant {
 
         if (bytes(pixTarget).length == 0) revert EmptyPixTarget();
         if (!allowedERC20s(token)) revert TokenDenied();
@@ -67,8 +67,6 @@ contract P2PIX is BaseUtils {
         uint256 _newBal = uint256(currBal + amount); 
         if (_newBal > MAXBALANCE_UPPERBOUND)
             revert MaxBalExceeded();
-
-        setReentrancyGuard();
 
         if (allowlistRoot != 0) {
             setRoot(msg.sender, allowlistRoot);
@@ -90,8 +88,6 @@ contract P2PIX is BaseUtils {
             address(this),
             amount
         );
-
-        clearReentrancyGuard();
 
         emit DepositAdded(msg.sender, token, amount);
     }
