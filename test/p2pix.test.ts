@@ -94,12 +94,8 @@ describe("P2PIX", () => {
       expect(p2pix).to.be.ok;
       expect(erc20).to.be.ok;
       expect(reputation).to.be.ok;
-      const ownerKey = await p2pix._castAddrToKey(
-        owner.address,
-      );
-      const acc01Key = await p2pix._castAddrToKey(
-        acc01.address,
-      );
+      const ownerKey = await p2pix._castAddrToKey(owner.address);
+      const acc01Key = await p2pix._castAddrToKey(acc01.address);
 
       // storage checks
       expect(
@@ -175,7 +171,7 @@ describe("P2PIX", () => {
       await expect(p2pix.withdrawBalance())
         .to.changeEtherBalances(
           [owner.address, p2pix.address],
-          [price, "-100000000000000000000"],
+          [price, price.mul(-1)],
         )
         .and.to.emit(p2pix, "FundsWithdrawn")
         .withArgs(owner.address, price);
@@ -388,7 +384,7 @@ describe("P2PIX", () => {
       await expect(tx).to.changeTokenBalances(
         erc20,
         [owner.address, p2pix.address],
-        ["-100000000000000000000", price],
+        [price.mul(-1), price],
       );
       expect(storage).to.eq(price);
       expect(pixTarget).to.eq(await p2pix.callStatic.getStr(pTarget));
@@ -568,7 +564,7 @@ describe("P2PIX", () => {
         const tx = transactions[i];
         const addr = addresses[i];
         const depositPrice = depositPrices[i];
-        const amount = `-${(i + 1) * 100000000000000000000}`;
+        const amount = ethers.utils.parseEther("100").mul(i+1).mul(-1).toBigInt();
 
         await expect(tx)
           .to.emit(p2pix, "DepositAdded")
@@ -697,13 +693,13 @@ describe("P2PIX", () => {
     it("should revert if msg.sender does not have enough credit in his spend limit", async () => {
       await erc20.approve(
         p2pix.address,
-        price.mul(BigNumber.from("3")),
+        price.mul(3),
       );
       await p2pix.deposit(
           "1",
           merkleRoot,
           erc20.address,
-          price.mul(BigNumber.from("3")),
+          price.mul(3),
           true,
       );
       const fail = p2pix
@@ -711,7 +707,7 @@ describe("P2PIX", () => {
         .lock(
             owner.address,
             erc20.address,
-            price.mul(BigNumber.from("2")),
+            price.mul(2),
             [],
             [],
         );
@@ -2039,7 +2035,7 @@ describe("P2PIX", () => {
         .to.changeTokenBalance(
           erc20,
           owner.address,
-          "-100000000000000000000",
+          price.mul(-1),
         )
         .and.to.changeTokenBalance(
           erc20,
@@ -2051,7 +2047,7 @@ describe("P2PIX", () => {
         .and.to.changeTokenBalance(
           erc20,
           p2pix.address,
-          "-50000000000000000000",
+          price.div(ethers.constants.Two).mul(-1),
         );
 
       await expect(tx)
