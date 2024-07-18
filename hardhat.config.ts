@@ -56,8 +56,11 @@ function getChainConfig(
       jsonRpcUrl = "https://public-node.testnet.rsk.co/";
       break;
     case "rootstock":
-      jsonRpcUrl = "https://public-node.rsk.co/"
+      jsonRpcUrl = "https://public-node.rsk.co/";
       break;
+    case "sepolia":
+      jsonRpcUrl = "https://rpc.sepolia.online";
+      break
     default:
       jsonRpcUrl =
         "https://" + chain + ".infura.io/v3/" + infuraApiKey;
