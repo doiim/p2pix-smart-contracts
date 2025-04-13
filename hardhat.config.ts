@@ -1,7 +1,6 @@
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-toolbox";
 import { config as dotenvConfig } from "dotenv";
-import "hardhat-tracer";
 import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import "hardhat-contract-sizer";
