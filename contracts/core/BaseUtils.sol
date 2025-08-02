@@ -4,8 +4,9 @@ pragma solidity ^0.8.19;
 import { ERC20, OwnerSettings } from "contracts/core/OwnerSettings.sol";
 
 import { ECDSA } from "contracts/lib/utils/ECDSA.sol";
-import { MerkleProofLib as Merkle } from "contracts/lib/utils/MerkleProofLib.sol";
-import { ReentrancyGuard } from "contracts/lib/utils/ReentrancyGuard.sol";
+import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import { MerkleProof as Merkle } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 abstract contract BaseUtils is
     OwnerSettings,
@@ -44,7 +45,7 @@ abstract contract BaseUtils is
             !validBacenSigners(
                 _castAddrToKey(
                     ECDSA.recoverCalldata(
-                        ECDSA.toEthSignedMessageHash(
+                        MessageHashUtils.toEthSignedMessageHash(
                             _message
                         ),
                         _signature
