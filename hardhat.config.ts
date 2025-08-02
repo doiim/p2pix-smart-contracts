@@ -14,14 +14,6 @@ if (!mnemonic) {
   throw new Error("Please set your MNEMONIC in a .env file");
 }
 
-const infuraApiKey: string | undefined =
-  process.env.INFURA_API_KEY;
-if (!infuraApiKey) {
-  throw new Error(
-    "Please set your INFURA_API_KEY in a .env file",
-  );
-}
-
 const alchemyApiKey: string | undefined =
   process.env.ALCHEMY_API_KEY;
 if (!alchemyApiKey) {
@@ -34,36 +26,16 @@ const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
   hardhat: 31337,
   mainnet: 1,
-  sepolia: 11155111,
-  goerli: 5,
+  "eth-sepolia": 11155111,
   "polygon-mumbai": 80001,
   rootstock:30,
-  rsktestnet:31,
+  "rootstock-testnet":31,
 };
 
 function getChainConfig(
   chain: keyof typeof chainIds,
 ): NetworkUserConfig {
-  let jsonRpcUrl: string;
-  switch (chain) {
-    case "polygon-mumbai":
-      jsonRpcUrl =
-        "https://polygon-mumbai.g.alchemy.com/v2/" +
-        alchemyApiKey;
-      break;
-    case "rsktestnet":
-      jsonRpcUrl = "https://public-node.testnet.rsk.co/";
-      break;
-    case "rootstock":
-      jsonRpcUrl = "https://public-node.rsk.co/";
-      break;
-    case "sepolia":
-      jsonRpcUrl = "https://rpc.sepolia.online";
-      break
-    default:
-      jsonRpcUrl =
-        "https://" + chain + ".infura.io/v3/" + infuraApiKey;
-  }
+  let jsonRpcUrl = "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
     // Comment out for default hardhat account settings
     accounts: {
@@ -112,11 +84,10 @@ const config: HardhatUserConfig = {
     },
     // network: getChainConfig("{INSERT_NAME}"),
     mainnet: getChainConfig("mainnet"),
-    goerli: getChainConfig("goerli"),
-    sepolia: getChainConfig("sepolia"),
-    "polygon-mumbai": getChainConfig("polygon-mumbai"),
+    sepolia: getChainConfig("eth-sepolia"),
+    mumbai: getChainConfig("polygon-mumbai"),
     rootstock: getChainConfig("rootstock"),
-    rsktestnet: getChainConfig("rsktestnet"),
+    rsktestnet: getChainConfig("rootstock-testnet"),
   },
   paths: {
     artifacts: "./artifacts",
