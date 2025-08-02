@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { ERC2771Context as ERC2771 } from "contracts/lib/metatx/ERC2771Context.sol";
 import { ERC20, SafeTransferLib } from "contracts/lib/utils/SafeTransferLib.sol";

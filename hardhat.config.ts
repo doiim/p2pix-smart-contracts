@@ -125,10 +125,10 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.19",
+    version: "0.8.28",
     settings: {
       viaIR: true,
-      evmVersion: "paris",
+      evmVersion: "cancun",
       optimizer: {
         enabled: true,
         runs: 20_000,
