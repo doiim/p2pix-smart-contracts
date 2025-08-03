@@ -1,14 +1,11 @@
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
-import { BigNumber } from "ethers";
+import "@nomicfoundation/hardhat-ethers";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
-import hre from "hardhat";
 
 import { Deploys } from "../test/utils/interfaces";
 
 let deploysJson: Deploys;
-const supply: BigNumber = ethers.utils.parseEther("20000000");
+const supply: BigInt = ethers.parseEther("20000000");
 
 const main = async () => {
   try {
@@ -25,15 +22,11 @@ const main = async () => {
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying contracts with ${deployer.address}`);
 
-  const ERC20Factory = await ethers.getContractFactory(
-    "MockToken",
-  );
-  const erc20 = await ERC20Factory.deploy(supply);
-  await erc20.deployed();
+  let erc20 = await ethers.deployContract("MockToken", [supply]);
+  erc20 = await erc20.waitForDeployment();
 
-  deploysJson.token = erc20.address;
-  console.log("🚀 Mock Token Deployed:", erc20.address);
-  await erc20.deployTransaction.wait(6);
+  deploysJson.token = await erc20.getAddress();
+  console.log("🚀 Mock Token Deployed:", await erc20.getAddress());
 
   fs.writeFileSync(
     `./deploys/${network.name}.json`,
