@@ -1,6 +1,6 @@
 import "@nomicfoundation/hardhat-chai-matchers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
 
@@ -15,7 +15,7 @@ describe("Reputation", () => {
 
   before("Set signers and reset network", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [owner] = await (ethers as any).getSigners();
+    [owner] = await ethers.getSigners();
 
     await network.provider.send("hardhat_reset");
   });
@@ -60,7 +60,7 @@ describe("Reputation", () => {
         },
         {
           x: Number.MAX_SAFE_INTEGER,
-          shouldRevert: "overflow",
+          expected: curve(Number.MAX_SAFE_INTEGER),
         },
         {
           x: Number.POSITIVE_INFINITY,

@@ -92,6 +92,7 @@ const config: HardhatUserConfig = {
       process.env.REPORT_GAS &&
       process.env.REPORT_GAS != "false"
     ),
+    offline: true,
     showTimeSpent: true,
     showMethodSig: true,
     token: "ETH",
@@ -147,7 +148,7 @@ const config: HardhatUserConfig = {
   },
   typechain: {
     outDir: "src/types",
-    target: "ethers-v5",
+    target: "ethers-v6",
   },
   docgen: {
     pages: "files",
