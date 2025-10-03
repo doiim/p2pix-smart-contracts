@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
+
+import { ERC20 } from "contracts/lib/tokens/ERC20.sol";
 
 // prettier-ignore
 interface EventAndErrors {
@@ -9,19 +11,19 @@ interface EventAndErrors {
     event DepositAdded(
         address indexed seller,
         // uint256 depositID,
-        address token,
+        ERC20 token,
         uint256 amount
     );
     /// @dev 0xca585721b6b442dc9183932f7c84dc2880efb67c4da52cc06873e78971105d49
     event ValidSet(
         address indexed seller,
-        address token,
+        ERC20 token,
         bool state
     );
     /// @dev 0x2cd6435b1b961c13f55202979edd0765a809f69a539d8a477436c94c1211e43e
     event DepositWithdrawn(
         address indexed seller,
-        address token,
+        ERC20 token,
         uint256 amount
     );
     /// @dev 0x8fb3989f70bd172a37d15b41b015e48ea09d59329638377304a4198cd0c4ea65

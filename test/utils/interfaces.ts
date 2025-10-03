@@ -1,5 +1,3 @@
-import { BigNumber } from "ethers";
-
 import {
   MockToken,
   Multicall,
@@ -19,29 +17,29 @@ export interface DepositArgs {
   pixTarget: string;
   allowlistRoot: string;
   token: string;
-  amount: BigNumber;
+  amount: BigInt;
   valid: boolean;
 } 
 
 export interface LockArgs {
   seller: string;
   token: string;
-  amount: BigNumber;
+  amount: BigInt;
   merkleProof: string[];
-  expiredLocks: BigNumber[];
+  expiredLocks: BigInt[];
 }
 
 export interface ReleaseArgs {
-  lockID: BigNumber;
+  lockID: BigInt;
   pixTimestamp: string;
   signature: string;
 }
 
 export interface Lock {
-  counter: BigNumber;
-  expirationBlock: BigNumber;
+  counter: BigInt;
+  expirationBlock: BigInt;
   pixTarget: string;
-  amount: BigNumber;
+  amount: BigInt;
   token: string;
   buyerAddress: string;
   seller: string;

@@ -1,5 +1,14 @@
-# MerkleProofLib
+# Solidity API
 
-_Solady (https://github.com/vectorized/solady/blob/main/src/utils/MerkleProofLib.sol)Modified from Solmate (https://github.com/transmissions11/solmate/blob/main/src/utils/MerkleProofLib.sol)Modified from OpenZeppelin (https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol)_
+## MerkleProofLib
 
 Gas optimized verification of proof of inclusion for a leaf in a Merkle tree.
+
+### verify
+
+```solidity
+function verify(bytes32[] proof, bytes32 root, bytes32 leaf) internal pure returns (bool isValid)
+```
+
+_Returns whether `leaf` exists in the Merkle tree with `root`, given `proof`._
+

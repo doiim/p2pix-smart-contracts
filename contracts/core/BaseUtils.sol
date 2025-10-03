@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { ERC20, OwnerSettings } from "contracts/core/OwnerSettings.sol";
 
@@ -20,7 +20,7 @@ abstract contract BaseUtils is
 
     /// ███ Helper FX ██████████████████████████████████████████████████████████
     function _setUsedTransactions(bytes32 message) internal {
-        assembly {
+        assembly ("memory-safe") {
             sstore(message, true)
         }
     }
@@ -28,7 +28,7 @@ abstract contract BaseUtils is
     function usedTransactions(
         bytes32 message
     ) public view returns (bool used) {
-        assembly {
+        assembly ("memory-safe") {
             used := sload(message)
         }
     }
@@ -71,7 +71,7 @@ abstract contract BaseUtils is
     function _castBool(
         bool _valid
     ) internal pure returns (uint256 _validCasted) {
-        assembly {
+        assembly ("memory-safe") {
             _validCasted := _valid
         }
     }
@@ -80,7 +80,7 @@ abstract contract BaseUtils is
         string memory str
     ) public pure returns (bytes32 strEnc) {
         bytes memory enc = bytes(abi.encodePacked(str));
-        assembly {
+        assembly ("memory-safe") {
             if lt(0x20, mload(enc)) {
                 invalid()
             }
@@ -94,7 +94,7 @@ abstract contract BaseUtils is
         uint256 _packed,
         bytes32 _pixTarget
     ) internal {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
             mstore(0x00, _sellerKey)
@@ -109,7 +109,7 @@ abstract contract BaseUtils is
         ERC20 _erc20,
         uint256 _packed
     ) internal {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
             mstore(0x00, _sellerKey)
@@ -123,7 +123,7 @@ abstract contract BaseUtils is
         ERC20 _erc20,
         uint256 _amount
     ) internal {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
             mstore(0x00, _sellerKey)
@@ -137,7 +137,7 @@ abstract contract BaseUtils is
         ERC20 _erc20,
         uint256 _amount
     ) internal {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
             mstore(0x00, _sellerKey)
@@ -150,7 +150,7 @@ abstract contract BaseUtils is
         address _sellerKey,
         ERC20 _erc20
     ) internal view returns (uint256 _packed) {
-        assembly {
+        assembly ("memory-safe") {
             mstore(0x20, _erc20)
             mstore(0x0c, _SELLER_BALANCE_SLOT_SEED)
             mstore(0x00, _sellerKey)
@@ -165,7 +165,7 @@ abstract contract BaseUtils is
         address _addr
     ) public pure returns (uint256 _key) {
         // _key = uint256(uint160(address(_addr))) << 12;
-        assembly {
+        assembly ("memory-safe") {
             _key := shl(0xc, _addr)
         }
     }
@@ -174,7 +174,7 @@ abstract contract BaseUtils is
         uint256 _key
     ) public pure returns (address _addr) {
         // _addr = address(uint160(uint256(_key >> 12)));
-        assembly {
+        assembly ("memory-safe") {
             _addr := shr(0xc, _key)
         }
     }
