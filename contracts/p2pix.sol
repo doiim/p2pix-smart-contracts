@@ -9,6 +9,7 @@ pragma solidity ^0.8.19;
 ///
 
 import { OwnerSettings, ERC20, SafeTransferLib } from "contracts/core/OwnerSettings.sol";
+import { ERC2771Context as ERC2771 } from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import { BaseUtils } from "contracts/core/BaseUtils.sol";
 import { DataTypes as DT } from "contracts/core/DataTypes.sol";
 
@@ -33,8 +34,10 @@ contract P2PIX is BaseUtils {
         address[] memory validSigners,
         address _reputation,
         ERC20[] memory tokens,
-        bool[] memory tokenStates
+        bool[] memory tokenStates,
+        address trustedForwarder
     ) 
+        ERC2771(trustedForwarder)
         OwnerSettings(
             defaultBlocks, 
             validSigners, 
