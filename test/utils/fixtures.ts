@@ -93,7 +93,6 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     reputation.target,
     [erc20.target],
     [true],
-    ethers.ZeroAddress,
   ]);
 
   const multicall = await ethers.deployContract("Multicall");
