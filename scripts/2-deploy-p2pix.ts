@@ -29,7 +29,6 @@ const main = async () => {
     reputation.target,
     [deploysJson.token],
     [true],
-    ethers.ZeroAddress,
   ]);
 
   reputation = await reputation.waitForDeployment();
