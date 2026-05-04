@@ -9,22 +9,19 @@ import "solidity-docgen";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
-const mnemonic: string | undefined = process.env.MNEMONIC;
-if (!mnemonic) {
-  throw new Error("Please set your MNEMONIC in a .env file");
-}
+// Default mnemonic used by Hardhat / Anvil for deterministic accounts.
+// Lets `--network localhost` (and the default in-process `hardhat` net)
+// run without a .env. Public networks still require a real MNEMONIC.
+const DEFAULT_MNEMONIC =
+  "test test test test test test test test test test test junk";
 
-const alchemyApiKey: string | undefined =
-  process.env.ALCHEMY_API_KEY;
-if (!alchemyApiKey) {
-  throw new Error(
-    "Please set your ALCHEMY_API_KEY in a .env file",
-  );
-}
+const mnemonic: string = process.env.MNEMONIC ?? DEFAULT_MNEMONIC;
+const alchemyApiKey: string | undefined = process.env.ALCHEMY_API_KEY;
 
 const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
   hardhat: 31337,
+  localhost: 31337,
   mainnet: 1,
   "eth-sepolia": 11155111,
   "polygon-mumbai": 80001,
@@ -35,6 +32,11 @@ const chainIds = {
 function getChainConfig(
   chain: keyof typeof chainIds,
 ): NetworkUserConfig {
+  if (!alchemyApiKey) {
+    throw new Error(
+      `Please set ALCHEMY_API_KEY in a .env file before targeting ${chain}`,
+    );
+  }
   let jsonRpcUrl = "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
     // Comment out for default hardhat account settings
@@ -81,6 +83,15 @@ const config: HardhatUserConfig = {
         mnemonic,
       },
       chainId: chainIds.hardhat,
+    },
+    // External Anvil / Hardhat node (e.g. `anvil --port 8545`). Used by
+    // the frontend e2e suite to deploy a fresh chain per CI run.
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: chainIds.localhost,
+      accounts: {
+        mnemonic,
+      },
     },
     // network: getChainConfig("{INSERT_NAME}"),
     mainnet: getChainConfig("mainnet"),
