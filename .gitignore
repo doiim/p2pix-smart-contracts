@@ -29,3 +29,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 docs/lib/mock/*.md
+.dagrobin/
+
+# Hardhat Ignition local/ephemeral deployments
+ignition/deployments/chain-31337/

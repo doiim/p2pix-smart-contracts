@@ -1,0 +1,9 @@
+{
+  "P2PIX": {
+    "defaultBlocks": 10,
+    "validSigners": []
+  },
+  "MockToken": {
+    "supply": "20000000000000000000000000"
+  }
+}

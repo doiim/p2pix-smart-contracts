@@ -125,36 +125,52 @@ To grab deployment addresses you can just grab from deploys folder:
 import localhostDeploys from "p2pix-smart-contracts/deploys/localhost.json";
 ```
 
-## Deploying to local environment
+## Deployment (Hardhat Ignition)
 
-On the first teminal, use the following command and import some wallets to your Metamask, then connect to the network pointed:
+Deployments are orchestrated by
+[Hardhat Ignition](https://hardhat.org/ignition). Each module declares its
+contracts; Ignition handles ordering, idempotency, and per-network state
+under `ignition/deployments/`.
+
+### Modules
+
+- `ignition/modules/MockToken.ts` — ERC20 mock used in dev / testnets.
+- `ignition/modules/Reputation.ts` — Reputation + Multicall.
+- `ignition/modules/P2PIX.ts` — wires Reputation + MockToken and deploys
+  P2PIX via its constructor, returning the full set of addresses.
+
+### Per-network parameters
+
+Network-specific values (e.g. `defaultBlocks`, `validSigners`, MockToken
+`supply`) live in `ignition/parameters/<network>.json`. Only
+`localhost.json` is checked in; copy it to e.g. `goerli.json` and set the
+network values before running the matching `deploy:*` script.
+
+### Local environment
+
+On the first terminal:
 
 ```sh
 yarn hardhat node
 ```
 
-On the second teminal, run the following commands:
+On the second terminal:
 
 ```sh
-yarn deploy1:localhost
-yarn deploy2:localhost
+yarn deploy:localhost
 ```
 
-**_NOTE_:** The second script transfers 2M tokens to the first wallet of the node.
-To use the P2Pix smart contract first transfer some of the tokens to other wallets.
+Addresses for every deployed contract are written to
+`ignition/deployments/chain-31337/deployed_addresses.json` (this path is
+gitignored — local-only state).
 
-## Deploying to testnets
-
-Deploy to Ethereum's Goerli testnet:
+### Testnets
 
 ```sh
-yarn deploy1:goerli
-yarn deploy2:goerli
+yarn deploy:goerli
+yarn deploy:sepolia
+yarn deploy:mumbai
 ```
 
-Deploy to Polygon's Mumbai testnet:
-
-```sh
-yarn deploy1:mumbai
-yarn deploy2:mumbai
-```
+Each command requires the matching `ignition/parameters/<network>.json`
+and the relevant API keys in `.env`.
