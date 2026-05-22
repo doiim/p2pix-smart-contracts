@@ -138,6 +138,10 @@ under `ignition/deployments/`.
 - `ignition/modules/Reputation.ts` — Reputation + Multicall.
 - `ignition/modules/P2PIX.ts` — wires Reputation + MockToken and deploys
   P2PIX via its constructor, returning the full set of addresses.
+- `ignition/modules/P2PIXProd.ts` — same as `P2PIX.ts` but **does not**
+  deploy MockToken. Token addresses are passed in via parameters
+  (`tokens` + `allowed`), so existing on-chain tokens (e.g. BRZ, USDC)
+  can be wired directly.
 
 ### Per-network parameters
 
@@ -174,3 +178,25 @@ yarn deploy:mumbai
 
 Each command requires the matching `ignition/parameters/<network>.json`
 and the relevant API keys in `.env`.
+
+### Deploying without MockToken (production / real tokens)
+
+Use the `P2PIXProd` module when the target network already has the ERC20
+tokens you want P2PIX to support — no MockToken is deployed.
+
+1. Copy `ignition/parameters/prod.example.json` to
+   `ignition/parameters/<network>.json` and set:
+   - `defaultBlocks`, `validSigners`
+   - `tokens` — array of ERC20 addresses on the target network
+   - `allowed` — array of booleans, same length as `tokens`
+2. Run:
+
+   ```sh
+   yarn deploy:prod --network <network> --parameters ignition/parameters/<network>.json
+   ```
+
+   (e.g. `--network mainnet` or `--network polygon`, with the network
+   defined in `hardhat.config.ts`).
+
+The deployed Reputation/Multicall/P2PIX addresses are written to
+`ignition/deployments/chain-<id>/deployed_addresses.json`.

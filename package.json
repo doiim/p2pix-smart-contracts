@@ -17,6 +17,7 @@
     "deploy:goerli": "hardhat ignition deploy ignition/modules/P2PIX.ts --network goerli --parameters ignition/parameters/goerli.json",
     "deploy:sepolia": "hardhat ignition deploy ignition/modules/P2PIX.ts --network sepolia --parameters ignition/parameters/sepolia.json",
     "deploy:mumbai": "hardhat ignition deploy ignition/modules/P2PIX.ts --network polygon-mumbai --parameters ignition/parameters/mumbai.json",
+    "deploy:prod": "hardhat ignition deploy ignition/modules/P2PIXProd.ts",
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && yarn typechain",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",

@@ -1,0 +1,8 @@
+{
+  "P2PIXProd": {
+    "defaultBlocks": 10,
+    "validSigners": [],
+    "tokens": ["0x0000000000000000000000000000000000000000"],
+    "allowed": [true]
+  }
+}
