@@ -1,3 +1,6 @@
 # directories
 **/artifacts
+**/cache
 **/node_modules
+deploys/
+docs/

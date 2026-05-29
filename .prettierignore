@@ -11,6 +11,12 @@
 **/node_modules
 **/types
 
+# deploy artifacts
+deploys/old/
+
+# auto-generated docs
+docs/
+
 # files
 *.env
 *.log

@@ -33,3 +33,6 @@ docs/lib/mock/*.md
 
 # Hardhat Ignition local/ephemeral deployments
 ignition/deployments/chain-31337/
+
+# Per-developer local deploy state (deterministic per mnemonic)
+deploys/localhost.json

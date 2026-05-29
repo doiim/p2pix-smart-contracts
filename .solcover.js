@@ -14,5 +14,9 @@ module.exports = {
   providerOptions: {
     mnemonic: process.env.MNEMONIC,
   },
-  skipFiles: ["test", 'core/BaseUtils.sol', 'core/OwnerSettings.sol'],
+  skipFiles: [
+    "test",
+    "core/BaseUtils.sol",
+    "core/OwnerSettings.sol",
+  ],
 };
