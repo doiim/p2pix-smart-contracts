@@ -1,5 +1,5 @@
 {
-  "P2PIX": {
+  "P2PIXWithMock": {
     "defaultBlocks": 10,
     "validSigners": []
   },

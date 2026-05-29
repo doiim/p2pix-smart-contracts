@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import { ethers } from "ethers";
 
-const DEFAULT_SUPPLY = ethers.utils
+const DEFAULT_SUPPLY = ethers
   .parseEther("20000000")
   .toString();
 

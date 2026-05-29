@@ -55,19 +55,13 @@
 
 | Testnet | Token Address                              | P2pix Address                              | Reputation Address                         | Multicall Address                          |
 | ------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ |
-| Goerli  | 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 | 0x2414817FF64A114d91eCFA16a834d3fCf69103d4 | 0x2CFD9354Ec7614fEf036EFd6A730dA1d5fC2762A | 0x8FE009992d96A86c7f0Bccdaf1eC3471E302a8a6 |
-| Mumbai  | 0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29 | 0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00 | 0x570445E3eF413bCDb5De79ed27B1c3840683e385 | 0x718B2C4DE4F9654E1349F610ff561249bfe1c418 |
+| Sepolia | 0x3eBE212377D847828eBb9D2a100f5c5EA1EF3A72 | 0xb7cDAE58C6e715Cfd795BB142041E43b9CB02497 | 0xFd1194A56995Ef7B62730F4061408e79d88E5207 | 0x2f7f9848A803E67d79C0C8aa42b663dCF6E1B5ed |
 
 <!-- All contracts deployed by 0x8dC06F985C131166570825F52447E8c88d64aE20 -->
-<!-- https://goerli.etherscan.io/address/0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00#code -->
-<!-- https://goerli.etherscan.io/address/0x2414817FF64A114d91eCFA16a834d3fCf69103d4#code -->
-<!-- https://goerli.etherscan.io/address/0x2CFD9354Ec7614fEf036EFd6A730dA1d5fC2762A#code -->
-<!-- https://goerli.etherscan.io/address/0x8FE009992d96A86c7f0Bccdaf1eC3471E302a8a6#code -->
-
-<!-- https://mumbai.polygonscan.com/address/0xC86042E9F2977C62Da8c9dDF7F9c40fde4796A29#code -->
-<!-- https://mumbai.polygonscan.com/address/0x4A2886EAEc931e04297ed336Cc55c4eb7C75BA00#code -->
-<!-- https://mumbai.polygonscan.com/address/0x570445e3ef413bcdb5de79ed27b1c3840683e385#code -->
-<!-- https://mumbai.polygonscan.com/address/0x718B2C4DE4F9654E1349F610ff561249bfe1c418#code -->
+<!-- https://sepolia.etherscan.io/address/0x3eBE212377D847828eBb9D2a100f5c5EA1EF3A72#code -->
+<!-- https://sepolia.etherscan.io/address/0xb7cDAE58C6e715Cfd795BB142041E43b9CB02497#code -->
+<!-- https://sepolia.etherscan.io/address/0xFd1194A56995Ef7B62730F4061408e79d88E5207#code -->
+<!-- https://sepolia.etherscan.io/address/0x2f7f9848A803E67d79C0C8aa42b663dCF6E1B5ed#code -->
 
 ## Usage
 
@@ -136,19 +130,17 @@ under `ignition/deployments/`.
 
 - `ignition/modules/MockToken.ts` — ERC20 mock used in dev / testnets.
 - `ignition/modules/Reputation.ts` — Reputation + Multicall.
-- `ignition/modules/P2PIX.ts` — wires Reputation + MockToken and deploys
-  P2PIX via its constructor, returning the full set of addresses.
-- `ignition/modules/P2PIXProd.ts` — same as `P2PIX.ts` but **does not**
-  deploy MockToken. Token addresses are passed in via parameters
-  (`tokens` + `allowed`), so existing on-chain tokens (e.g. BRZ, USDC)
-  can be wired directly.
+- `ignition/modules/P2PIX.ts` — production deploy (no MockToken). Token
+  addresses passed via parameters (`tokens` + `allowed`).
+- `ignition/modules/P2PIXWithMock.ts` — dev/test deploy. Wires Reputation +
+  MockToken and deploys P2PIX.
 
 ### Per-network parameters
 
 Network-specific values (e.g. `defaultBlocks`, `validSigners`, MockToken
 `supply`) live in `ignition/parameters/<network>.json`. Only
-`localhost.json` is checked in; copy it to e.g. `goerli.json` and set the
-network values before running the matching `deploy:*` script.
+`localhost.json` is checked in; copy it to e.g. `sepolia.json` and set the
+network values before running the deploy script.
 
 ### Local environment
 
@@ -161,7 +153,7 @@ yarn hardhat node
 On the second terminal:
 
 ```sh
-yarn deploy:localhost
+yarn deploy:mock --network localhost --parameters ignition/parameters/localhost.json
 ```
 
 Addresses for every deployed contract are written to
@@ -171,17 +163,15 @@ gitignored — local-only state).
 ### Testnets
 
 ```sh
-yarn deploy:goerli
-yarn deploy:sepolia
-yarn deploy:mumbai
+yarn deploy:mock --network sepolia
 ```
 
-Each command requires the matching `ignition/parameters/<network>.json`
-and the relevant API keys in `.env`.
+Requires the matching `ignition/parameters/sepolia.json` and the relevant
+API keys in `.env`.
 
-### Deploying without MockToken (production / real tokens)
+### Production (real tokens)
 
-Use the `P2PIXProd` module when the target network already has the ERC20
+Use the `P2PIX` module when the target network already has the ERC20
 tokens you want P2PIX to support — no MockToken is deployed.
 
 1. Copy `ignition/parameters/prod.example.json` to
@@ -192,11 +182,8 @@ tokens you want P2PIX to support — no MockToken is deployed.
 2. Run:
 
    ```sh
-   yarn deploy:prod --network <network> --parameters ignition/parameters/<network>.json
+   yarn deploy --network <network> --parameters ignition/parameters/<network>.json
    ```
-
-   (e.g. `--network mainnet` or `--network polygon`, with the network
-   defined in `hardhat.config.ts`).
 
 The deployed Reputation/Multicall/P2PIX addresses are written to
 `ignition/deployments/chain-<id>/deployed_addresses.json`.

@@ -1,10 +1,8 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-import MockTokenModule from "./MockToken";
 import ReputationModule from "./Reputation";
 
 export default buildModule("P2PIX", m => {
-  const { token } = m.useModule(MockTokenModule);
   const { reputation, multicall } = m.useModule(
     ReputationModule,
   );
@@ -14,19 +12,20 @@ export default buildModule("P2PIX", m => {
     "validSigners",
     [],
   );
+  const tokens = m.getParameter<string[]>("tokens");
+  const allowed = m.getParameter<boolean[]>("allowed");
 
   const p2pix = m.contract("P2PIX", [
     defaultBlocks,
     validSigners,
     reputation,
-    [token],
-    [true],
+    tokens,
+    allowed,
   ]);
 
   return {
     p2pix,
     reputation,
     multicall,
-    token,
   };
 });

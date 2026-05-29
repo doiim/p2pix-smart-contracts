@@ -24,9 +24,10 @@ const chainIds = {
   localhost: 31337,
   mainnet: 1,
   "eth-sepolia": 11155111,
-  "polygon-mumbai": 80001,
-  rootstock:30,
-  "rootstock-testnet":31,
+  "polygon-mainnet": 137,
+  "arb-mainnet": 42161,
+  rootstock: 30,
+  "rootstock-testnet": 31,
 };
 
 function getChainConfig(
@@ -56,9 +57,9 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY || "",
-      rinkeby: process.env.ETHERSCAN_API_KEY || "",
-      goerli: process.env.ETHERSCAN_API_KEY || "",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+      sepolia: process.env.ETHERSCAN_API_KEY || "",
+      polygon: process.env.POLYGONSCAN_API_KEY || "",
+      arbitrumOne: process.env.ARBISCAN_API_KEY || "",
     },
   },
   gasReporter: {
@@ -94,11 +95,12 @@ const config: HardhatUserConfig = {
       },
     },
     // network: getChainConfig("{INSERT_NAME}"),
-    mainnet: () => getChainConfig("mainnet"),
-    sepolia: () => getChainConfig("eth-sepolia"),
-    mumbai: () => getChainConfig("polygon-mumbai"),
-    rootstock: () => getChainConfig("rootstock"),
-    rsktestnet: () => getChainConfig("rootstock-testnet"),
+    mainnet: getChainConfig("mainnet"),
+    sepolia: getChainConfig("eth-sepolia"),
+    polygon: getChainConfig("polygon-mainnet"),
+    arbitrum: getChainConfig("arb-mainnet"),
+    rootstock: getChainConfig("rootstock"),
+    rsktestnet: getChainConfig("rootstock-testnet"),
   },
   paths: {
     artifacts: "./artifacts",
