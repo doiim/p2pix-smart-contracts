@@ -4,7 +4,6 @@ pragma solidity ^0.8.19;
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 library DataTypes {
-
     struct Lock {
         uint256 counter;
         uint256 expirationBlock;

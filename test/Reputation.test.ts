@@ -1,6 +1,5 @@
 import "@nomicfoundation/hardhat-chai-matchers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
 
@@ -8,14 +7,11 @@ import { Reputation } from "../src/types";
 import { curve, repFixture } from "./utils/fixtures";
 
 describe("Reputation", () => {
-  // contract deployer/admin
-  let owner: SignerWithAddress;
   // Reputation Interface instance;
   let reputation: Reputation;
 
   before("Set signers and reset network", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [owner] = await ethers.getSigners();
+    await ethers.getSigners();
 
     await network.provider.send("hardhat_reset");
   });

@@ -12,7 +12,6 @@ import { OwnerSettings, ERC20, SafeTransferLib } from "contracts/core/OwnerSetti
 import { BaseUtils } from "contracts/core/BaseUtils.sol";
 import { DataTypes as DT } from "contracts/core/DataTypes.sol";
 
-
 contract P2PIX is BaseUtils {
     // solhint-disable use-forbidden-name
     // solhint-disable no-inline-assembly
@@ -34,15 +33,18 @@ contract P2PIX is BaseUtils {
         address _reputation,
         ERC20[] memory tokens,
         bool[] memory tokenStates
-    ) 
+    )
+        payable
         OwnerSettings(
-            defaultBlocks, 
-            validSigners, 
-            _reputation, 
-            tokens, 
+            defaultBlocks,
+            validSigners,
+            _reputation,
+            tokens,
             tokenStates
-        ) 
-        payable {/*  */}
+        )
+    {
+        /*  */
+    }
 
     /// @notice Creates a deposit order based on a seller's
     /// offer of an amount of ERC20 tokens.
@@ -58,13 +60,16 @@ contract P2PIX is BaseUtils {
         uint96 amount,
         bool valid
     ) public nonReentrant {
-
-        if (bytes(pixTarget).length == 0) revert EmptyPixTarget();
+        if (bytes(pixTarget).length == 0)
+            revert EmptyPixTarget();
         if (!allowedERC20s(token)) revert TokenDenied();
-        uint256 _sellerBalance = __sellerBalance(msg.sender, token);
+        uint256 _sellerBalance = __sellerBalance(
+            msg.sender,
+            token
+        );
 
         uint256 currBal = _sellerBalance & BITMASK_SB_ENTRY;
-        uint256 _newBal = uint256(currBal + amount); 
+        uint256 _newBal = uint256(currBal + amount);
         if (_newBal > MAXBALANCE_UPPERBOUND)
             revert MaxBalExceeded();
 
@@ -76,8 +81,8 @@ contract P2PIX is BaseUtils {
         uint256 validCasted = _castBool(valid);
 
         _setSellerBalance(
-            msg.sender, 
-            token, 
+            msg.sender,
+            token,
             (_newBal | (validCasted << BITPOS_VALID)),
             pixTargetCasted
         );
@@ -97,7 +102,10 @@ contract P2PIX is BaseUtils {
     /// @notice This function does not affect any ongoing active locks.
     /// @dev Function sighash: 0x6d82d9e0
     function setValidState(ERC20 token, bool state) public {
-        uint256 _sellerBalance = __sellerBalance(msg.sender, token);
+        uint256 _sellerBalance = __sellerBalance(
+            msg.sender,
+            token
+        );
 
         if (_sellerBalance != 0) {
             uint256 _valid = _castBool(state);
@@ -115,7 +123,7 @@ contract P2PIX is BaseUtils {
     /// @notice Public method designed to lock an remaining amount of
     /// the deposit order of a seller.
     /// @notice Transaction forwarding must leave `merkleProof` empty;
-    /// otherwise, the trustedForwarder must be previously added 
+    /// otherwise, the trustedForwarder must be previously added
     /// to a seller whitelist.
     /// @notice This method can be performed either by:
     /// - An user allowed via the seller's allowlist;
@@ -144,30 +152,36 @@ contract P2PIX is BaseUtils {
         uint256 bal = getBalance(seller, token);
         if (bal < amount) revert NotEnoughTokens();
 
-        unchecked { 
+        unchecked {
             lockID = ++lockCounter;
         }
 
-        if (
-            mapLocks[lockID].expirationBlock >= block.number
-        ) revert NotExpired();
+        if (mapLocks[lockID].expirationBlock >= block.number)
+            revert NotExpired();
 
         bytes32 _pixTarget = getPixTarget(seller, token);
 
         // transaction forwarding must leave `merkleProof` empty;
-        // otherwise, the trustedForwarder must be previously added 
+        // otherwise, the trustedForwarder must be previously added
         // to a seller whitelist.
         if (merkleProof.length != 0) {
-            _merkleVerify( merkleProof, sellerAllowList(seller), _msgSender());
-
-        } else if ( amount > REPUTATION_LOWERBOUND && msg.sender == _msgSender() ) {
-            
-            uint256 spendLimit; uint256 userCredit = 
-            userRecord[_castAddrToKey(_msgSender())];
+            _merkleVerify(
+                merkleProof,
+                sellerAllowList(seller),
+                _msgSender()
+            );
+        } else if (
+            amount > REPUTATION_LOWERBOUND &&
+            msg.sender == _msgSender()
+        ) {
+            uint256 spendLimit;
+            uint256 userCredit = userRecord[
+                _castAddrToKey(_msgSender())
+            ];
             (spendLimit) = _limiter(userCredit / WAD);
-            if ( 
-                amount > (spendLimit * WAD) || 
-                amount > LOCKAMOUNT_UPPERBOUND 
+            if (
+                amount > (spendLimit * WAD) ||
+                amount > LOCKAMOUNT_UPPERBOUND
             ) revert AmountNotAllowed();
         }
 
@@ -225,14 +239,21 @@ contract P2PIX is BaseUtils {
         l.amount = 0;
         l.expirationBlock = 0;
         _setUsedTransactions(message);
-        
-        if (_msgSender() == msg.sender) { 
-        if (msg.sender != l.buyerAddress) {
-            userRecord[_castAddrToKey(msg.sender)] += (lockAmount >> 1);
-            userRecord[_castAddrToKey(l.buyerAddress)] += (lockAmount >> 1);
-        } else {
-            userRecord[_castAddrToKey(msg.sender)] += lockAmount;
-        }}
+
+        if (_msgSender() == msg.sender) {
+            if (msg.sender != l.buyerAddress) {
+                userRecord[
+                    _castAddrToKey(msg.sender)
+                ] += (lockAmount >> 1);
+                userRecord[
+                    _castAddrToKey(l.buyerAddress)
+                ] += (lockAmount >> 1);
+            } else {
+                userRecord[
+                    _castAddrToKey(msg.sender)
+                ] += lockAmount;
+            }
+        }
 
         SafeTransferLib.safeTransfer(
             t,
@@ -249,9 +270,9 @@ contract P2PIX is BaseUtils {
     /// @notice For each successfull unexpired lock recovered,
     /// `userRecord[_castAddrToKey(l.relayerAddress)]` is decreased by half of its value.
     /// @dev Function sighash: 0xb0983d39
-    function unlockExpired(uint256[] calldata lockIDs)
-        public
-    {
+    function unlockExpired(
+        uint256[] calldata lockIDs
+    ) public {
         uint256 i;
         uint256 locksSize = lockIDs.length;
 
@@ -260,19 +281,21 @@ contract P2PIX is BaseUtils {
 
             _notExpired(l);
 
-            uint256 _sellerBalance = 
-            __sellerBalance(l.seller, l.token) & BITMASK_SB_ENTRY;
+            uint256 _sellerBalance = __sellerBalance(
+                l.seller,
+                l.token
+            ) & BITMASK_SB_ENTRY;
 
-            if ((_sellerBalance + l.amount) > MAXBALANCE_UPPERBOUND)
-                revert MaxBalExceeded();
+            if (
+                (_sellerBalance + l.amount) >
+                MAXBALANCE_UPPERBOUND
+            ) revert MaxBalExceeded();
 
             _addSellerBalance(l.seller, l.token, l.amount);
 
             l.amount = 0;
 
-            uint256 userKey = _castAddrToKey(
-                l.buyerAddress
-            );
+            uint256 userKey = _castAddrToKey(l.buyerAddress);
             uint256 _newUserRecord = (userRecord[userKey] >>
                 1);
 
@@ -312,7 +335,8 @@ contract P2PIX is BaseUtils {
             setValidState(token, false);
 
         _decBal(
-            (__sellerBalance(msg.sender, token) & BITMASK_SB_ENTRY),
+            (__sellerBalance(msg.sender, token) &
+                BITMASK_SB_ENTRY),
             amount,
             token,
             msg.sender
@@ -325,18 +349,15 @@ contract P2PIX is BaseUtils {
             amount
         );
 
-        emit DepositWithdrawn(
-            msg.sender,
-            token,
-            amount
-        );
+        emit DepositWithdrawn(msg.sender, token, amount);
     }
 
-    function setRoot(address addr, bytes32 merkleroot)
-        public
-    {
+    function setRoot(
+        address addr,
+        bytes32 merkleroot
+    ) public {
         assembly ("memory-safe") {
-            // if (addr != msg.sender)  
+            // if (addr != msg.sender)
             if iszero(eq(addr, caller())) {
                 // revert OnlySeller()
                 mstore(0x00, 0x85d1f726)
@@ -349,8 +370,8 @@ contract P2PIX is BaseUtils {
 
             // emit RootUpdated(addr, merkleroot);
             log3(
-                0, 
-                0, 
+                0,
+                0,
                 _ROOT_UPDATED_EVENT_SIGNATURE,
                 addr,
                 merkleroot
@@ -408,14 +429,13 @@ contract P2PIX is BaseUtils {
         }
 
         // we can directly dec from packed uint entry value
-        _decSellerBalance(_k,_t, _amount);
+        _decSellerBalance(_k, _t, _amount);
     }
 
-    function getBalance(address seller, ERC20 token)
-        public
-        view
-        returns (uint256 bal)
-    {
+    function getBalance(
+        address seller,
+        ERC20 token
+    ) public view returns (uint256 bal) {
         assembly ("memory-safe") {
             for {
                 /*  */
@@ -434,11 +454,10 @@ contract P2PIX is BaseUtils {
         }
     }
 
-    function getValid(address seller, ERC20 token)
-        public
-        view
-        returns (bool valid)
-    {
+    function getValid(
+        address seller,
+        ERC20 token
+    ) public view returns (bool valid) {
         assembly ("memory-safe") {
             for {
                 /*  */
@@ -452,7 +471,9 @@ contract P2PIX is BaseUtils {
                     BITMASK_SB_ENTRY,
                     shr(
                         BITPOS_VALID,
-                        sload(add(keccak256(0x0c, 0x34), 0x01))
+                        sload(
+                            add(keccak256(0x0c, 0x34), 0x01)
+                        )
                     )
                 )
                 break
@@ -460,11 +481,10 @@ contract P2PIX is BaseUtils {
         }
     }
 
-    function getPixTarget(address seller, ERC20 token)
-        public
-        view
-        returns (bytes32 pixTarget)
-    {
+    function getPixTarget(
+        address seller,
+        ERC20 token
+    ) public view returns (bytes32 pixTarget) {
         assembly ("memory-safe") {
             for {
                 /*  */
@@ -480,9 +500,12 @@ contract P2PIX is BaseUtils {
         }
     }
 
-    function getPixTargetString(address seller, ERC20 token) public view returns (string memory pixTarget) {
+    function getPixTargetString(
+        address seller,
+        ERC20 token
+    ) public view returns (string memory pixTarget) {
         bytes32 _pixEnc = getPixTarget(seller, token);
-        pixTarget =  string(abi.encodePacked(_pixEnc));
+        pixTarget = string(abi.encodePacked(_pixEnc));
     }
 
     function getBalances(
@@ -506,7 +529,9 @@ contract P2PIX is BaseUtils {
     /// @notice External getter that returns the status of a lockIDs array.
     /// @notice Call will not revert if provided with an empty array as parameter.
     /// @dev Function sighash: 0x49ef8448
-    function getLocksStatus(uint256[] memory ids)
+    function getLocksStatus(
+        uint256[] memory ids
+    )
         external
         view
         returns (uint256[] memory, DT.LockStatus[] memory)

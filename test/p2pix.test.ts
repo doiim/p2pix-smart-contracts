@@ -22,12 +22,12 @@ import {
   Reputation,
 } from "../src/types";
 import { P2PixErrors } from "./utils/errors";
-import { 
-  // LockArgs, 
+import {
+  // LockArgs,
   // DepositArgs,
-  Call, 
-  Lock, 
-  Result 
+  Call,
+  Lock,
+  Result,
 } from "./utils/interfaces";
 import {
   getBnFrom,
@@ -36,10 +36,7 @@ import {
   p2pixFixture,
   randomSigners,
 } from "./utils/fixtures";
-import {
-    parseEther,
-    stringToHex,
-} from "viem";
+import { parseEther, stringToHex } from "viem";
 
 describe("P2PIX", () => {
   type WalletWithAddress = Wallet & SignerWithAddress;
@@ -62,10 +59,10 @@ describe("P2PIX", () => {
   let merkleRoot: string; // MerkleRoot from seller's allowlist
   let proof: string[]; // Owner's proof as whitelisted address
 
-  const fundAmount: BigInt = parseEther("10000");
-  const price: BigInt = parseEther("100");
+  const fundAmount: bigint = parseEther("10000");
+  const price: bigint = parseEther("100");
 
-  const zero = '0x0000000000000000000000000000000000000000';
+  const zero = "0x0000000000000000000000000000000000000000";
 
   before("Set signers and reset network", async () => {
     [owner, acc01, acc02, acc03] =
@@ -90,15 +87,19 @@ describe("P2PIX", () => {
       expect(p2pix).to.be.ok;
       expect(erc20).to.be.ok;
       expect(reputation).to.be.ok;
-      const ownerKey = await p2pix._castAddrToKey(owner.address);
-      const acc01Key = await p2pix._castAddrToKey(acc01.address);
+      const ownerKey = await p2pix._castAddrToKey(
+        owner.address,
+      );
+      const acc01Key = await p2pix._castAddrToKey(
+        acc01.address,
+      );
 
       // storage checks
       expect(
         await p2pix.defaultLockBlocks.staticCall(),
       ).to.eq(10);
       expect(await p2pix.reputation.staticCall()).to.eq(
-        reputation.target
+        reputation.target,
       );
       expect(await p2pix.lockCounter.staticCall()).to.eq(0);
       expect(
@@ -165,17 +166,20 @@ describe("P2PIX", () => {
       expect(newBal).to.eq(price);
 
       const tx = p2pix.withdrawBalance();
+      await expect(tx).to.changeEtherBalances(
+        [owner.address, p2pix.target],
+        [price, price * -1n],
+      );
       await expect(tx)
-        .to.changeEtherBalances(
-          [owner.address, p2pix.target],
-          [price, price * -1n],
-        );
-        await expect(tx).to.emit(p2pix, "FundsWithdrawn")
+        .to.emit(p2pix, "FundsWithdrawn")
         .withArgs(owner.address, price);
 
       await expect(
         p2pix.connect(acc01).withdrawBalance(),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.Unauthorized);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
+      );
     });
     it("should allow owner to change reputation instance", async () => {
       const tx = await p2pix.setReputation(acc03.address);
@@ -285,11 +289,10 @@ describe("P2PIX", () => {
         p2pix,
         P2PixErrors.LengthMismatch,
       );
-      await expect(mtcFail)
-        .to.be.revertedWithCustomError(
-          multicall,
-          P2PixErrors.CallFailed,
-        );
+      await expect(mtcFail).to.be.revertedWithCustomError(
+        multicall,
+        P2PixErrors.CallFailed,
+      );
     });
   });
   describe("Deposit", async () => {
@@ -304,9 +307,15 @@ describe("P2PIX", () => {
       //   token: owner.address,
       //   amount: BigInt(1),
       //   valid: true,
-      // }; 
+      // };
 
-      const tx = p2pix.deposit(pTarget, root, owner.address, BigInt(1), true);
+      const tx = p2pix.deposit(
+        pTarget,
+        root,
+        owner.address,
+        BigInt(1),
+        true,
+      );
 
       await expect(tx).to.be.revertedWithCustomError(
         p2pix,
@@ -318,7 +327,13 @@ describe("P2PIX", () => {
         ethers.toUtf8Bytes("root"),
       );
 
-      const tx = p2pix.deposit("", root, erc20.target, BigInt(1), true);
+      const tx = p2pix.deposit(
+        "",
+        root,
+        erc20.target,
+        BigInt(1),
+        true,
+      );
 
       await expect(tx).to.be.revertedWithCustomError(
         p2pix,
@@ -330,7 +345,13 @@ describe("P2PIX", () => {
       const root = ethers.keccak256(
         ethers.toUtf8Bytes("root"),
       );
-      const tx = p2pix.deposit(pTarget, root, erc20.target, parseEther("100000001"), true);
+      const tx = p2pix.deposit(
+        pTarget,
+        root,
+        erc20.target,
+        parseEther("100000001"),
+        true,
+      );
 
       await expect(tx).to.be.revertedWithCustomError(
         p2pix,
@@ -342,7 +363,7 @@ describe("P2PIX", () => {
       // we use `hashZero` to avoid updating seller's allowlist settings
       const root = ethers.ZeroHash;
       await erc20.approve(p2pix.target, price);
-      
+
       const tx = await p2pix.deposit(
         pTarget,
         root,
@@ -363,12 +384,13 @@ describe("P2PIX", () => {
         erc20.target,
       );
 
-      const allowList = await p2pix.sellerAllowList(owner.address);
+      const allowList = await p2pix.sellerAllowList(
+        owner.address,
+      );
       const balances = await p2pix.getBalances.staticCall(
         [owner.address, acc01.address],
         erc20.target,
       );
-
 
       expect(tx).to.be.ok;
       await expect(tx)
@@ -380,7 +402,9 @@ describe("P2PIX", () => {
         [price * -1n, price],
       );
       expect(storage).to.eq(price);
-      expect(pixTarget).to.eq(stringToHex(pTarget,{size:32}));
+      expect(pixTarget).to.eq(
+        stringToHex(pTarget, { size: 32 }),
+      );
       expect(valid).to.eq(true);
       expect(allowList).to.eq(root);
       expect(balances[0]).to.eq(price);
@@ -388,7 +412,6 @@ describe("P2PIX", () => {
     });
     // edge case test
     it("should create multiple deposits", async () => {
-
       // const acc01Key = await p2pix._castAddrToKey.staticCall(
       //   acc01.address,
       // );
@@ -411,7 +434,7 @@ describe("P2PIX", () => {
       const price2 = price * 2n;
       const price3 = price * 3n;
       const price4 = price * 4n;
-      const prices: BigInt[] = [
+      const prices: bigint[] = [
         price,
         price2,
         price3,
@@ -421,9 +444,7 @@ describe("P2PIX", () => {
         getSignerAddrs(4, await ethers.getSigners()),
         price4,
       );
-      await erc20
-        .connect(owner)
-        .approve(p2pix.target, price);
+      await erc20.connect(owner).approve(p2pix.target, price);
       await erc20
         .connect(acc01)
         .approve(p2pix.target, price2);
@@ -440,29 +461,23 @@ describe("P2PIX", () => {
       const tx2 = await p2pix
         .connect(acc01)
         .deposit(
-            pTarget2,
-            nullRoot,
-            erc20.target,
-            price2,
-            false,
+          pTarget2,
+          nullRoot,
+          erc20.target,
+          price2,
+          false,
         );
       const tx3 = await p2pix
         .connect(acc02)
-        .deposit(
-            pTarget3, 
-            root,
-            erc20.target, 
-            price3, 
-            true,
-        );
+        .deposit(pTarget3, root, erc20.target, price3, true);
       const tx4 = await p2pix
         .connect(acc03)
         .deposit(
-            pTarget,
-            nullRoot,
-            erc20.target,
-            price4,
-            false,
+          pTarget,
+          nullRoot,
+          erc20.target,
+          price4,
+          false,
         );
 
       const balances = await p2pix.getBalances.staticCall(
@@ -557,7 +572,8 @@ describe("P2PIX", () => {
         const tx = transactions[i];
         const addr = addresses[i];
         const depositPrice = depositPrices[i];
-        const amount = parseEther("100") * BigInt(i+1) * -1n;
+        const amount =
+          parseEther("100") * BigInt(i + 1) * -1n;
 
         await expect(tx)
           .to.emit(p2pix, "DepositAdded")
@@ -575,22 +591,30 @@ describe("P2PIX", () => {
       expect(prices[3]).to.eq(balances[3]);
 
       expect(storage1).to.eq(price);
-      expect(pixTarget1).to.eq(stringToHex(pTarget,{size:32}));
+      expect(pixTarget1).to.eq(
+        stringToHex(pTarget, { size: 32 }),
+      );
       expect(valid1).to.eq(true);
       expect(allowList1).to.eq(root);
 
       expect(storage2).to.eq(price2);
-      expect(pixTarget2).to.eq(stringToHex(pTarget2,{size:32}));
+      expect(pixTarget2).to.eq(
+        stringToHex(pTarget2, { size: 32 }),
+      );
       expect(valid2).to.eq(false);
       expect(allowList2).to.eq(nullRoot);
 
       expect(storage3).to.eq(price3);
-      expect(pixTarget3).to.eq(stringToHex(pTarget3,{size:32}));
+      expect(pixTarget3).to.eq(
+        stringToHex(pTarget3, { size: 32 }),
+      );
       expect(valid3).to.eq(true);
       expect(allowList3).to.eq(root);
 
       expect(storage4).to.eq(price4);
-      expect(pixTarget4).to.eq(stringToHex(pTarget,{size:32}));
+      expect(pixTarget4).to.eq(
+        stringToHex(pTarget, { size: 32 }),
+      );
       expect(valid4).to.eq(false);
       expect(allowList4).to.eq(nullRoot);
     });
@@ -600,35 +624,23 @@ describe("P2PIX", () => {
       const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          pTarget,
-          ethers.ZeroHash,
-          erc20.target,
-          price,
-          true,
+        pTarget,
+        ethers.ZeroHash,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix.setValidState(erc20.target, false);
       const fail = p2pix
         .connect(acc03)
-        .lock(
-            owner.address,
-            erc20.target,
-            price,
-            [],
-            [],
-        );
-      const fail2 = p2pix.lock(
-          zero,
-          zero,
-          price,
-          [],
-          [],
-      );
+        .lock(owner.address, erc20.target, price, [], []);
+      const fail2 = p2pix.lock(zero, zero, price, [], []);
 
-      expect(fail).to.be.revertedWithCustomError(
+      await expect(fail).to.be.revertedWithCustomError(
         p2pix,
         P2PixErrors.InvalidDeposit,
       );
-      expect(fail2).to.be.revertedWithCustomError(
+      await expect(fail2).to.be.revertedWithCustomError(
         p2pix,
         P2PixErrors.InvalidDeposit,
       );
@@ -637,20 +649,20 @@ describe("P2PIX", () => {
       await erc20.approve(p2pix.target, price);
       const pTarget = "7ce3339x4133301u8f63pn71a5333118";
       await p2pix.deposit(
-          pTarget,
-          ethers.ZeroHash,
-          erc20.target,
-          price,
-          true,
+        pTarget,
+        ethers.ZeroHash,
+        erc20.target,
+        price,
+        true,
       );
       const fail = p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            price * 2n,
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          price * 2n,
+          [],
+          [],
         );
 
       await expect(fail).to.be.revertedWithCustomError(
@@ -662,20 +674,20 @@ describe("P2PIX", () => {
     it("should revert if an invalid allowlist merkleproof is provided", async () => {
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          "7ce3339x4133301u8f63pn71a5333118",
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        "7ce3339x4133301u8f63pn71a5333118",
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const fail = p2pix
         .connect(acc02)
         .lock(
-            owner.address,
-            erc20.target,
-            1000n,
-            [ethers.keccak256(ethers.toUtf8Bytes("wrong"))],
-            [],
+          owner.address,
+          erc20.target,
+          1000n,
+          [ethers.keccak256(ethers.toUtf8Bytes("wrong"))],
+          [],
         );
 
       await expect(fail).to.be.revertedWithCustomError(
@@ -684,25 +696,22 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if msg.sender does not have enough credit in his spend limit", async () => {
-      await erc20.approve(
-        p2pix.target,
-        price * 3n,
-      );
+      await erc20.approve(p2pix.target, price * 3n);
       await p2pix.deposit(
-          "1",
-          merkleRoot,
-          erc20.target,
-          price * 3n,
-          true,
+        "1",
+        merkleRoot,
+        erc20.target,
+        price * 3n,
+        true,
       );
       const fail = p2pix
         .connect(acc02)
         .lock(
-            owner.address,
-            erc20.target,
-            price * 2n,
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          price * 2n,
+          [],
+          [],
         );
 
       await expect(fail).to.be.revertedWithCustomError(
@@ -714,24 +723,17 @@ describe("P2PIX", () => {
       const target = "333";
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const tx = await p2pix
         .connect(acc01)
-        .lock(
-            owner.address,
-            erc20.target,
-            price,
-            proof,
-            [],
-        );
-      const storage: Lock = await p2pix.mapLocks.staticCall(
-        1,
-      );
+        .lock(owner.address, erc20.target, price, proof, []);
+      const storage: Lock =
+        await p2pix.mapLocks.staticCall(1);
 
       const rc: ContractTransactionReceipt = await tx.wait();
       const expiration = rc.blockNumber + 10;
@@ -749,7 +751,9 @@ describe("P2PIX", () => {
       expect(storage.counter).to.eq(1);
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(stringToHex(target,{size:32}));
+      expect(storage.pixTarget).to.eq(
+        stringToHex(target, { size: 32 }),
+      );
       expect(storage.buyerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.target);
     });
@@ -758,33 +762,25 @@ describe("P2PIX", () => {
       const target = "101";
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          root,
-          erc20.target,
-          price,
-          true,
+        target,
+        root,
+        erc20.target,
+        price,
+        true,
       );
       const tx = await p2pix
         .connect(acc01)
-        .lock(
-            owner.address,
-            erc20.target,
-            price,
-            [],
-            [],
-        );
-      const storage: Lock = await p2pix.mapLocks.staticCall(
-        1,
-      );
+        .lock(owner.address, erc20.target, price, [], []);
+      const storage: Lock =
+        await p2pix.mapLocks.staticCall(1);
 
       const rc: ContractTransactionReceipt = await tx.wait();
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
       );
-      const castBack = await p2pix._castKeyToAddr.staticCall(
-        key,
-      );
+      const castBack =
+        await p2pix._castKeyToAddr.staticCall(key);
 
       expect(tx).to.be.ok;
       expect(castBack).to.eq(owner.address);
@@ -792,13 +788,20 @@ describe("P2PIX", () => {
       expect(storage.counter).to.eq(1);
       expect(storage.amount).to.eq(price);
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(stringToHex(target,{size:32}));
+      expect(storage.pixTarget).to.eq(
+        stringToHex(target, { size: 32 }),
+      );
       expect(storage.buyerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.target);
 
       await expect(tx)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc01.address, 1, owner.address, storage.amount);
+        .withArgs(
+          acc01.address,
+          1,
+          owner.address,
+          storage.amount,
+        );
     });
     it("should create a lock, update storage and emit events via the reputation path 2", async () => {
       const root = ethers.ZeroHash;
@@ -807,75 +810,71 @@ describe("P2PIX", () => {
       const target = "101";
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(target, { size: 32 }), price, endtoendID],
+        [
+          stringToHex(target, { size: 32 }),
+          price,
+          endtoendID,
+        ],
       );
-      const messageHashBytes =
-        ethers.getBytes(messageToSign);
+      const messageHashBytes = ethers.getBytes(messageToSign);
       const flatSig = await acc01.signMessage(
         messageHashBytes,
       );
       // const sig = ethers.utils.splitSignature(flatSig);
       await erc20.approve(p2pix.target, newPrice);
       await p2pix.deposit(
-          target,
-          root,
-          erc20.target,
-          newPrice,
-          true,
+        target,
+        root,
+        erc20.target,
+        newPrice,
+        true,
       );
       await p2pix
         .connect(acc01)
-        .lock(
-            owner.address,
-            erc20.target,
-            price,
-            [],
-            [],
-        );
+        .lock(owner.address, erc20.target, price, [], []);
       await p2pix
         .connect(acc01)
-        .release(
-          BigInt(1),
-          endtoendID,
-          flatSig
-        );
+        .release(BigInt(1), endtoendID, flatSig);
       const tx = await p2pix
         .connect(acc01)
         .lock(
-            owner.address,
-            erc20.target,
-            price + 1n,
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          price + 1n,
+          [],
+          [],
         );
-      const storage: Lock = await p2pix.mapLocks.staticCall(
-        2,
-      );
+      const storage: Lock =
+        await p2pix.mapLocks.staticCall(2);
 
       const rc: ContractTransactionReceipt = await tx.wait();
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
       );
-      const castBack = await p2pix._castKeyToAddr.staticCall(
-        key,
-      );
+      const castBack =
+        await p2pix._castKeyToAddr.staticCall(key);
 
       expect(tx).to.be.ok;
       expect(castBack).to.eq(owner.address);
       expect(storage.seller).to.eq(owner.address);
       expect(storage.counter).to.eq(2);
-      expect(storage.amount).to.eq(
-        price+1n,
-      );
+      expect(storage.amount).to.eq(price + 1n);
       expect(storage.expirationBlock).to.eq(expiration);
-      expect(storage.pixTarget).to.eq(stringToHex(target,{size:32}));
+      expect(storage.pixTarget).to.eq(
+        stringToHex(target, { size: 32 }),
+      );
       expect(storage.buyerAddress).to.eq(acc01.address);
       expect(storage.token).to.eq(erc20.target);
 
       await expect(tx)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc01.address, 2, owner.address, storage.amount);
+        .withArgs(
+          acc01.address,
+          2,
+          owner.address,
+          storage.amount,
+        );
     });
     // edge case test
     it("should create multiple locks", async () => {
@@ -883,58 +882,58 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const tx1 = await p2pix
         .connect(acc01)
         .lock(
-            owner.address,
-            erc20.target,
-            newPrice,
-            proof,
-            [],
+          owner.address,
+          erc20.target,
+          newPrice,
+          proof,
+          [],
         );
-      const storage1: Lock = await p2pix.mapLocks.staticCall(
-        1,
-      );
+      const storage1: Lock =
+        await p2pix.mapLocks.staticCall(1);
 
-      const rc1: ContractTransactionReceipt = await tx1.wait();
+      const rc1: ContractTransactionReceipt =
+        await tx1.wait();
       const expiration1 = rc1.blockNumber + 10;
 
       const tx2 = await p2pix
         .connect(acc01)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
-      const storage2: Lock = await p2pix.mapLocks.staticCall(
-        2,
-      );
+      const storage2: Lock =
+        await p2pix.mapLocks.staticCall(2);
 
-      const rc2: ContractTransactionReceipt = await tx2.wait();
+      const rc2: ContractTransactionReceipt =
+        await tx2.wait();
       const expiration2 = rc2.blockNumber + 10;
 
       const tx3 = await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
-      const storage3: Lock = await p2pix.mapLocks.staticCall(
-        3,
-      );
+      const storage3: Lock =
+        await p2pix.mapLocks.staticCall(3);
 
-      const rc3: ContractTransactionReceipt = await tx3.wait();
+      const rc3: ContractTransactionReceipt =
+        await tx3.wait();
       const expiration3 = rc3.blockNumber + 10;
 
       // const key = await p2pix._castAddrToKey.staticCall(
@@ -947,24 +946,24 @@ describe("P2PIX", () => {
       // const lockStatus4 = await p2pix.getLocksStatus.staticCall([]);
 
       // All getLocksStatus calls were batched via the Multicall contract.
-      const ls1: [BigInt[], BigInt[]] = [
+      const ls1: [bigint[], bigint[]] = [
         getBnFrom([1, 7, 7, 2, 3, 4, 5, 5, 2, 3]),
         getBnFrom([1, 0, 0, 1, 1, 0, 0, 0, 1, 1]),
       ];
 
-      const ls2: [BigInt[], BigInt[]] = [
+      const ls2: [bigint[], bigint[]] = [
         getBnFrom([0, 1, 2, 3]),
         getBnFrom([0, 1, 1, 1]),
       ];
 
-      const ls3: [BigInt[], BigInt[]] = [
+      const ls3: [bigint[], bigint[]] = [
         getBnFrom([7, 7, 333, 14, 777]),
         getBnFrom([0, 0, 0, 0, 0]),
       ];
 
       const ls4 = [[], []];
 
-      const batchedLocks: Array<BigInt[]> = [
+      const batchedLocks: Array<bigint[]> = [
         ls1,
         ls2,
         ls3,
@@ -976,15 +975,11 @@ describe("P2PIX", () => {
         batchedLocks,
       );
 
-      const batchCall = await multicall.mtc1.staticCall(
-        cData,
-      );
+      const batchCall =
+        await multicall.mtc1.staticCall(cData);
       const blockNumber = batchCall[0];
 
-      const result: Array<Bytes> = batchCall[1].slice(
-        0,
-        4,
-      );
+      const result: Array<Bytes> = batchCall[1].slice(0, 4);
 
       const decodedData = result.map(r =>
         ethers.AbiCoder.defaultAbiCoder().decode(
@@ -1023,7 +1018,7 @@ describe("P2PIX", () => {
       expect(storage2.expirationBlock).to.eq(expiration2);
       expect(storage3.expirationBlock).to.eq(expiration3);
 
-      expect(stringToHex(target,{size:32}))
+      expect(stringToHex(target, { size: 32 }))
         .to.eq(storage1.pixTarget)
         .and.to.eq(storage2.pixTarget)
         .and.to.eq(storage3.pixTarget);
@@ -1040,13 +1035,28 @@ describe("P2PIX", () => {
 
       await expect(tx1)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc01.address, 1, owner.address, storage1.amount);
+        .withArgs(
+          acc01.address,
+          1,
+          owner.address,
+          storage1.amount,
+        );
       await expect(tx2)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc01.address, 2, owner.address, storage2.amount);
+        .withArgs(
+          acc01.address,
+          2,
+          owner.address,
+          storage2.amount,
+        );
       await expect(tx3)
         .to.emit(p2pix, "LockAdded")
-        .withArgs(acc03.address, 3, owner.address, storage3.amount);
+        .withArgs(
+          acc03.address,
+          3,
+          owner.address,
+          storage3.amount,
+        );
     });
   });
   describe("Set sellerBalance Valid State", async () => {
@@ -1061,11 +1071,11 @@ describe("P2PIX", () => {
     it("should setValidState, update storage and emit events", async () => {
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          BigInt(10101).toString(),
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        BigInt(10101).toString(),
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const state1 = await p2pix.getValid.staticCall(
         owner.address,
@@ -1093,15 +1103,13 @@ describe("P2PIX", () => {
       const target = BigInt(1).toString();
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          hashZero,
-          erc20.target,
-          price,
-          true,
+        target,
+        hashZero,
+        erc20.target,
+        price,
+        true,
       );
-      await erc20
-        .connect(acc01)
-        .approve(p2pix.target, price);
+      await erc20.connect(acc01).approve(p2pix.target, price);
       await p2pix
         .connect(acc01)
         .deposit(
@@ -1111,18 +1119,10 @@ describe("P2PIX", () => {
           price,
           false,
         );
-      await erc20
-        .connect(acc02)
-        .approve(p2pix.target, price);
+      await erc20.connect(acc02).approve(p2pix.target, price);
       await p2pix
         .connect(acc02)
-        .deposit(
-          target,
-          hashZero,
-          erc20.target,
-          price,
-          true,
-        );
+        .deposit(target, hashZero, erc20.target, price, true);
       const oldState1 = await p2pix.getValid.staticCall(
         owner.address,
         erc20.target,
@@ -1191,28 +1191,28 @@ describe("P2PIX", () => {
       // const sig = ethers.utils.splitSignature(flatSig);
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       const lockID = BigInt(1);
       await mine(13);
       const fail = p2pix.release(
-          lockID,
-          ethers.ZeroHash,
-          flatSig,
-          );
+        lockID,
+        ethers.ZeroHash,
+        flatSig,
+      );
 
       await expect(fail).to.be.revertedWithCustomError(
         p2pix,
@@ -1224,7 +1224,7 @@ describe("P2PIX", () => {
       const hashZero = ethers.ZeroHash;
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(target,{size:32}), 100, hashZero],
+        [stringToHex(target, { size: 32 }), 100, hashZero],
       );
       const flatSig = await acc01.signMessage(
         ethers.getBytes(messageToSign),
@@ -1232,31 +1232,27 @@ describe("P2PIX", () => {
       // const sig = ethers.utils.splitSignature(flatSig);
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       const lockID = BigInt(1);
-      await p2pix.release(
-          lockID,
-          ethers.ZeroHash,
-          flatSig
-        );
+      await p2pix.release(lockID, ethers.ZeroHash, flatSig);
       const fail = p2pix.release(
-          lockID,
-          ethers.ZeroHash,
-          flatSig,
+        lockID,
+        ethers.ZeroHash,
+        flatSig,
       );
 
       await expect(fail).to.be.revertedWithCustomError(
@@ -1268,7 +1264,11 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(target,{size:32}), 100, ethers.ZeroHash],
+        [
+          stringToHex(target, { size: 32 }),
+          100,
+          ethers.ZeroHash,
+        ],
       );
       const flatSig = await owner.signMessage(
         ethers.getBytes(messageToSign),
@@ -1276,45 +1276,37 @@ describe("P2PIX", () => {
       // const sig = ethers.utils.splitSignature(flatSig);
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          ethers.ZeroHash,
-          erc20.target,
-          price,
-          true,
+        target,
+        ethers.ZeroHash,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
 
       await p2pix
         .connect(acc01)
-        .release(
-            BigInt(1),
-            ethers.ZeroHash,
-            flatSig,
-          );
+        .release(BigInt(1), ethers.ZeroHash, flatSig);
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       const fail = p2pix
         .connect(acc01)
-        .release(
-            BigInt(2),
-            ethers.ZeroHash,
-            flatSig,
-        );
+        .release(BigInt(2), ethers.ZeroHash, flatSig);
 
       await expect(fail).to.be.revertedWithCustomError(
         p2pix,
@@ -1325,7 +1317,11 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(target,{size:32}), 100, ethers.ZeroHash],
+        [
+          stringToHex(target, { size: 32 }),
+          100,
+          ethers.ZeroHash,
+        ],
       );
       const flatSig = await acc03.signMessage(
         ethers.getBytes(messageToSign),
@@ -1334,28 +1330,24 @@ describe("P2PIX", () => {
 
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          ethers.ZeroHash,
-          erc20.target,
-          price,
-          true,
+        target,
+        ethers.ZeroHash,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       const fail = p2pix
         .connect(acc01)
-        .release(
-            BigInt(1),
-            ethers.ZeroHash,
-            flatSig,          
-        );
+        .release(BigInt(1), ethers.ZeroHash, flatSig);
 
       await expect(fail).to.be.revertedWithCustomError(
         p2pix,
@@ -1368,7 +1360,11 @@ describe("P2PIX", () => {
       const pixTarget = BigInt(101).toString();
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(pixTarget,{size:32}), 100, endtoendID],
+        [
+          stringToHex(pixTarget, { size: 32 }),
+          100,
+          endtoendID,
+        ],
       );
       // Note: messageToSign is a string, that is 66-bytes long, to sign the
       //       binary value, we must convert it to the 32 byte Array that
@@ -1380,8 +1376,7 @@ describe("P2PIX", () => {
       //   ... vs ...
       //   32 entry Uint8Array
       //  [ 89, 47, 167, 67, 136, 159, ... 103, 7, 186]
-      const messageHashBytes =
-        ethers.getBytes(messageToSign);
+      const messageHashBytes = ethers.getBytes(messageToSign);
       const flatSig = await acc01.signMessage(
         messageHashBytes,
       );
@@ -1390,20 +1385,20 @@ describe("P2PIX", () => {
 
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          pixTarget,
-          root,
-          erc20.target,
-          price,
-          true,
+        pixTarget,
+        root,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       const acc01Key = await p2pix._castAddrToKey.staticCall(
         acc01.address,
@@ -1411,44 +1406,36 @@ describe("P2PIX", () => {
       const acc03Key = await p2pix._castAddrToKey.staticCall(
         acc03.address,
       );
-      const userRecordA = await p2pix.userRecord.staticCall(
-        acc01Key,
-      );
-      const userRecord1 = await p2pix.userRecord.staticCall(
-        acc03Key,
-      );
+      const userRecordA =
+        await p2pix.userRecord.staticCall(acc01Key);
+      const userRecord1 =
+        await p2pix.userRecord.staticCall(acc03Key);
       const storage1: Lock = await p2pix.mapLocks.staticCall(
         BigInt(1),
       );
       const tx = await p2pix
         .connect(acc01)
-        .release(
-            BigInt(1),
-            endtoendID,
-            flatSig,
-          );
+        .release(BigInt(1), endtoendID, flatSig);
 
       const lockStatus1 =
         await p2pix.getLocksStatus.staticCall([1]);
-      const ls1: [BigInt[], number[]] = [
-        [BigInt(1)],
-        [3],
-      ];
+      const ls1: [bigint[], number[]] = [[BigInt(1)], [3]];
       const funcSig = "0xd6e8b973";
       const args = ethers.AbiCoder.defaultAbiCoder().encode(
         ["address[]", "bool[]"],
         [[acc01.address], [false]],
       );
       const cd1 = funcSig + args.substring(2);
-      const cd2: Call[] = getLockData(p2pix.target as string, [
-        ls1[0],
-      ]);
+      const cd2: Call[] = getLockData(
+        p2pix.target as string,
+        [ls1[0]],
+      );
       const mtcCalls = [
         { target: p2pix.target, callData: cd1 },
       ];
       mtcCalls.push(cd2[0]);
       const mtc2 = await multicall.mtc2.staticCall(mtcCalls);
-      const blockNumber: BigInt = mtc2[0];
+      const blockNumber: bigint = mtc2[0];
       const blockhash: Bytes = mtc2[1];
       const result = mtc2.slice(2).flat(1) as Result[];
       const res1: Bytes[] = [result[1].returnData];
@@ -1459,32 +1446,21 @@ describe("P2PIX", () => {
         ),
       );
 
-      const storage2: Lock = await p2pix.mapLocks.staticCall(
-        1,
-      );
-      const userRecordB = await p2pix.userRecord.staticCall(
-        acc01Key,
-      );
-      const userRecord2 = await p2pix.userRecord.staticCall(
-        acc03Key,
-      );
+      const storage2: Lock =
+        await p2pix.mapLocks.staticCall(1);
+      const userRecordB =
+        await p2pix.userRecord.staticCall(acc01Key);
+      const userRecord2 =
+        await p2pix.userRecord.staticCall(acc03Key);
       const used = await p2pix.usedTransactions.staticCall(
         messageHashBytes,
       );
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "LockReleased")
-        .withArgs(
-          acc03.address,
-          BigInt(1),
-          storage1.amount,
-        );
-      expect(storage1.expirationBlock).to.eq(
-        BigInt(17),
-      );
-      expect(storage1.amount).to.eq(
-        BigInt(100),
-      );
+        .withArgs(acc03.address, BigInt(1), storage1.amount);
+      expect(storage1.expirationBlock).to.eq(BigInt(17));
+      expect(storage1.amount).to.eq(BigInt(100));
       expect(lockStatus1[0].toString()).to.equal(
         ls1[0].toString(),
       );
@@ -1492,9 +1468,7 @@ describe("P2PIX", () => {
         ls1[1].toString(),
       );
       expect(blockNumber).to.eq(8);
-      expect(blockhash).to.deep.equal(
-        ethers.ZeroHash,
-      );
+      expect(blockhash).to.deep.equal(ethers.ZeroHash);
       expect(result[0].success).to.eq(false);
       expect(result[1].success).to.eq(true);
       expect(decodedLockData.flat(1)).to.deep.eq(ls1);
@@ -1507,7 +1481,7 @@ describe("P2PIX", () => {
       expect(userRecord2).to.eq(BigInt(50));
       await expect(tx).to.changeTokenBalances(
         erc20,
-        [acc03.address, acc01.address, acc02.address ],
+        [acc03.address, acc01.address, acc02.address],
         [100, 0, 0],
       );
     });
@@ -1522,15 +1496,17 @@ describe("P2PIX", () => {
       const acc03Key = await p2pix._castAddrToKey.staticCall(
         acc03.address,
       );
-      const acc01Record1 = await p2pix.userRecord.staticCall(
-        acc01Key,
-      );
-      const acc03Record1 = await p2pix.userRecord.staticCall(
-        acc03Key,
-      );
+      const acc01Record1 =
+        await p2pix.userRecord.staticCall(acc01Key);
+      const acc03Record1 =
+        await p2pix.userRecord.staticCall(acc03Key);
       const messageToSign1 = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(pixTarget,{size:32}), 100, endtoendID],
+        [
+          stringToHex(pixTarget, { size: 32 }),
+          100,
+          endtoendID,
+        ],
       );
       const flatSig1 = await owner.signMessage(
         ethers.getBytes(messageToSign1),
@@ -1538,7 +1514,11 @@ describe("P2PIX", () => {
       // const sig1 = ethers.utils.splitSignature(flatSig1);
       const messageToSign2 = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(pixTarget,{size:32}), 50, endtoendID],
+        [
+          stringToHex(pixTarget, { size: 32 }),
+          50,
+          endtoendID,
+        ],
       );
       const flatSig2 = await owner.signMessage(
         ethers.getBytes(messageToSign2),
@@ -1546,7 +1526,11 @@ describe("P2PIX", () => {
       // const sig2 = ethers.utils.splitSignature(flatSig2);
       const messageToSign3 = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(pixTarget,{size:32}), 25, endtoendID],
+        [
+          stringToHex(pixTarget, { size: 32 }),
+          25,
+          endtoendID,
+        ],
       );
       const flatSig3 = await owner.signMessage(
         ethers.getBytes(messageToSign3),
@@ -1554,90 +1538,70 @@ describe("P2PIX", () => {
       // const sig3 = ethers.utils.splitSignature(flatSig3);
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          pixTarget,
-          root,
-          erc20.target,
-          price,
-          true,
+        pixTarget,
+        root,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(100),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(100),
+          [],
+          [],
         );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(50),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(50),
+          [],
+          [],
         );
       await p2pix
         .connect(acc03)
         .lock(
-            owner.address,
-            erc20.target,
-            BigInt(25),
-            [],
-            [],
+          owner.address,
+          erc20.target,
+          BigInt(25),
+          [],
+          [],
         );
 
       const lockStatus1 =
         await p2pix.getLocksStatus.staticCall([1, 2, 3, 44]);
-      const ls1: [BigInt[], BigInt[]] = [
-        [
-          BigInt(1),
-          BigInt(2),
-          BigInt(3),
-          BigInt(44),
-        ],
+      const ls1: [bigint[], bigint[]] = [
+        [BigInt(1), BigInt(2), BigInt(3), BigInt(44)],
         getBnFrom([1, 1, 1, 0]),
       ];
 
       const lockID = BigInt(1);
       const lockID2 = BigInt(2);
       const lockID3 = BigInt(3);
-      const storage1: Lock = await p2pix.mapLocks.staticCall(
-        lockID,
-      );
-      const storage2: Lock = await p2pix.mapLocks.staticCall(
-        lockID2,
-      );
-      const storage3: Lock = await p2pix.mapLocks.staticCall(
-        lockID3,
-      );
+      const storage1: Lock =
+        await p2pix.mapLocks.staticCall(lockID);
+      const storage2: Lock =
+        await p2pix.mapLocks.staticCall(lockID2);
+      const storage3: Lock =
+        await p2pix.mapLocks.staticCall(lockID3);
       // relayerPremium == 0
       const tx = await p2pix
         .connect(acc01)
-        .release(
-            lockID,
-            endtoendID,
-            flatSig1,
-        );
+        .release(lockID, endtoendID, flatSig1);
       // relayerPremium != 0 &&
       // lock's msg.sender != release's msg.sender
       const tx1 = await p2pix
         .connect(acc01)
-        .release(
-            lockID2,
-            endtoendID,
-            flatSig2,
-        );
+        .release(lockID2, endtoendID, flatSig2);
       // relayerPremium != 0 &&
       // lock's msg.sender == release's msg.sender
       const tx2 = await p2pix
         .connect(acc03)
-        .release(
-          lockID3,
-          endtoendID,
-          flatSig3,
-        );
+        .release(lockID3, endtoendID, flatSig3);
       const used1 = await p2pix.usedTransactions.staticCall(
         ethers.getBytes(messageToSign1),
       );
@@ -1647,26 +1611,19 @@ describe("P2PIX", () => {
       const used3 = await p2pix.usedTransactions.staticCall(
         ethers.getBytes(messageToSign3),
       );
-      const acc01Record2 = await p2pix.userRecord.staticCall(
-        acc01Key,
-      );
-      const acc03Record2 = await p2pix.userRecord.staticCall(
-        acc03Key,
-      );
+      const acc01Record2 =
+        await p2pix.userRecord.staticCall(acc01Key);
+      const acc03Record2 =
+        await p2pix.userRecord.staticCall(acc03Key);
 
       const lockStatus2 =
         await p2pix.getLocksStatus.staticCall([1, 2, 3, 44]);
-      const ls2: [BigInt[], BigInt[]] = [
-        [
-          BigInt(1),
-          BigInt(2),
-          BigInt(3),
-          BigInt(44),
-        ],
+      const ls2: [bigint[], bigint[]] = [
+        [BigInt(1), BigInt(2), BigInt(3), BigInt(44)],
         getBnFrom([3, 3, 3, 0]),
       ];
 
-      const batchedLocks: Array<BigInt[]> = [
+      const batchedLocks: Array<bigint[]> = [
         ls1.slice(0, 1)[0],
         ls2.slice(0, 1)[0],
       ];
@@ -1741,21 +1698,15 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc02)
-        .lock(
-          owner.address,
-          erc20.target,
-          BigInt(1),
-          [],
-          [],
-        );
+        .lock(owner.address, erc20.target, BigInt(1), [], []);
       const lockID = BigInt(1);
       const fail = p2pix.unlockExpired([lockID]);
 
@@ -1769,38 +1720,27 @@ describe("P2PIX", () => {
       const pixTarget = BigInt(101).toString();
       const messageToSign = ethers.solidityPackedKeccak256(
         ["bytes32", "uint80", "bytes32"],
-        [stringToHex(pixTarget,{size:32}), 1, endtoendID],
+        [stringToHex(pixTarget, { size: 32 }), 1, endtoendID],
       );
-      const messageHashBytes =
-        ethers.getBytes(messageToSign);
+      const messageHashBytes = ethers.getBytes(messageToSign);
       const flatSig = await acc01.signMessage(
         messageHashBytes,
       );
       // const sig = ethers.utils.splitSignature(flatSig);
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          pixTarget,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        pixTarget,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc02)
-        .lock(
-            owner.address,
-            erc20.target,
-            BigInt(1),
-            [],
-            [],
-        );
+        .lock(owner.address, erc20.target, BigInt(1), [], []);
       const lockID = BigInt(1);
       // await mine(10);
-      await p2pix.release(
-          lockID,
-          endtoendID,
-          flatSig,
-        );
+      await p2pix.release(lockID, endtoendID, flatSig);
       const fail = p2pix.unlockExpired([lockID]);
 
       await expect(fail).to.be.revertedWithCustomError(
@@ -1812,51 +1752,37 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       await p2pix
         .connect(acc02)
-        .lock(
-            owner.address,
-            erc20.target,
-            BigInt(1),
-            [],
-            [],
-        );
+        .lock(owner.address, erc20.target, BigInt(1), [], []);
       const lockID = BigInt(1);
       await mine(11);
 
       const lockStatus1 =
         await p2pix.getLocksStatus.staticCall([11, 1, 777]);
-      const ls1: [BigInt[], BigInt[]] = [
-        [
-          BigInt(11),
-          BigInt(1),
-          BigInt(777),
-        ],
+      const ls1: [bigint[], bigint[]] = [
+        [BigInt(11), BigInt(1), BigInt(777)],
         getBnFrom([0, 2, 0]),
       ];
 
-      const storage: Lock = await p2pix.mapLocks.staticCall(
-        lockID,
-      );
+      const storage: Lock =
+        await p2pix.mapLocks.staticCall(lockID);
       const userKey = await p2pix._castAddrToKey.staticCall(
         acc02.address,
       );
-      const record1 = await p2pix.userRecord.staticCall(
-        userKey,
-      );
+      const record1 =
+        await p2pix.userRecord.staticCall(userKey);
       const tx = await p2pix.unlockExpired([lockID]);
-      const storage2: Lock = await p2pix.mapLocks.staticCall(
-        lockID,
-      );
-      const record2 = await p2pix.userRecord.staticCall(
-        userKey,
-      );
+      const storage2: Lock =
+        await p2pix.mapLocks.staticCall(lockID);
+      const record2 =
+        await p2pix.userRecord.staticCall(userKey);
 
       expect(tx).to.be.ok;
       await expect(tx)
@@ -1875,28 +1801,23 @@ describe("P2PIX", () => {
       // test method through lock fx
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const lock1: ContractTransactionResponse = await p2pix
         .connect(acc01)
-        .lock(
-            owner.address,
-            erc20.target,
-            price,
-            proof,
-            [],
-        );
+        .lock(owner.address, erc20.target, price, proof, []);
       // as return values of non view functions can't be accessed
       // outside the evm, we fetch the lockID from the emitted event.
-      const rc: ContractTransactionReceipt = await lock1.wait() as ContractTransactionReceipt;
+      const rc: ContractTransactionReceipt =
+        (await lock1.wait()) as ContractTransactionReceipt;
       const event = rc.logs?.find(
         log => log.fragment.name === "LockAdded",
       );
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       const emittedLockID = event?.args!["lockID"];
       const lockID = BigInt(1);
 
@@ -1923,11 +1844,11 @@ describe("P2PIX", () => {
       // create another lock by freeing the price value
       // back to `l.remamining` and lock 100 again.
       const tx1 = await p2pix.lock(
-          owner.address,
-          erc20.target,
-          BigInt(100),
-          [],
-          [lockID],
+        owner.address,
+        erc20.target,
+        BigInt(100),
+        [],
+        [lockID],
       );
       const remaining = await p2pix.getBalance.staticCall(
         owner.address,
@@ -1938,9 +1859,7 @@ describe("P2PIX", () => {
       await expect(tx1)
         .to.emit(p2pix, "LockReturned")
         .withArgs(acc01.address, lockID);
-      expect(remaining).to.eq(
-        price - 100n,
-      );
+      expect(remaining).to.eq(price - 100n);
     });
     it("should unlock expired through withdraw function", async () => {
       const target = "1";
@@ -1955,13 +1874,7 @@ describe("P2PIX", () => {
       );
       await p2pix
         .connect(acc01)
-        .lock(
-          owner.address,
-          erc20.target,
-          price,
-          proof,
-          [],
-        );
+        .lock(owner.address, erc20.target, price, proof, []);
       const lockID = BigInt(1);
       // mine blocks to expire lock
       await mine(11);
@@ -1986,19 +1899,15 @@ describe("P2PIX", () => {
       const target = BigInt(101).toString();
       await erc20.approve(p2pix.target, price);
       await p2pix.deposit(
-          target,
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        target,
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const fail = p2pix
         .connect(acc02)
-        .withdraw(
-          erc20.target,
-          price * 2n,
-          [],
-        );
+        .withdraw(erc20.target, price * 2n, []);
 
       await expect(fail).to.be.revertedWithCustomError(
         p2pix,
@@ -2009,11 +1918,11 @@ describe("P2PIX", () => {
       const newPrice = price / 2n;
       await erc20.approve(p2pix.target, price);
       const dep = await p2pix.deposit(
-          BigInt(101).toString(),
-          merkleRoot,
-          erc20.target,
-          price,
-          true,
+        BigInt(101).toString(),
+        merkleRoot,
+        erc20.target,
+        price,
+        true,
       );
       const tx = await p2pix.withdraw(
         erc20.target,
@@ -2022,25 +1931,26 @@ describe("P2PIX", () => {
       );
 
       expect(tx).to.be.ok;
-      await expect(dep)
-        .to.changeTokenBalance(
-          erc20,
-          owner.address,
-          price * -1n,
-        );
       await expect(dep).to.changeTokenBalance(
-          erc20,
-          p2pix.target,
-          price,
-        );
-      await expect(tx)
-        .to.changeTokenBalance(erc20, owner.address, newPrice);
-      await expect(tx)
-        .to.changeTokenBalance(
-          erc20,
-          p2pix.target,
-          (price/2n) * -1n,
-        );
+        erc20,
+        owner.address,
+        price * -1n,
+      );
+      await expect(dep).to.changeTokenBalance(
+        erc20,
+        p2pix.target,
+        price,
+      );
+      await expect(tx).to.changeTokenBalance(
+        erc20,
+        owner.address,
+        newPrice,
+      );
+      await expect(tx).to.changeTokenBalance(
+        erc20,
+        p2pix.target,
+        (price / 2n) * -1n,
+      );
 
       await expect(tx)
         .to.emit(p2pix, "DepositWithdrawn")
@@ -2063,7 +1973,6 @@ describe("P2PIX", () => {
       );
     });
     it("should set root of seller's allowlist, update storage and emit event", async () => {
-
       const oldState = await p2pix.sellerAllowList.staticCall(
         owner.address,
       );

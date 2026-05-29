@@ -18,7 +18,7 @@
     "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && yarn typechain",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
-    "lint:ts": "eslint --config ./.eslintrc.yaml --ignore-path ./.eslintignore --ext .js,.ts .",
+    "lint:ts": "eslint .",
     "prettier": "prettier --config ./.prettierrc.yaml --write \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
     "prettier:check": "prettier --check --config ./.prettierrc.yaml \"**/*.{js,json,md,sol,ts,yaml,yml}\""
   },
@@ -54,13 +54,14 @@
     "mocha": "^10.8.2",
     "prettier": "^3.0.0",
     "prettier-plugin-solidity": "^1.0.0",
-    "solhint": "^5.0.0",
+    "solhint": "^6.2.1",
     "solhint-plugin-prettier": "^0.1.0",
     "solidity-coverage": "^0.8.16",
     "solidity-docgen": "^0.6.0-beta.36",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.60.0",
     "viem": "^2.33.1"
   },
   "files": [

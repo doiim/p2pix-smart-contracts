@@ -4,15 +4,13 @@ import { ethers } from "hardhat";
 import keccak256 from "keccak256";
 import { MerkleTree } from "merkletreejs";
 
-import {
-  MockToken,
-  Multicall,
-  P2PIX,
-  P2PIX__factory,
-  Reputation,
-} from "../../src/types";
+import { MockToken, P2PIX__factory } from "../../src/types";
 
-import { Call, RepFixture, P2PixAndReputation, DepositArgs, LockArgs, ReleaseArgs } from "./interfaces";
+import {
+  Call,
+  RepFixture,
+  P2PixAndReputation,
+} from "./interfaces";
 
 // exported constants
 export const getSignerAddrs = (
@@ -22,18 +20,16 @@ export const getSignerAddrs = (
   return addrs.slice(0, amount).map(({ address }) => address);
 };
 
-export const getBnFrom = (nums: number[]): BigInt[] => {
+export const getBnFrom = (nums: number[]): bigint[] => {
   const bns = nums.map(num => BigInt(num));
   return bns;
 };
 
 export const getLockData = (
   addr: string,
-  locks: BigInt[][],
+  locks: bigint[][],
 ): Call[] => {
-  const iface = new ethers.Interface(
-    P2PIX__factory.abi,
-  );
+  const iface = new ethers.Interface(P2PIX__factory.abi);
   return locks.map(lock => ({
     target: addr,
     callData: iface.encodeFunctionData("getLocksStatus", [
@@ -71,8 +67,9 @@ export const curve = (x: number): number => {
 
 // exported async functions
 export async function repFixture(): Promise<RepFixture> {
-  const reputation = await ethers.deployContract("Reputation");
-  return { reputation: await reputation.waitForDeployment()  };
+  const reputation =
+    await ethers.deployContract("Reputation");
+  return { reputation: await reputation.waitForDeployment() };
 }
 
 export async function p2pixFixture(): Promise<P2PixAndReputation> {
@@ -81,11 +78,12 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     await ethers.getSigners(),
   );
 
-  const reputation = await ethers.deployContract("Reputation");
+  const reputation =
+    await ethers.deployContract("Reputation");
 
-  const erc20 = await ethers.deployContract("MockToken", [
-    ethers.parseEther("20000000") // 20M
-  ]) as MockToken;
+  const erc20 = (await ethers.deployContract("MockToken", [
+    ethers.parseEther("20000000"), // 20M
+  ])) as MockToken;
 
   const p2pix = await ethers.deployContract("P2PIX", [
     10,

@@ -3,6 +3,7 @@
   "plugins": ["prettier"],
   "rules": {
     "code-complexity": ["error", 8],
+    "avoid-low-level-calls": "off",
     "compiler-version": ["error", ">=0.8.4"],
     "const-name-snakecase": "off",
     "constructor-syntax": "error",
@@ -10,7 +11,14 @@
       "error",
       { "ignoreConstructors": true }
     ],
+    "function-max-lines": "off",
+    "gas-calldata-parameters": "off",
+    "gas-indexed-events": "off",
+    "gas-strict-inequalities": "off",
+    "gas-struct-packing": "off",
+    "interface-starts-with-i": "off",
     "max-line-length": ["error", 120],
+    "no-inline-assembly": "off",
     "not-rely-on-time": "off",
     "prettier/prettier": [
       "error",
@@ -18,6 +26,7 @@
         "endOfLine": "auto"
       }
     ],
-    "reason-string": ["warn", { "maxLength": 64 }]
+    "reason-string": ["warn", { "maxLength": 64 }],
+    "use-natspec": "off"
   }
 }

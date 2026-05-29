@@ -15,8 +15,10 @@ dotenvConfig({ path: resolve(__dirname, "./.env") });
 const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";
 
-const mnemonic: string = process.env.MNEMONIC ?? DEFAULT_MNEMONIC;
-const alchemyApiKey: string | undefined = process.env.ALCHEMY_API_KEY;
+const mnemonic: string =
+  process.env.MNEMONIC ?? DEFAULT_MNEMONIC;
+const alchemyApiKey: string | undefined =
+  process.env.ALCHEMY_API_KEY;
 
 const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
@@ -33,7 +35,12 @@ const chainIds = {
 function getChainConfig(
   chain: keyof typeof chainIds,
 ): NetworkUserConfig {
-  let jsonRpcUrl =
+  if (!alchemyApiKey) {
+    throw new Error(
+      `Please set ALCHEMY_API_KEY in a .env file before targeting ${chain}`,
+    );
+  }
+  const jsonRpcUrl =
     "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
     accounts: {
@@ -136,7 +143,7 @@ const config: HardhatUserConfig = {
   },
   docgen: {
     pages: "files",
-  }
+  },
 };
 
 export default config;

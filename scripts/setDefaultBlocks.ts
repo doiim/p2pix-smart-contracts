@@ -20,12 +20,22 @@ const main = async () => {
   }
 
   const [deployer] = await ethers.getSigners();
-  console.log(`Signing transactions with ${deployer.address}`);
+  console.log(
+    `Signing transactions with ${deployer.address}`,
+  );
 
-  const iface = new ethers.utils.Interface(P2PIX__factory.abi);
-  const calldata = iface.encodeFunctionData("setDefaultLockBlocks", ["10000"]);
-  
-  const tx = await deployer.sendTransaction({to:deploysJson.p2pix, data: calldata});
+  const iface = new ethers.utils.Interface(
+    P2PIX__factory.abi,
+  );
+  const calldata = iface.encodeFunctionData(
+    "setDefaultLockBlocks",
+    ["10000"],
+  );
+
+  const tx = await deployer.sendTransaction({
+    to: deploysJson.p2pix,
+    data: calldata,
+  });
   const done = await tx.wait();
   console.log(done.transactionHash);
 };

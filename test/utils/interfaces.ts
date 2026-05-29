@@ -5,7 +5,6 @@ import {
   Reputation,
 } from "../../src/types";
 
-
 // exported interfaces
 export interface Deploys {
   signers: string[];
@@ -17,29 +16,29 @@ export interface DepositArgs {
   pixTarget: string;
   allowlistRoot: string;
   token: string;
-  amount: BigInt;
+  amount: bigint;
   valid: boolean;
-} 
+}
 
 export interface LockArgs {
   seller: string;
   token: string;
-  amount: BigInt;
+  amount: bigint;
   merkleProof: string[];
-  expiredLocks: BigInt[];
+  expiredLocks: bigint[];
 }
 
 export interface ReleaseArgs {
-  lockID: BigInt;
+  lockID: bigint;
   pixTimestamp: string;
   signature: string;
 }
 
 export interface Lock {
-  counter: BigInt;
-  expirationBlock: BigInt;
+  counter: bigint;
+  expirationBlock: bigint;
   pixTarget: string;
-  amount: BigInt;
+  amount: bigint;
   token: string;
   buyerAddress: string;
   seller: string;

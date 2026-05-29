@@ -45,9 +45,8 @@ abstract contract BaseUtils is
             !validBacenSigners(
                 _castAddrToKey(
                     ECDSA.recover(
-                        MessageHashUtils.toEthSignedMessageHash(
-                            _message
-                        ),
+                        MessageHashUtils
+                            .toEthSignedMessageHash(_message),
                         _signature
                     )
                 )

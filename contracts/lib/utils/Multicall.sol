@@ -19,12 +19,12 @@ contract Multicall {
     }
 
     //prettier-ignore
+    //solhint-disable-next-line no-empty-blocks
     constructor(/*  */) payable {/*  */}
 
-    function mtc1(Call[] calldata calls)
-        external
-        returns (uint256, bytes[] memory)
-    {
+    function mtc1(
+        Call[] calldata calls
+    ) external returns (uint256, bytes[] memory) {
         uint256 bn = block.number;
         uint256 len = calls.length;
         bytes[] memory res = new bytes[](len);
@@ -49,21 +49,14 @@ contract Multicall {
         return (bn, res);
     }
 
-    function mtc2(Call[] calldata calls)
-        external
-        returns (
-            uint256,
-            bytes32,
-            Result[] memory
-        )
-    {
+    function mtc2(
+        Call[] calldata calls
+    ) external returns (uint256, bytes32, Result[] memory) {
         uint256 bn = block.number;
         // µ 0 s [0] ≡ P(IHp , µs [0], 0) ∴ P is the hash of a block of a particular number, up to a maximum age.
         // 0 is left on the stack if the looked for `block.number` is >= to the current `block.number` or more than 256
         // blocks behind the current block (Yellow Paper, p. 33, https://ethereum.github.io/yellowpaper/paper.pdf).
-        bytes32 bh = blockhash(
-            bn /* - 1 */
-        );
+        bytes32 bh = blockhash(bn /* - 1 */);
         uint256 len = calls.length;
         Result[] memory res = new Result[](len);
         uint256 i;
