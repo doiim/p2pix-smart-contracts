@@ -67,7 +67,11 @@
 
 ### Pre Requisites
 
-Before installing, create a `.env` file and set a BIP-39 compatible mnemonic and other env criteria as in `.env.example`.
+Before installing, create a `.env` file and set the authentication method and other env criteria as in `.env.example`.
+
+You can authenticate with either:
+- `PRIVATE_KEY` — a raw hex private key (e.g. `0x123...`). Takes priority if both are set.
+- `MNEMONIC` — a BIP-39 compatible 12-word mnemonic phrase. Used as fallback when `PRIVATE_KEY` is not set.
 
 ### Install
 

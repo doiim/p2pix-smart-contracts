@@ -19,6 +19,8 @@ const mnemonic: string =
   process.env.MNEMONIC ?? DEFAULT_MNEMONIC;
 const alchemyApiKey: string | undefined =
   process.env.ALCHEMY_API_KEY;
+const privateKey: string | undefined =
+  process.env.PRIVATE_KEY;
 
 const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
@@ -43,11 +45,13 @@ function getChainConfig(
   const jsonRpcUrl =
     "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
-    accounts: {
-      count: 10,
-      mnemonic,
-      path: "m/44'/60'/0'/0",
-    },
+    accounts: privateKey
+      ? [privateKey]
+      : {
+          count: 10,
+          mnemonic,
+          path: "m/44'/60'/0'/0",
+        },
     chainId: chainIds[chain],
     url: jsonRpcUrl,
   };
