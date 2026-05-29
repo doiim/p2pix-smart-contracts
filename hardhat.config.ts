@@ -33,24 +33,30 @@ const chainIds = {
 function getChainConfig(
   chain: keyof typeof chainIds,
 ): NetworkUserConfig {
-  if (!alchemyApiKey) {
-    throw new Error(
-      `Please set ALCHEMY_API_KEY in a .env file before targeting ${chain}`,
-    );
-  }
-  let jsonRpcUrl = "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
+  let jsonRpcUrl =
+    "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
-    // Comment out for default hardhat account settings
     accounts: {
       count: 10,
       mnemonic,
       path: "m/44'/60'/0'/0",
     },
-    // gasPrice: 8000000000,
     chainId: chainIds[chain],
     url: jsonRpcUrl,
   };
 }
+
+const liveNetworks: Record<string, NetworkUserConfig> =
+  alchemyApiKey
+    ? {
+        mainnet: getChainConfig("mainnet"),
+        sepolia: getChainConfig("eth-sepolia"),
+        polygon: getChainConfig("polygon-mainnet"),
+        arbitrum: getChainConfig("arb-mainnet"),
+        rootstock: getChainConfig("rootstock"),
+        rsktestnet: getChainConfig("rootstock-testnet"),
+      }
+    : {};
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -94,13 +100,7 @@ const config: HardhatUserConfig = {
         mnemonic,
       },
     },
-    // network: getChainConfig("{INSERT_NAME}"),
-    mainnet: getChainConfig("mainnet"),
-    sepolia: getChainConfig("eth-sepolia"),
-    polygon: getChainConfig("polygon-mainnet"),
-    arbitrum: getChainConfig("arb-mainnet"),
-    rootstock: getChainConfig("rootstock"),
-    rsktestnet: getChainConfig("rootstock-testnet"),
+    ...liveNetworks,
   },
   paths: {
     artifacts: "./artifacts",
