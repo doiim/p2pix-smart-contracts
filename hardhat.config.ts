@@ -60,7 +60,7 @@ function getChainConfig(
 const liveNetworks: Record<string, NetworkUserConfig> =
   alchemyApiKey
     ? {
-        mainnet: getChainConfig("mainnet"),
+        mainnet: getChainConfig("eth-mainnet"),
         sepolia: getChainConfig("eth-sepolia"),
         polygon: getChainConfig("polygon-mainnet"),
         arbitrum: getChainConfig("arb-mainnet"),
