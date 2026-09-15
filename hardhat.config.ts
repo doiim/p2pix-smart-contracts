@@ -1,124 +1,47 @@
-import "@nomicfoundation/hardhat-chai-matchers";
-import "@nomicfoundation/hardhat-toolbox";
-import { config as dotenvConfig } from "dotenv";
-import { HardhatUserConfig } from "hardhat/config";
-import { NetworkUserConfig } from "hardhat/types";
-import "hardhat-contract-sizer";
-import { resolve } from "path";
-import "solidity-docgen";
-
-dotenvConfig({ path: resolve(__dirname, "./.env") });
+import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import { configVariable, defineConfig } from "hardhat/config";
 
 // Default mnemonic used by Hardhat / Anvil for deterministic accounts.
-// Lets `--network localhost` (and the default in-process `hardhat` net)
-// run without a .env. Public networks still require a real MNEMONIC.
+// Lets the in-process simulated network run without a .env. Public
+// networks still require a real MNEMONIC (or PRIVATE_KEY).
 const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";
 
-const mnemonic: string =
-  process.env.MNEMONIC ?? DEFAULT_MNEMONIC;
-const alchemyApiKey: string | undefined =
-  process.env.ALCHEMY_API_KEY;
-const privateKey: string | undefined =
-  process.env.PRIVATE_KEY;
+const mnemonic = configVariable("MNEMONIC", {
+  default: DEFAULT_MNEMONIC,
+});
+
+const alchemyApiKey = configVariable("ALCHEMY_API_KEY");
 
 const chainIds = {
-  // "{INSERT_NAME}": {INSERT_ID},
-  hardhat: 31337,
-  localhost: 31337,
   mainnet: 1,
-  "eth-sepolia": 11155111,
-  "polygon-mainnet": 137,
-  "arb-mainnet": 42161,
+  sepolia: 11155111,
+  polygon: 137,
+  arbitrum: 42161,
   rootstock: 30,
-  "rootstock-testnet": 31,
-};
+  rsktestnet: 31,
+} as const;
 
-function getChainConfig(
-  chain: keyof typeof chainIds,
-): NetworkUserConfig {
-  if (!alchemyApiKey) {
-    throw new Error(
-      `Please set ALCHEMY_API_KEY in a .env file before targeting ${chain}`,
-    );
-  }
-  const jsonRpcUrl =
-    "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
+type LiveNetwork = keyof typeof chainIds;
+
+function liveNetwork(chain: LiveNetwork, alchemyName: string) {
   return {
-    accounts: privateKey
-      ? [privateKey]
-      : {
-          count: 10,
-          mnemonic,
-          path: "m/44'/60'/0'/0",
-        },
+    type: "http" as const,
+    chainType: "generic" as const,
     chainId: chainIds[chain],
-    url: jsonRpcUrl,
+    url: configVariable("ALCHEMY_API_KEY", {
+      format: `https://${alchemyName}.g.alchemy.com/v2/{variable}`,
+    }),
+    accounts: {
+      mnemonic,
+      count: 10,
+      path: "m/44'/60'/0'/0",
+    },
   };
 }
 
-const liveNetworks: Record<string, NetworkUserConfig> =
-  alchemyApiKey
-    ? {
-        mainnet: getChainConfig("eth-mainnet"),
-        sepolia: getChainConfig("eth-sepolia"),
-        polygon: getChainConfig("polygon-mainnet"),
-        arbitrum: getChainConfig("arb-mainnet"),
-        rootstock: getChainConfig("rootstock"),
-        rsktestnet: getChainConfig("rootstock-testnet"),
-      }
-    : {};
-
-const config: HardhatUserConfig = {
-  defaultNetwork: "hardhat",
-  etherscan: {
-    apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY || "",
-      sepolia: process.env.ETHERSCAN_API_KEY || "",
-      polygon: process.env.POLYGONSCAN_API_KEY || "",
-      arbitrumOne: process.env.ARBISCAN_API_KEY || "",
-    },
-  },
-  gasReporter: {
-    enabled: !!(
-      process.env.REPORT_GAS &&
-      process.env.REPORT_GAS != "false"
-    ),
-    offline: true,
-    showTimeSpent: true,
-    showMethodSig: true,
-    token: "ETH",
-    currency: "USD",
-    // gasPriceApi: process.env.GASPRICE_API_ENDPOINT,
-    coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-    excludeContracts: [],
-    src: "./contracts",
-  },
-  networks: {
-    hardhat: {
-      blockGasLimit: 30000000,
-      accounts: {
-        mnemonic,
-      },
-      chainId: chainIds.hardhat,
-    },
-    // External Anvil / Hardhat node (e.g. `anvil --port 8545`). Used by
-    // the frontend e2e suite to deploy a fresh chain per CI run.
-    localhost: {
-      url: "http://127.0.0.1:8545",
-      chainId: chainIds.localhost,
-      accounts: {
-        mnemonic,
-      },
-    },
-    ...liveNetworks,
-  },
-  paths: {
-    artifacts: "./artifacts",
-    cache: "./cache",
-    sources: "./contracts",
-    tests: "./test",
-  },
+export default defineConfig({
+  plugins: [hardhatToolboxMochaEthers],
   solidity: {
     version: "0.8.28",
     settings: {
@@ -141,13 +64,90 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  networks: {
+    default: {
+      type: "edr-simulated",
+      chainId: 31337,
+      blockGasLimit: 30_000_000,
+      accounts: {
+        mnemonic,
+      },
+    },
+    // External Anvil / Hardhat node (e.g. `anvil --port 8545`). Used by
+    // the frontend e2e suite to deploy a fresh chain per CI run.
+    localhost: {
+      type: "http",
+      chainId: 31337,
+      url: "http://127.0.0.1:8545",
+      accounts: {
+        mnemonic,
+      },
+    },
+    mainnet: liveNetwork("mainnet", "eth-mainnet"),
+    sepolia: liveNetwork("sepolia", "eth-sepolia"),
+    polygon: liveNetwork("polygon", "polygon-mainnet"),
+    arbitrum: liveNetwork("arbitrum", "arb-mainnet"),
+    rootstock: liveNetwork("rootstock", "rootstock"),
+    rsktestnet: liveNetwork("rsktestnet", "rootstock-testnet"),
+  },
+  chainDescriptors: {
+    11155111: {
+      name: "sepolia",
+      blockExplorers: {
+        etherscan: {
+          name: "Etherscan",
+          url: "https://sepolia.etherscan.io",
+          apiUrl: "https://api-sepolia.etherscan.io/api",
+        },
+      },
+    },
+    137: {
+      name: "polygon",
+      blockExplorers: {
+        etherscan: {
+          name: "Polygonscan",
+          url: "https://polygonscan.com",
+          apiUrl: "https://api.polygonscan.com/api",
+        },
+      },
+    },
+    42161: {
+      name: "arbitrum",
+      blockExplorers: {
+        etherscan: {
+          name: "Arbiscan",
+          url: "https://arbiscan.io",
+          apiUrl: "https://api.arbiscan.io/api",
+        },
+      },
+    },
+  },
+  verify: {
+    etherscan: {
+      apiKey: configVariable("ETHERSCAN_API_KEY", { default: "" }),
+    },
+  },
   typechain: {
     outDir: "src/types",
-    target: "ethers-v6",
   },
-  docgen: {
-    pages: "files",
+  paths: {
+    sources: {
+      solidity: ["contracts"],
+    },
+    tests: {
+      mocha: "test",
+    },
   },
-};
-
-export default config;
+  test: {
+    solidity: {
+      fuzz: {
+        runs: 4,
+      },
+      invariant: {
+        runs: 4,
+        depth: 4,
+        failOnRevert: true,
+      },
+    },
+  },
+});
