@@ -22,7 +22,7 @@ contract Reputation is IReputation {
         override(IReputation)
         returns (uint256 _spendLimit)
     {
-        _spendLimit = (1 +
+        _spendLimit = (256 +
             ((maxLimit * _userCredit) /
                 sqrt(
                     magicValue + (_userCredit * _userCredit)
