@@ -6,22 +6,18 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es6"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "lib": ["es2023"],
+    "module": "nodenext",
     "noImplicitAny": true,
     "removeComments": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es6"
+    "target": "es2023",
+    "verbatimModuleSyntax": true,
+    "types": ["node", "mocha"]
   },
   "exclude": ["node_modules"],
   "files": ["./hardhat.config.ts"],
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "scripts/**/*",
-    "ignition/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*", "scripts/**/*", "ignition/**/*"]
 }
