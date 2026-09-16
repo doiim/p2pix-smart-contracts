@@ -65,7 +65,7 @@ export const padBuffer = (addr: any) => {
 
 export const curve = (x: number): number => {
   return Math.round(
-    1 + (10 ** 6 * x) / Math.sqrt(2.5 * 10 ** 11 + x * x),
+    256 + (10 ** 6 * x) / Math.sqrt(2.5 * 10 ** 11 + x * x),
   );
 };
 
