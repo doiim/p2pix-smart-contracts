@@ -15,6 +15,7 @@
     "test": "hardhat test",
     "deploy": "hardhat ignition deploy ignition/modules/P2PIX.ts",
     "deploy:mock": "hardhat ignition deploy ignition/modules/P2PIXWithMock.ts",
+    "set-blocks": "hardhat run scripts/setDefaultBlocks.ts",
     "coverage": "hardhat test --coverage",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",

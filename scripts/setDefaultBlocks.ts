@@ -3,21 +3,22 @@ import { Interface } from "ethers";
 import hre from "hardhat";
 
 import { P2PIX__factory } from "../src/types/index.ts";
-import type { Deploys } from "../test/utils/interfaces.ts";
 
-let deploysJson: Deploys;
+let p2pixAddress: string;
 
 const main = async () => {
-  const { ethers, networkName } = await hre.network.getOrCreate();
+  const { ethers } = await hre.network.getOrCreate();
+  const { chainId } = await ethers.provider.getNetwork();
 
+  // Ignition writes deployment state to chain-<id>/deployed_addresses.json.
   try {
     const data = fs.readFileSync(
-      `./deploys/${networkName}.json`,
+      `./ignition/deployments/chain-${chainId}/deployed_addresses.json`,
       { encoding: "utf-8" },
     );
-    deploysJson = JSON.parse(data);
+    p2pixAddress = JSON.parse(data)["P2PIX#P2PIX"];
   } catch (err) {
-    console.log("Error loading Master address: ", err);
+    console.log("Error loading P2PIX address: ", err);
     process.exit(1);
   }
 
@@ -33,7 +34,7 @@ const main = async () => {
   );
 
   const tx = await deployer.sendTransaction({
-    to: deploysJson.p2pix,
+    to: p2pixAddress,
     data: calldata,
   });
   const done = await tx.wait();
