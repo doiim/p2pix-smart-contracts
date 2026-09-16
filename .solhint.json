@@ -7,10 +7,7 @@
     "compiler-version": ["error", ">=0.8.4"],
     "const-name-snakecase": "off",
     "constructor-syntax": "error",
-    "func-visibility": [
-      "error",
-      { "ignoreConstructors": true }
-    ],
+    "func-visibility": ["error", { "ignoreConstructors": true }],
     "function-max-lines": "off",
     "gas-calldata-parameters": "off",
     "gas-indexed-events": "off",
