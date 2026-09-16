@@ -6,23 +6,23 @@
 
 ```rs
 ./contracts/
-├── Constants.sol
-├── DataTypes.sol
-├── EventAndErrors.sol
+├── core
+│   ├── BaseUtils.sol
+│   ├── Constants.sol
+│   ├── DataTypes.sol
+│   ├── EventAndErrors.sol
+│   └── OwnerSettings.sol
 ├── lib
 │   ├── auth
 │   │   └── Owned.sol
 │   ├── interfaces
 │   │   └── IReputation.sol
+│   ├── metatx
+│   │   └── ERC2771Context.sol
 │   ├── mock
 │   │   └── mockToken.sol
-│   ├── tokens
-│   │   └── ERC20.sol
 │   └── utils
-│       ├── ECDSA.sol
-│       ├── MerkleProofLib.sol
 │       ├── Multicall.sol
-│       ├── ReentrancyGuard.sol
 │       └── SafeTransferLib.sol
 ├── p2pix.sol
 └── Reputation.sol
@@ -67,11 +67,11 @@
 
 ### Pre Requisites
 
-Before installing, create a `.env` file and set the authentication method and other env criteria as in `.env.example`.
+Before installing, create a `.env` file and set the authentication and API keys as in `.env.example`.
 
-You can authenticate with either:
-- `PRIVATE_KEY` — a raw hex private key (e.g. `0x123...`). Takes priority if both are set.
-- `MNEMONIC` — a BIP-39 compatible 12-word mnemonic phrase. Used as fallback when `PRIVATE_KEY` is not set.
+Live networks authenticate with `MNEMONIC` — a BIP-39 compatible 12-word
+mnemonic phrase. The in-process simulated network falls back to Hardhat's
+default mnemonic, so no `.env` is needed for tests.
 
 ### Install
 
@@ -96,10 +96,11 @@ $ yarn test
 ### Report Gas
 
 ```sh
-$ REPORT_GAS=true yarn test
+$ yarn test --gas-stats
 ```
 
-**_NOTE_:** Gas usage per unit test and average gas per method call.
+**_NOTE_:** Built-in gas statistics (Hardhat V3). Use `-vvvv` for full
+transaction traces.
 
 ### Clean
 
