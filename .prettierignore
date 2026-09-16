@@ -13,6 +13,7 @@
 
 # deploy artifacts
 deploys/old/
+ignition/deployments/**/build-info/
 
 # auto-generated docs
 docs/

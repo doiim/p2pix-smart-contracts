@@ -34,5 +34,10 @@ docs/lib/mock/*.md
 # Hardhat Ignition local/ephemeral deployments
 ignition/deployments/chain-31337/
 
+# Ignition scratch state (regenerated on every run) — keep only
+# deployed_addresses.json, the deployment source of truth.
+ignition/deployments/**/build-info/
+ignition/deployments/**/journal.jsonl
+
 # Per-developer local deploy state (deterministic per mnemonic)
 deploys/localhost.json
