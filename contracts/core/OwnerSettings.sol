@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ERC2771 } from "contracts/lib/metatx/ERC2771Context.sol";
-import { ERC20, SafeTransferLib } from "contracts/lib/utils/SafeTransferLib.sol";
-import { IReputation } from "contracts/lib/interfaces/IReputation.sol";
-import { EventAndErrors } from "contracts/core/EventAndErrors.sol";
-import { Constants } from "contracts/core/Constants.sol";
-import { Owned } from "contracts/lib/auth/Owned.sol";
+import { ERC2771 } from "./lib/metatx/ERC2771Context.sol";
+import { ERC20, SafeTransferLib } from "./lib/utils/SafeTransferLib.sol";
+import { IReputation } from "./lib/interfaces/IReputation.sol";
+import { EventAndErrors } from "./EventAndErrors.sol";
+import { Constants } from "./Constants.sol";
+import { Owned } from "./lib/auth/Owned.sol";
 
 abstract contract OwnerSettings is
     Constants,

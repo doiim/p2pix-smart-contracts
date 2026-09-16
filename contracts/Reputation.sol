@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IReputation } from "./lib/interfaces/IReputation.sol";
+import { IReputation } from "./core/lib/interfaces/IReputation.sol";
 
 contract Reputation is IReputation {
     /// @dev Asymptote numerator constant value for the `limiter` fx.

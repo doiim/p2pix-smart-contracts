@@ -8,9 +8,9 @@ pragma solidity ^0.8.19;
 /// |__|           |__|
 ///
 
-import { OwnerSettings, ERC20, SafeTransferLib } from "contracts/core/OwnerSettings.sol";
-import { BaseUtils } from "contracts/core/BaseUtils.sol";
-import { DataTypes as DT } from "contracts/core/DataTypes.sol";
+import { OwnerSettings, ERC20, SafeTransferLib } from "./core/OwnerSettings.sol";
+import { BaseUtils } from "./core/BaseUtils.sol";
+import { DataTypes as DT } from "./core/DataTypes.sol";
 
 contract P2PIX is BaseUtils {
     // solhint-disable use-forbidden-name
