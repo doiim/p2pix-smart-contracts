@@ -3,14 +3,13 @@ import { configVariable, defineConfig } from "hardhat/config";
 
 // Default mnemonic used by Hardhat / Anvil for deterministic accounts.
 // Lets the in-process simulated network run without a .env. Public
-// networks still require a real MNEMONIC (or PRIVATE_KEY).
+// networks still require a real MNEMONIC.
 const DEFAULT_MNEMONIC =
   "test test test test test test test test test test test junk";
 
 const mnemonic = configVariable("MNEMONIC", {
   default: DEFAULT_MNEMONIC,
 });
-
 
 const chainIds = {
   mainnet: 1,
@@ -23,7 +22,10 @@ const chainIds = {
 
 type LiveNetwork = keyof typeof chainIds;
 
-function liveNetwork(chain: LiveNetwork, alchemyName: string) {
+function liveNetwork(
+  chain: LiveNetwork,
+  alchemyName: string,
+) {
   return {
     type: "http" as const,
     chainType: "generic" as const,
@@ -87,7 +89,10 @@ export default defineConfig({
     polygon: liveNetwork("polygon", "polygon-mainnet"),
     arbitrum: liveNetwork("arbitrum", "arb-mainnet"),
     rootstock: liveNetwork("rootstock", "rootstock"),
-    rsktestnet: liveNetwork("rsktestnet", "rootstock-testnet"),
+    rsktestnet: liveNetwork(
+      "rsktestnet",
+      "rootstock-testnet",
+    ),
   },
   chainDescriptors: {
     11155111: {
@@ -123,7 +128,9 @@ export default defineConfig({
   },
   verify: {
     etherscan: {
-      apiKey: configVariable("ETHERSCAN_API_KEY", { default: "" }),
+      apiKey: configVariable("ETHERSCAN_API_KEY", {
+        default: "",
+      }),
     },
   },
   typechain: {
