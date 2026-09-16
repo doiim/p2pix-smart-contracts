@@ -611,19 +611,14 @@ describe("P2PIX", () => {
         true,
       );
       await p2pix.setValidState(erc20.target, false);
-      const fail = p2pix
-        .connect(acc03)
-        .lock(owner.address, erc20.target, price, [], []);
-      const fail2 = p2pix.lock(zero, zero, price, [], []);
-
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.InvalidDeposit,
-      );
-      await expect(fail2).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.InvalidDeposit,
-      );
+      await expect(
+        p2pix
+          .connect(acc03)
+          .lock(owner.address, erc20.target, price, [], []),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidDeposit);
+      await expect(
+        p2pix.lock(zero, zero, price, [], []),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidDeposit);
     });
     it("should revert if wished amount is greater than balance's remaining amount", async () => {
       await erc20.approve(p2pix.target, price);
@@ -1284,14 +1279,11 @@ describe("P2PIX", () => {
           [],
           [],
         );
-      const fail = p2pix
-        .connect(acc01)
-        .release(BigInt(2), ethers.ZeroHash, flatSig);
-
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.TxAlreadyUsed,
-      );
+      await expect(
+        p2pix
+          .connect(acc01)
+          .release(BigInt(2), ethers.ZeroHash, flatSig),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.TxAlreadyUsed);
     });
     it("should revert if ecrecovered signer is invalid", async () => {
       const target = BigInt(101).toString();
@@ -1325,14 +1317,11 @@ describe("P2PIX", () => {
           [],
           [],
         );
-      const fail = p2pix
-        .connect(acc01)
-        .release(BigInt(1), ethers.ZeroHash, flatSig);
-
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.InvalidSigner,
-      );
+      await expect(
+        p2pix
+          .connect(acc01)
+          .release(BigInt(1), ethers.ZeroHash, flatSig),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidSigner);
     });
     it("should release lock, update storage and emit events", async () => {
       const zero = ethers.ZeroHash;
@@ -1723,12 +1712,10 @@ describe("P2PIX", () => {
       const lockID = BigInt(1);
       // await mine(10);
       await p2pix.release(lockID, endtoendID, flatSig);
-      const fail = p2pix.unlockExpired([lockID]);
 
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.AlreadyReleased,
-      );
+      await expect(
+        p2pix.unlockExpired([lockID]),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.AlreadyReleased);
     });
     it("should unlock expired locks, update storage and emit events", async () => {
       const target = BigInt(101).toString();
@@ -1952,14 +1939,9 @@ describe("P2PIX", () => {
       const root = ethers.keccak256(
         ethers.toUtf8Bytes("root"),
       );
-      const fail = p2pix
-        .connect(acc02)
-        .setRoot(owner.address, root);
-
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.OnlySeller,
-      );
+      await expect(
+        p2pix.connect(acc02).setRoot(owner.address, root),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.OnlySeller);
     });
     it("should set root of seller's allowlist, update storage and emit event", async () => {
       const oldState = await p2pix.sellerAllowList.staticCall(
