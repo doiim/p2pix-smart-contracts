@@ -1,9 +1,9 @@
-import {
+import type {
   MockToken,
   Multicall,
   P2PIX,
   Reputation,
-} from "../../src/types";
+} from "../../src/types/index.ts";
 
 // exported interfaces
 export interface Deploys {

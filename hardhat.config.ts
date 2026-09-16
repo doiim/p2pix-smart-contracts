@@ -11,7 +11,6 @@ const mnemonic = configVariable("MNEMONIC", {
   default: DEFAULT_MNEMONIC,
 });
 
-const alchemyApiKey = configVariable("ALCHEMY_API_KEY");
 
 const chainIds = {
   mainnet: 1,

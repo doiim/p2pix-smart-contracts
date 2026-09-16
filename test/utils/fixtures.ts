@@ -1,21 +1,27 @@
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { Signer } from "ethers";
-import { ethers } from "hardhat";
-import keccak256 from "keccak256";
+import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types";
+import type { Signer } from "ethers";
+import {
+  Interface,
+  Wallet,
+  keccak256,
+  toUtf8Bytes,
+} from "ethers";
+import hre from "hardhat";
 import { MerkleTree } from "merkletreejs";
 
-import { MockToken, P2PIX__factory } from "../../src/types";
+import type { MockToken } from "../../src/types/index.ts";
+import { P2PIX__factory } from "../../src/types/index.ts";
 
-import {
+import type {
   Call,
   RepFixture,
   P2PixAndReputation,
-} from "./interfaces";
+} from "./interfaces.ts";
 
 // exported constants
 export const getSignerAddrs = (
   amount: number,
-  addrs: SignerWithAddress[],
+  addrs: HardhatEthersSigner[],
 ): string[] => {
   return addrs.slice(0, amount).map(({ address }) => address);
 };
@@ -29,7 +35,7 @@ export const getLockData = (
   addr: string,
   locks: bigint[][],
 ): Call[] => {
-  const iface = new ethers.Interface(P2PIX__factory.abi);
+  const iface = new Interface(P2PIX__factory.abi);
   return locks.map(lock => ({
     target: addr,
     callData: iface.encodeFunctionData("getLocksStatus", [
@@ -41,15 +47,13 @@ export const getLockData = (
 export const randomSigners = (amount: number): Signer[] => {
   const signers: Signer[] = [];
   for (let i = 0; i < amount; i++) {
-    signers.push(ethers.Wallet.createRandom());
+    signers.push(Wallet.createRandom());
   }
   return signers;
 };
 
 export const getError = (Error: string) =>
-  ethers.utils
-    .keccak256(ethers.utils.toUtf8Bytes(Error))
-    .slice(0, 10);
+  keccak256(toUtf8Bytes(Error)).slice(0, 10);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const padBuffer = (addr: any) => {
@@ -67,12 +71,14 @@ export const curve = (x: number): number => {
 
 // exported async functions
 export async function repFixture(): Promise<RepFixture> {
+  const { ethers } = await hre.network.getOrCreate();
   const reputation =
     await ethers.deployContract("Reputation");
   return { reputation: await reputation.waitForDeployment() };
 }
 
 export async function p2pixFixture(): Promise<P2PixAndReputation> {
+  const { ethers } = await hre.network.getOrCreate();
   const validSigners = getSignerAddrs(
     2,
     await ethers.getSigners(),

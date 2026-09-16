@@ -1,56 +1,45 @@
-import "@nomicfoundation/hardhat-chai-matchers";
-import {
-  loadFixture,
-  mine,
-} from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import type {
+  HardhatEthers,
+  HardhatEthersSigner,
+} from "@nomicfoundation/hardhat-ethers/types";
+import type { NetworkHelpers } from "@nomicfoundation/hardhat-network-helpers/types";
 import { expect } from "chai";
-import {
+import type {
   ContractTransactionReceipt,
   ContractTransactionResponse,
-  Wallet,
 } from "ethers";
-import {
-  ethers,
-  network,
-  /* tracer */
-} from "hardhat";
-import {
+import hre from "hardhat";
+import { parseEther, stringToHex } from "viem";
+
+import type {
   MockToken,
   Multicall,
   P2PIX,
   Reputation,
-} from "../src/types";
-import { P2PixErrors } from "./utils/errors";
-import {
-  // LockArgs,
-  // DepositArgs,
-  Call,
-  Lock,
-  Result,
-} from "./utils/interfaces";
+} from "../src/types/index.ts";
+import { P2PixErrors } from "./utils/errors.ts";
 import {
   getBnFrom,
   getLockData,
   getSignerAddrs,
   p2pixFixture,
   randomSigners,
-} from "./utils/fixtures";
-import { parseEther, stringToHex } from "viem";
+} from "./utils/fixtures.ts";
+import type { Call, Lock, Result } from "./utils/interfaces.ts";
 
 describe("P2PIX", () => {
-  type WalletWithAddress = Wallet & SignerWithAddress;
-
   // contract deployer/admin
-  let owner: WalletWithAddress;
+  let owner: HardhatEthersSigner;
 
   // extra EOAs
-  let acc01: WalletWithAddress;
-  let acc02: WalletWithAddress;
-  let acc03: WalletWithAddress;
+  let acc01: HardhatEthersSigner;
+  let acc02: HardhatEthersSigner;
+  let acc03: HardhatEthersSigner;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let res: any;
+  let ethers: HardhatEthers;
+  let networkHelpers: NetworkHelpers;
+
+  let res: bigint;
 
   let p2pix: P2PIX; // Contract instance
   let erc20: MockToken; // Token instance
@@ -65,11 +54,8 @@ describe("P2PIX", () => {
   const zero = "0x0000000000000000000000000000000000000000";
 
   before("Set signers and reset network", async () => {
-    [owner, acc01, acc02, acc03] =
-      await // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (ethers as any).getSigners();
-
-    await network.provider.send("hardhat_reset");
+    ({ ethers, networkHelpers } = await hre.network.getOrCreate());
+    [owner, acc01, acc02, acc03] = await ethers.getSigners();
   });
   beforeEach("Load deployment fixtures", async () => {
     ({
@@ -79,7 +65,7 @@ describe("P2PIX", () => {
       multicall,
       merkleRoot,
       proof,
-    } = await loadFixture(p2pixFixture));
+    } = await networkHelpers.loadFixture(p2pixFixture));
   });
 
   describe("Init", async () => {
@@ -167,6 +153,7 @@ describe("P2PIX", () => {
 
       const tx = p2pix.withdrawBalance();
       await expect(tx).to.changeEtherBalances(
+        ethers,
         [owner.address, p2pix.target],
         [price, price * -1n],
       );
@@ -397,6 +384,7 @@ describe("P2PIX", () => {
         .to.emit(p2pix, "DepositAdded")
         .withArgs(owner.address, erc20.target, price);
       await expect(tx).to.changeTokenBalances(
+        ethers,
         erc20,
         [owner.address, p2pix.target],
         [price * -1n, price],
@@ -579,6 +567,7 @@ describe("P2PIX", () => {
           .to.emit(p2pix, "DepositAdded")
           .withArgs(addr, erc20.target, depositPrice);
         await expect(tx).to.changeTokenBalances(
+          ethers,
           erc20,
           [addr, p2pix.target],
           [amount, depositPrice],
@@ -735,7 +724,7 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(1);
 
-      const rc: ContractTransactionReceipt = await tx.wait();
+      const rc: ContractTransactionReceipt = (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
 
       await expect(tx)
@@ -774,7 +763,7 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(1);
 
-      const rc: ContractTransactionReceipt = await tx.wait();
+      const rc: ContractTransactionReceipt = (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
@@ -847,7 +836,7 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(2);
 
-      const rc: ContractTransactionReceipt = await tx.wait();
+      const rc: ContractTransactionReceipt = (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
@@ -901,7 +890,7 @@ describe("P2PIX", () => {
         await p2pix.mapLocks.staticCall(1);
 
       const rc1: ContractTransactionReceipt =
-        await tx1.wait();
+        (await tx1.wait())!;
       const expiration1 = rc1.blockNumber + 10;
 
       const tx2 = await p2pix
@@ -917,7 +906,7 @@ describe("P2PIX", () => {
         await p2pix.mapLocks.staticCall(2);
 
       const rc2: ContractTransactionReceipt =
-        await tx2.wait();
+        (await tx2.wait())!;
       const expiration2 = rc2.blockNumber + 10;
 
       const tx3 = await p2pix
@@ -933,7 +922,7 @@ describe("P2PIX", () => {
         await p2pix.mapLocks.staticCall(3);
 
       const rc3: ContractTransactionReceipt =
-        await tx3.wait();
+        (await tx3.wait())!;
       const expiration3 = rc3.blockNumber + 10;
 
       // const key = await p2pix._castAddrToKey.staticCall(
@@ -979,7 +968,7 @@ describe("P2PIX", () => {
         await multicall.mtc1.staticCall(cData);
       const blockNumber = batchCall[0];
 
-      const result: Array<Bytes> = batchCall[1].slice(0, 4);
+      const result: string[] = batchCall[1].slice(0, 4);
 
       const decodedData = result.map(r =>
         ethers.AbiCoder.defaultAbiCoder().decode(
@@ -1207,7 +1196,7 @@ describe("P2PIX", () => {
           [],
         );
       const lockID = BigInt(1);
-      await mine(13);
+      await networkHelpers.mine(13);
       const fail = p2pix.release(
         lockID,
         ethers.ZeroHash,
@@ -1436,9 +1425,9 @@ describe("P2PIX", () => {
       mtcCalls.push(cd2[0]);
       const mtc2 = await multicall.mtc2.staticCall(mtcCalls);
       const blockNumber: bigint = mtc2[0];
-      const blockhash: Bytes = mtc2[1];
+      const blockhash: string = mtc2[1];
       const result = mtc2.slice(2).flat(1) as Result[];
-      const res1: Bytes[] = [result[1].returnData];
+      const res1: string[] = [result[1].returnData];
       const decodedLockData = res1.map(r =>
         ethers.AbiCoder.defaultAbiCoder().decode(
           ["uint256[]", "uint8[]"],
@@ -1480,6 +1469,7 @@ describe("P2PIX", () => {
       expect(userRecordB).to.eq(BigInt(50));
       expect(userRecord2).to.eq(BigInt(50));
       await expect(tx).to.changeTokenBalances(
+        ethers,
         erc20,
         [acc03.address, acc01.address, acc02.address],
         [100, 0, 0],
@@ -1628,7 +1618,7 @@ describe("P2PIX", () => {
         ls2.slice(0, 1)[0],
       ];
       const cData: Call[] = getLockData(
-        erc20.target,
+        erc20.target as string,
         batchedLocks,
       );
 
@@ -1667,6 +1657,7 @@ describe("P2PIX", () => {
       for (let i = 0; i < 3; i++) {
         const txs = [tx, tx1, tx2][i];
         await expect(txs).to.changeTokenBalances(
+          ethers,
           erc20,
           addresses,
           balances[i],
@@ -1762,7 +1753,7 @@ describe("P2PIX", () => {
         .connect(acc02)
         .lock(owner.address, erc20.target, BigInt(1), [], []);
       const lockID = BigInt(1);
-      await mine(11);
+      await networkHelpers.mine(11);
 
       const lockStatus1 =
         await p2pix.getLocksStatus.staticCall([11, 1, 777]);
@@ -1814,15 +1805,18 @@ describe("P2PIX", () => {
       // outside the evm, we fetch the lockID from the emitted event.
       const rc: ContractTransactionReceipt =
         (await lock1.wait()) as ContractTransactionReceipt;
-      const event = rc.logs?.find(
-        log => log.fragment.name === "LockAdded",
+      const eventLog = rc.logs.find(
+        log => "fragment" in log && log.fragment.name === "LockAdded",
       );
 
-      const emittedLockID = event?.args!["lockID"];
+      const emittedLockID =
+        eventLog !== undefined && "args" in eventLog
+          ? eventLog.args["lockID"]
+          : undefined;
       const lockID = BigInt(1);
 
       // mine blocks to expire lock
-      await mine(12);
+      await networkHelpers.mine(12);
       // const blocknum = await p2pix.provider.getBlockNumber();
       // console.log("bn = 6 + 12 ( i.e., %s )", blocknum);
       // console.log(
@@ -1877,7 +1871,7 @@ describe("P2PIX", () => {
         .lock(owner.address, erc20.target, price, proof, []);
       const lockID = BigInt(1);
       // mine blocks to expire lock
-      await mine(11);
+      await networkHelpers.mine(11);
       const tx = await p2pix.withdraw(erc20.target, price, [
         lockID,
       ]);
@@ -1932,21 +1926,25 @@ describe("P2PIX", () => {
 
       expect(tx).to.be.ok;
       await expect(dep).to.changeTokenBalance(
+        ethers,
         erc20,
         owner.address,
         price * -1n,
       );
       await expect(dep).to.changeTokenBalance(
+        ethers,
         erc20,
         p2pix.target,
         price,
       );
       await expect(tx).to.changeTokenBalance(
+        ethers,
         erc20,
         owner.address,
         newPrice,
       );
       await expect(tx).to.changeTokenBalance(
+        ethers,
         erc20,
         p2pix.target,
         (price / 2n) * -1n,

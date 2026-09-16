@@ -26,7 +26,7 @@ module.exports = tseslint.config(
       "yarn-debug.log*",
       "yarn-error.log*",
       ".solcover.js",
-      "eslint.config.js",
+      "eslint.config.cjs",
     ],
   },
   js.configs.recommended,

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "declaration": true,
     "declarationMap": true,
     "emitDecoratorMetadata": true,
@@ -11,6 +12,8 @@
     "noImplicitAny": true,
     "removeComments": true,
     "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2023",

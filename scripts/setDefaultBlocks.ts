@@ -1,16 +1,18 @@
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
 import * as fs from "fs";
-import { ethers, network } from "hardhat";
-import { Deploys } from "../test/utils/interfaces";
-import { P2PIX__factory } from "../src/types";
+import { Interface } from "ethers";
+import hre from "hardhat";
+
+import { P2PIX__factory } from "../src/types/index.ts";
+import type { Deploys } from "../test/utils/interfaces.ts";
 
 let deploysJson: Deploys;
 
 const main = async () => {
+  const { ethers, networkName } = await hre.network.getOrCreate();
+
   try {
     const data = fs.readFileSync(
-      `./deploys/${network.name}.json`,
+      `./deploys/${networkName}.json`,
       { encoding: "utf-8" },
     );
     deploysJson = JSON.parse(data);
@@ -24,9 +26,7 @@ const main = async () => {
     `Signing transactions with ${deployer.address}`,
   );
 
-  const iface = new ethers.utils.Interface(
-    P2PIX__factory.abi,
-  );
+  const iface = new Interface(P2PIX__factory.abi);
   const calldata = iface.encodeFunctionData(
     "setDefaultLockBlocks",
     ["10000"],
@@ -37,7 +37,7 @@ const main = async () => {
     data: calldata,
   });
   const done = await tx.wait();
-  console.log(done.transactionHash);
+  console.log(done!.hash);
 };
 
 main()

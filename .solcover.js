@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   configureYulOptimizer: true,
   solcOptimizerDetails: {
     deduplicate: true,

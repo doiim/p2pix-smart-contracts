@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-import ReputationModule from "./Reputation";
+import ReputationModule from "./Reputation.ts";
 
 export default buildModule("P2PIX", m => {
   const { reputation, multicall } = m.useModule(

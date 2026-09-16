@@ -1,22 +1,24 @@
-import "@nomicfoundation/hardhat-chai-matchers";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import type { HardhatEthers } from "@nomicfoundation/hardhat-ethers/types";
+import type { NetworkHelpers } from "@nomicfoundation/hardhat-network-helpers/types";
 import { expect } from "chai";
-import { ethers, network } from "hardhat";
+import hre from "hardhat";
 
-import { Reputation } from "../src/types";
-import { curve, repFixture } from "./utils/fixtures";
+import type { Reputation } from "../src/types/index.ts";
+import { curve, repFixture } from "./utils/fixtures.ts";
 
 describe("Reputation", () => {
   // Reputation Interface instance;
   let reputation: Reputation;
+  let ethers: HardhatEthers;
+  let networkHelpers: NetworkHelpers;
 
   before("Set signers and reset network", async () => {
+    ({ ethers, networkHelpers } = await hre.network.getOrCreate());
     await ethers.getSigners();
-
-    await network.provider.send("hardhat_reset");
   });
   beforeEach("Load deployment fixtures", async () => {
-    ({ reputation } = await loadFixture(repFixture));
+    ({ reputation } =
+      await networkHelpers.loadFixture(repFixture));
   });
 
   // describe("Limiter", async () => {
@@ -78,8 +80,9 @@ describe("Reputation", () => {
 
       for (const testCase of testCases) {
         if (testCase.shouldRevert != undefined) {
-          await expect(reputation.limiter(testCase.x)).to.be
-            .rejected;
+          await expect(reputation.limiter(testCase.x)).to.revert(
+            ethers,
+          );
         } else {
           const result = await reputation.limiter(testCase.x);
           expect(result).to.eq(testCase.expected).and.to.be

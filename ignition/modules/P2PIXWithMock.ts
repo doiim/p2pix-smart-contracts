@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-import MockTokenModule from "./MockToken";
-import ReputationModule from "./Reputation";
+import MockTokenModule from "./MockToken.ts";
+import ReputationModule from "./Reputation.ts";
 
 export default buildModule("P2PIXWithMock", m => {
   const { token } = m.useModule(MockTokenModule);
