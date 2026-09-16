@@ -25,7 +25,11 @@ import {
   p2pixFixture,
   randomSigners,
 } from "./utils/fixtures.ts";
-import type { Call, Lock, Result } from "./utils/interfaces.ts";
+import type {
+  Call,
+  Lock,
+  Result,
+} from "./utils/interfaces.ts";
 
 describe("P2PIX", () => {
   // contract deployer/admin
@@ -54,7 +58,8 @@ describe("P2PIX", () => {
   const zero = "0x0000000000000000000000000000000000000000";
 
   before("Set signers and reset network", async () => {
-    ({ ethers, networkHelpers } = await hre.network.getOrCreate());
+    ({ ethers, networkHelpers } =
+      await hre.network.getOrCreate());
     [owner, acc01, acc02, acc03] = await ethers.getSigners();
   });
   beforeEach("Load deployment fixtures", async () => {
@@ -261,16 +266,28 @@ describe("P2PIX", () => {
         p2pix
           .connect(acc01)
           .tokenSettings([acc01.address], [false]),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.Unauthorized);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.Unauthorized,
+      );
       await expect(
         p2pix.tokenSettings([], [true, false]),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.NoTokens);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.NoTokens,
+      );
       await expect(
         p2pix.tokenSettings([zero], [true, true]),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.LengthMismatch);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.LengthMismatch,
+      );
       await expect(
         multicall.mtc1([callStruct]),
-      ).to.be.revertedWithCustomError(multicall, P2PixErrors.CallFailed);
+      ).to.be.revertedWithCustomError(
+        multicall,
+        P2PixErrors.CallFailed,
+      );
     });
   });
   describe("Deposit", async () => {
@@ -615,10 +632,16 @@ describe("P2PIX", () => {
         p2pix
           .connect(acc03)
           .lock(owner.address, erc20.target, price, [], []),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidDeposit);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.InvalidDeposit,
+      );
       await expect(
         p2pix.lock(zero, zero, price, [], []),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidDeposit);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.InvalidDeposit,
+      );
     });
     it("should revert if wished amount is greater than balance's remaining amount", async () => {
       await erc20.approve(p2pix.target, price);
@@ -671,12 +694,15 @@ describe("P2PIX", () => {
       );
     });
     it("should revert if msg.sender does not have enough credit in his spend limit", async () => {
-      await erc20.approve(p2pix.target, price * 3n);
+      // Fresh account: credit 0 => spendLimit = 256 (wei-scaled) and the
+      // lock amount must stay <= the deposit balance, so deposit more than
+      // the spend limit and lock above it to trip `AmountNotAllowed`.
+      await erc20.approve(p2pix.target, price * 4n);
       await p2pix.deposit(
         "1",
         merkleRoot,
         erc20.target,
-        price * 3n,
+        price * 4n,
         true,
       );
       const fail = p2pix
@@ -684,7 +710,7 @@ describe("P2PIX", () => {
         .lock(
           owner.address,
           erc20.target,
-          price * 2n,
+          price * 3n,
           [],
           [],
         );
@@ -710,7 +736,8 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(1);
 
-      const rc: ContractTransactionReceipt = (await tx.wait())!;
+      const rc: ContractTransactionReceipt =
+        (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
 
       await expect(tx)
@@ -749,7 +776,8 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(1);
 
-      const rc: ContractTransactionReceipt = (await tx.wait())!;
+      const rc: ContractTransactionReceipt =
+        (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
@@ -822,7 +850,8 @@ describe("P2PIX", () => {
       const storage: Lock =
         await p2pix.mapLocks.staticCall(2);
 
-      const rc: ContractTransactionReceipt = (await tx.wait())!;
+      const rc: ContractTransactionReceipt =
+        (await tx.wait())!;
       const expiration = rc.blockNumber + 10;
       const key = await p2pix._castAddrToKey.staticCall(
         owner.address,
@@ -969,7 +998,8 @@ describe("P2PIX", () => {
       expect(tx2).to.be.ok;
       expect(tx3).to.be.ok;
 
-      expect(blockNumber).to.eq(9);
+      // batchCall executes in the same block as tx3.
+      expect(blockNumber).to.eq(rc3.blockNumber);
       expect(ls1Res).to.deep.equal(ls1);
       expect(ls2Res).to.deep.equal(ls2);
       expect(ls3Res).to.deep.equal(ls3);
@@ -1283,7 +1313,10 @@ describe("P2PIX", () => {
         p2pix
           .connect(acc01)
           .release(BigInt(2), ethers.ZeroHash, flatSig),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.TxAlreadyUsed);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.TxAlreadyUsed,
+      );
     });
     it("should revert if ecrecovered signer is invalid", async () => {
       const target = BigInt(101).toString();
@@ -1321,7 +1354,10 @@ describe("P2PIX", () => {
         p2pix
           .connect(acc01)
           .release(BigInt(1), ethers.ZeroHash, flatSig),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.InvalidSigner);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.InvalidSigner,
+      );
     });
     it("should release lock, update storage and emit events", async () => {
       const zero = ethers.ZeroHash;
@@ -1360,7 +1396,7 @@ describe("P2PIX", () => {
         price,
         true,
       );
-      await p2pix
+      const lockTx = await p2pix
         .connect(acc03)
         .lock(
           owner.address,
@@ -1369,6 +1405,8 @@ describe("P2PIX", () => {
           [],
           [],
         );
+      const rc: ContractTransactionReceipt =
+        (await lockTx.wait())!;
       const acc01Key = await p2pix._castAddrToKey.staticCall(
         acc01.address,
       );
@@ -1385,6 +1423,8 @@ describe("P2PIX", () => {
       const tx = await p2pix
         .connect(acc01)
         .release(BigInt(1), endtoendID, flatSig);
+      const releaseRc: ContractTransactionReceipt =
+        (await tx.wait())!;
 
       const lockStatus1 =
         await p2pix.getLocksStatus.staticCall([1]);
@@ -1428,7 +1468,10 @@ describe("P2PIX", () => {
       await expect(tx)
         .to.emit(p2pix, "LockReleased")
         .withArgs(acc03.address, BigInt(1), storage1.amount);
-      expect(storage1.expirationBlock).to.eq(BigInt(17));
+      // lock mined at block rc; defaultLockBlocks is 10.
+      expect(storage1.expirationBlock).to.eq(
+        BigInt(rc.blockNumber + 10),
+      );
       expect(storage1.amount).to.eq(BigInt(100));
       expect(lockStatus1[0].toString()).to.equal(
         ls1[0].toString(),
@@ -1436,7 +1479,8 @@ describe("P2PIX", () => {
       expect(lockStatus1[1].toString()).to.equal(
         ls1[1].toString(),
       );
-      expect(blockNumber).to.eq(8);
+      // multicall reads post-release state, so it runs in the release block.
+      expect(blockNumber).to.eq(releaseRc.blockNumber);
       expect(blockhash).to.deep.equal(ethers.ZeroHash);
       expect(result[0].success).to.eq(false);
       expect(result[1].success).to.eq(true);
@@ -1715,7 +1759,10 @@ describe("P2PIX", () => {
 
       await expect(
         p2pix.unlockExpired([lockID]),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.AlreadyReleased);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.AlreadyReleased,
+      );
     });
     it("should unlock expired locks, update storage and emit events", async () => {
       const target = BigInt(101).toString();
@@ -1784,7 +1831,9 @@ describe("P2PIX", () => {
       const rc: ContractTransactionReceipt =
         (await lock1.wait()) as ContractTransactionReceipt;
       const eventLog = rc.logs.find(
-        log => "fragment" in log && log.fragment.name === "LockAdded",
+        log =>
+          "fragment" in log &&
+          log.fragment.name === "LockAdded",
       );
 
       const emittedLockID =
@@ -1941,7 +1990,10 @@ describe("P2PIX", () => {
       );
       await expect(
         p2pix.connect(acc02).setRoot(owner.address, root),
-      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.OnlySeller);
+      ).to.be.revertedWithCustomError(
+        p2pix,
+        P2PixErrors.OnlySeller,
+      );
     });
     it("should set root of seller's allowlist, update storage and emit event", async () => {
       const oldState = await p2pix.sellerAllowList.staticCall(

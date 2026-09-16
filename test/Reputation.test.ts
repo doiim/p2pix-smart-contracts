@@ -13,7 +13,8 @@ describe("Reputation", () => {
   let networkHelpers: NetworkHelpers;
 
   before("Set signers and reset network", async () => {
-    ({ ethers, networkHelpers } = await hre.network.getOrCreate());
+    ({ ethers, networkHelpers } =
+      await hre.network.getOrCreate());
     await ethers.getSigners();
   });
   beforeEach("Load deployment fixtures", async () => {
@@ -80,9 +81,15 @@ describe("Reputation", () => {
 
       for (const testCase of testCases) {
         if (testCase.shouldRevert != undefined) {
-          await expect(reputation.limiter(testCase.x)).to.revert(
-            ethers,
-          );
+          // ethers rejects invalid args client-side (sync throw or
+          // rejected promise), so catch both.
+          let threw = false;
+          try {
+            await reputation.limiter(testCase.x);
+          } catch {
+            threw = true;
+          }
+          expect(threw).to.be.true;
         } else {
           const result = await reputation.limiter(testCase.x);
           expect(result).to.eq(testCase.expected).and.to.be
