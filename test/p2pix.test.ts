@@ -249,13 +249,6 @@ describe("P2PIX", () => {
         target: p2pix.target as string,
         callData: cd,
       };
-      const fail = p2pix
-        .connect(acc01)
-        .tokenSettings([acc01.address], [false]);
-      const fail2 = p2pix.tokenSettings([], [true, false]);
-      const fail3 = p2pix.tokenSettings([zero], [true, true]);
-      const mtcFail = multicall.mtc1([callStruct]);
-
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "AllowedERC20Updated")
@@ -264,22 +257,20 @@ describe("P2PIX", () => {
         .withArgs(owner.address, true);
       expect(newTokenState1).to.eq(false);
       expect(newTokenState2).to.eq(true);
-      await expect(fail).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.Unauthorized,
-      );
-      await expect(fail2).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.NoTokens,
-      );
-      await expect(fail3).to.be.revertedWithCustomError(
-        p2pix,
-        P2PixErrors.LengthMismatch,
-      );
-      await expect(mtcFail).to.be.revertedWithCustomError(
-        multicall,
-        P2PixErrors.CallFailed,
-      );
+      await expect(
+        p2pix
+          .connect(acc01)
+          .tokenSettings([acc01.address], [false]),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.Unauthorized);
+      await expect(
+        p2pix.tokenSettings([], [true, false]),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.NoTokens);
+      await expect(
+        p2pix.tokenSettings([zero], [true, true]),
+      ).to.be.revertedWithCustomError(p2pix, P2PixErrors.LengthMismatch);
+      await expect(
+        multicall.mtc1([callStruct]),
+      ).to.be.revertedWithCustomError(multicall, P2PixErrors.CallFailed);
     });
   });
   describe("Deposit", async () => {
