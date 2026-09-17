@@ -41,3 +41,6 @@ ignition/deployments/**/journal.jsonl
 
 # Per-developer local deploy state (deterministic per mnemonic)
 deploys/localhost.json
+
+# captured homologação proof (contains the sandbox app key)
+test/utils/fixtures/

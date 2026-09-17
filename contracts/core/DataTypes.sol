@@ -14,6 +14,27 @@ library DataTypes {
         address seller;
     }
 
+    /// @dev The bank request the attestor replays, rebuilt on-chain:
+    ///      `<solicitationUrlPrefix><numeroSolicitacao><solicitationUrlSuffix>`;
+    ///      the suffix carries the convênio query as the attestor records it.
+    struct BankConfig {
+        string solicitationUrlPrefix;
+        string solicitationUrlSuffix;
+    }
+
+    /// @dev A proof of Pix payment: the Primus attestation of the bank's own
+    ///      answer, minus what the contract rebuilds from its settings.
+    struct PixProof {
+        uint256 numeroSolicitacao;
+        address recipient;
+        string data;
+        uint64 timestamp;
+        string additionParams;
+        string attConditions;
+        address attestor;
+        bytes signature;
+    }
+
     // prettier-ignore
     enum LockStatus {
         Inexistent,     // 0 := Uninitialized Lock.

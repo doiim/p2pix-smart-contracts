@@ -17,6 +17,7 @@ import type {
   RepFixture,
   P2PixAndReputation,
 } from "./interfaces.ts";
+import { BANK, PROOF_MAX_AGE_MS } from "./proof.ts";
 
 // exported constants
 export const getSignerAddrs = (
@@ -79,10 +80,12 @@ export async function repFixture(): Promise<RepFixture> {
 
 export async function p2pixFixture(): Promise<P2PixAndReputation> {
   const { ethers } = await hre.network.getOrCreate();
-  const validSigners = getSignerAddrs(
-    2,
-    await ethers.getSigners(),
-  );
+  const attestorWallet = ethers.Wallet.createRandom();
+  const attestor = {
+    privateKey: attestorWallet.privateKey,
+    address: attestorWallet.address,
+  };
+  const prover = ethers.Wallet.createRandom().address;
 
   const reputation =
     await ethers.deployContract("Reputation");
@@ -93,10 +96,13 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
 
   const p2pix = await ethers.deployContract("P2PIX", [
     10,
-    validSigners,
+    [attestor.address],
     reputation.target,
     [erc20.target],
     [true],
+    BANK,
+    prover,
+    PROOF_MAX_AGE_MS,
   ]);
 
   const multicall = await ethers.deployContract("Multicall");
@@ -121,5 +127,7 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     p2pix: await p2pix.waitForDeployment(),
     merkleRoot,
     proof,
+    attestor,
+    prover,
   };
 }

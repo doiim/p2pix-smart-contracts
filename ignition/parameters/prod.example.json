@@ -1,7 +1,15 @@
 {
   "P2PIX": {
-    "defaultBlocks": 10,
-    "validSigners": [],
+    "defaultBlocks": 1000,
+    "validAttestors": [
+      "0x0000000000000000000000000000000000000000"
+    ],
+    "bank": {
+      "solicitationUrlPrefix": "https://api-bbpay.bb.com.br/checkout/v2/solicitacoes/",
+      "solicitationUrlSuffix": "?numeroConvenio=246686&gw-dev-app-key="
+    },
+    "prover": "0x0000000000000000000000000000000000000000",
+    "proofMaxAgeMs": 3600000,
     "tokens": ["0x0000000000000000000000000000000000000000"],
     "allowed": [true]
   }

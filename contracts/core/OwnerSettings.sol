@@ -7,6 +7,7 @@ import { IReputation } from "./lib/interfaces/IReputation.sol";
 import { EventAndErrors } from "./EventAndErrors.sol";
 import { Constants } from "./Constants.sol";
 import { Owned } from "./lib/auth/Owned.sol";
+import { DataTypes as DT } from "./DataTypes.sol";
 
 abstract contract OwnerSettings is
     Constants,
@@ -16,28 +17,40 @@ abstract contract OwnerSettings is
 {
     /// ███ Storage ████████████████████████████████████████████████████████████
 
-    /// @dev List of valid Bacen signature addresses
-    ///     mapping(uint256 => bool) public validBacenSigners;
-    /// @dev Value in custom storage slot given by:
-    ///     let value := sload(shl(12, address)).
-
     IReputation public reputation;
     /// @dev Default blocks that lock will hold tokens.
     uint256 public defaultLockBlocks;
+    /// @dev Primus attestors whose signature releases a lock.
+    mapping(address => bool) public validAttestors;
+    /// @dev The bank request a proof must have attested.
+    DT.BankConfig public bank;
+    /// @dev The prover's Primus task wallet: the only accepted proof recipient.
+    address public prover;
+    /// @dev Oldest attestation accepted, in milliseconds.
+    uint256 public proofMaxAgeMs;
 
     /// ███ Constructor ████████████████████████████████████████████████████████
 
     constructor(
         uint256 defaultBlocks,
-        address[] memory validSigners,
+        address[] memory attestors,
         address _reputation,
         ERC20[] memory tokens,
-        bool[] memory tokenStates
+        bool[] memory tokenStates,
+        DT.BankConfig memory bankConfig,
+        address _prover,
+        uint256 maxAgeMs
     ) {
         setDefaultLockBlocks(defaultBlocks);
-        setValidSigners(validSigners);
+        setValidAttestors(
+            attestors,
+            _allTrue(attestors.length)
+        );
         setReputation(IReputation(_reputation));
         tokenSettings(tokens, tokenStates);
+        setBankConfig(bankConfig);
+        setProver(_prover);
+        setProofMaxAgeMs(maxAgeMs);
     }
 
     /// ███ Owner Only █████████████████████████████████████████████████████████
@@ -110,26 +123,40 @@ abstract contract OwnerSettings is
         emit LockBlocksUpdated(_blocks);
     }
 
-    function setValidSigners(
-        address[] memory _validSigners
+    /// @dev Adds or removes Primus attestors. Primus rotates and revokes node
+    ///      keys, so removal must stay possible.
+    function setValidAttestors(
+        address[] memory attestors,
+        bool[] memory states
     ) public onlyOwner {
-        assembly ("memory-safe") {
-            let i := add(_validSigners, 0x20)
-            let end := add(i, shl(0x05, mload(_validSigners)))
-            for {
-                /*  */
-            } iszero(returndatasize()) {
-                /*  */
-            } {
-                sstore(shl(0xc, mload(i)), true)
-                i := add(i, 0x20)
-
-                if iszero(lt(i, end)) {
-                    break
-                }
-            }
+        uint256 len = attestors.length;
+        if (len == 0) revert NoAttestors();
+        if (len != states.length) revert LengthMismatch();
+        for (uint256 i; i < len; ++i) {
+            if (attestors[i] == address(0))
+                revert NoAttestors();
+            validAttestors[attestors[i]] = states[i];
         }
-        emit ValidSignersUpdated(_validSigners);
+        emit ValidAttestorsUpdated(attestors, states);
+    }
+
+    function setBankConfig(
+        DT.BankConfig memory config
+    ) public onlyOwner {
+        bank = config;
+        emit BankConfigUpdated();
+    }
+
+    function setProver(address _prover) public onlyOwner {
+        prover = _prover;
+        emit ProverUpdated(_prover);
+    }
+
+    function setProofMaxAgeMs(
+        uint256 maxAgeMs
+    ) public onlyOwner {
+        proofMaxAgeMs = maxAgeMs;
+        emit ProofMaxAgeUpdated(maxAgeMs);
     }
 
     function tokenSettings(
@@ -178,14 +205,6 @@ abstract contract OwnerSettings is
 
     /// ███ View FX ████████████████████████████████████████████████████████████
 
-    function validBacenSigners(
-        uint256 signer
-    ) public view returns (bool valid) {
-        assembly ("memory-safe") {
-            valid := sload(signer)
-        }
-    }
-
     function sellerAllowList(
         address sellerKey
     ) public view returns (bytes32 root) {
@@ -204,6 +223,13 @@ abstract contract OwnerSettings is
             mstore(0x00, erc20)
             state := sload(keccak256(0x0c, 0x20))
         }
+    }
+
+    function _allTrue(
+        uint256 len
+    ) private pure returns (bool[] memory states) {
+        states = new bool[](len);
+        for (uint256 i; i < len; ++i) states[i] = true;
     }
 
     function _limiter(

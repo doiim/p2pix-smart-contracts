@@ -1,7 +1,15 @@
 {
   "P2PIXWithMock": {
     "defaultBlocks": 10,
-    "validSigners": []
+    "validAttestors": [
+      "0x0DE886e31723e64Aa72e51977B14475fB66a9f72"
+    ],
+    "bank": {
+      "solicitationUrlPrefix": "https://api-bbpay.hm.bb.com.br/checkout/v2/solicitacoes/",
+      "solicitationUrlSuffix": "?numeroConvenio=701&gw-dev-app-key="
+    },
+    "prover": "0x8963e134e6d22ee9a26ac62a99964ab391ead816",
+    "proofMaxAgeMs": 3600000
   },
   "MockToken": {
     "supply": "20000000000000000000000000"

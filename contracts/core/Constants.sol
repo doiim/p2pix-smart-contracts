@@ -53,4 +53,43 @@ abstract contract Constants {
         1e2 ether;
     uint256 internal constant LOCKAMOUNT_UPPERBOUND =
         1e6 ether;
+
+    /// ███ Proof of Pix payment ███████████████████████████████████████████████
+
+    /// @dev Lock amounts must be whole centavos: the bank echoes two decimals.
+    uint256 internal constant CENTAVO = 1e16;
+    /// @dev Tolerance for an attestation timestamp ahead of the block, in ms.
+    uint256 internal constant PROOF_FUTURE_TOLERANCE_MS =
+        60_000;
+
+    /// @dev The attested request, as the attestor records it.
+    string internal constant REQUEST_METHOD = "GET";
+    string internal constant REQUEST_HEADER = "";
+    string internal constant REQUEST_BODY = "";
+    /// @dev `parseType` as the attestor records it: an empty string, whatever was sent.
+    string internal constant PARSE_TYPE = "";
+
+    // solhint-disable gas-small-strings
+    /// @dev Fields revealed from `GET /solicitacoes/{n}`, in the order the prover sends them.
+    string internal constant KEY_AMOUNT = "amount";
+    string internal constant PATH_AMOUNT =
+        "$.valorSolicitacao";
+    string internal constant KEY_SETTLED = "settled";
+    string internal constant PATH_SETTLED =
+        "$.valorSomatorioPagamentosEfetivados";
+    string internal constant KEY_PAYEE = "payee";
+    string internal constant PATH_PAYEE =
+        "$.repasse.recebedores[0].identificadorRecebedor";
+    string internal constant KEY_TXID = "txId";
+    string internal constant PATH_TXID =
+        "$.informacoesPix.txId";
+    string internal constant KEY_LOCK = "lock";
+    string internal constant PATH_LOCK =
+        "$.codigoConciliacaoSolicitacao";
+
+    /// @dev Accepted `algorithmType` values.
+    string internal constant ALGORITHM_PROXY = "proxytls";
+    string internal constant ALGORITHM_MPC = "mpctls";
+    string internal constant KEY_ALGORITHM = "algorithmType";
+    // solhint-enable gas-small-strings
 }

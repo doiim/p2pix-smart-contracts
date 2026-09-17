@@ -29,18 +29,24 @@ contract P2PIX is BaseUtils {
 
     constructor(
         uint256 defaultBlocks,
-        address[] memory validSigners,
+        address[] memory attestors,
         address _reputation,
         ERC20[] memory tokens,
-        bool[] memory tokenStates
+        bool[] memory tokenStates,
+        DT.BankConfig memory bankConfig,
+        address _prover,
+        uint256 maxAgeMs
     )
         payable
         OwnerSettings(
             defaultBlocks,
-            validSigners,
+            attestors,
             _reputation,
             tokens,
-            tokenStates
+            tokenStates,
+            bankConfig,
+            _prover,
+            maxAgeMs
         )
     {
         /*  */
@@ -131,6 +137,8 @@ contract P2PIX is BaseUtils {
     /// @notice There can only exist a lock per each `amount` partitioned
     /// from the total `remaining` value.
     /// @notice Locks can only be performed in valid orders.
+    /// @notice `amount` must be a whole number of centavos (a multiple of
+    /// `CENTAVO`); reverts with `AmountNotCentavo` otherwise.
     /// @param amount The deposit's remaining amount wished to be locked.
     /// @param merkleProof Provided as a pass if the `msg.sender` is in the
     /// seller's allowlist; Left empty otherwise;
@@ -184,6 +192,10 @@ contract P2PIX is BaseUtils {
                 amount > LOCKAMOUNT_UPPERBOUND
             ) revert AmountNotAllowed();
         }
+        // The bank reports the paid amount with at most two decimals and
+        // `release` requires it to equal `amount` exactly; a sub-centavo
+        // lock could never be released and would sit until it expires.
+        if (amount % CENTAVO != 0) revert AmountNotCentavo();
 
         DT.Lock memory l = DT.Lock(
             lockID,
@@ -201,19 +213,16 @@ contract P2PIX is BaseUtils {
     /// @notice Lock release method that liquidate lock
     /// orders and distributes relayer fees.
     /// @notice This method can be called by any public actor
-    /// as long the signature provided is valid.
-    /// @notice `relayerPremium` gets splitted equaly
-    /// if relayer addresses differ.
-    /// @notice If the `msg.sender` of this method and `l.relayerAddress` are the same,
-    /// `msg.sender` accrues both l.amount and l.relayerPremium as userRecord credit.
-    ///  In case of they differing:
-    /// - `lock` caller gets accrued with `l.amount` as userRecord credit;
-    /// - `release` caller gets accrued with `l.relayerPremium` as userRecord credit;
-    /// @dev Function sighash: 0x11fc7f9a
+    /// as long as the proof of Pix payment is valid: a Primus
+    /// attestation of the bank's own answer whose attestor is in
+    /// `validAttestors` and whose fields name this lock, its amount
+    /// and its pixTarget on this chain.
+    /// @notice If the `msg.sender` of this method and `l.buyerAddress` are the same,
+    /// `msg.sender` accrues l.amount as userRecord credit.
+    ///  In case of they differing, both accrue half of it.
     function release(
         uint256 lockID,
-        bytes32 pixTimestamp,
-        bytes calldata signature
+        DT.PixProof calldata proof
     ) public nonReentrant {
         DT.Lock storage l = mapLocks[lockID];
 
@@ -221,15 +230,8 @@ contract P2PIX is BaseUtils {
         if (l.expirationBlock < block.number)
             revert LockExpired();
 
-        bytes32 message = keccak256(
-            abi.encodePacked(
-                l.pixTarget,
-                l.amount,
-                pixTimestamp
-            )
-        );
-
-        _signerCheck(message, signature);
+        bytes32 message = _proofCheck(lockID, l, proof);
+        if (usedTransactions(message)) revert TxAlreadyUsed();
 
         ERC20 t = ERC20(l.token);
 

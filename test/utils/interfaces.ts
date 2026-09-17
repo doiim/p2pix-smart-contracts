@@ -28,10 +28,9 @@ export interface LockArgs {
   expiredLocks: bigint[];
 }
 
-export interface ReleaseArgs {
-  lockID: bigint;
-  pixTimestamp: string;
-  signature: string;
+export interface Attestor {
+  privateKey: string;
+  address: string;
 }
 
 export interface Lock {
@@ -59,6 +58,10 @@ export interface P2pixFixture {
   erc20: MockToken;
   proof: string[];
   merkleRoot: string;
+  /** The Primus attestor the fixture allows. */
+  attestor: Attestor;
+  /** The prover's task wallet: the only accepted proof recipient. */
+  prover: string;
 }
 
 export interface RepFixture {

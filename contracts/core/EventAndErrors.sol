@@ -68,8 +68,14 @@ interface EventAndErrors {
     event ReputationUpdated(address reputation);
     /// @dev 0x70fa43ca70216ad905ade86b9e650a691b2ce5a01980d0a81bdd8324141b8511
     event LockBlocksUpdated(uint256 blocks);
-    /// @dev 0x14a422d2412784a5749d03da98921fe468c98577b767851389a9f58ea5a363d7
-    event ValidSignersUpdated(address[] signers);
+    /// @dev 0x88eacf65f98d0f2ce681cef59c7714000cc73ff6897728296e721e86e9474148
+    event ValidAttestorsUpdated(address[] attestors, bool[] states);
+    /// @dev 0x6924242e554a57cb5f0c4a3b1bf49b3d3dc6f39ee392abd531bfe3cd562c746e
+    event BankConfigUpdated();
+    /// @dev 0x52dd1bef79b79f03d1c5c160b2d041c41b8578a23904fadc4aeae4c071b00f03
+    event ProverUpdated(address prover);
+    /// @dev 0xa02cd8b37653c4f468a2463047b342138ac24b48b418fa206ffa364208438e18
+    event ProofMaxAgeUpdated(uint256 maxAgeMs);
 
 
     /// ███ Errors ████████████████████████████████████████████████████████████
@@ -97,9 +103,36 @@ interface EventAndErrors {
     /// @dev Transaction already used to unlock payment.
     /// @dev 0xf490a6ea
     error TxAlreadyUsed();
-    /// @dev Signer is not a valid signer.
-    /// @dev 0x815e1d64
-    error InvalidSigner();
+    /// @dev The proof's signature does not recover an allowed Primus attestor.
+    /// @dev 0xacec4753
+    error InvalidAttestor();
+    /// @dev The proof's recipient, conditions or algorithm are not the expected ones.
+    /// @dev 0x09bde339
+    error InvalidProof();
+    /// @dev The proof's data cannot be read as the expected fields.
+    /// @dev 0xf4ea0ab0
+    error MalformedProof();
+    /// @dev The bank does not report the charge as paid once, in full, unrefunded.
+    /// @dev 0x34862073
+    error PixNotPaid();
+    /// @dev The charged amount differs from the lock's amount.
+    /// @dev 0x55e97b0d
+    error AmountMismatch();
+    /// @dev The charge's payee is not the lock's pixTarget on this chain.
+    /// @dev 0xf524f90a
+    error PixTargetMismatch();
+    /// @dev The charge's reconciliation code names another lock.
+    /// @dev 0x459808cf
+    error LockMismatch();
+    /// @dev The proof is older than `proofMaxAgeMs` or dated in the future.
+    /// @dev 0xb67a7713
+    error ProofExpired();
+    /// @dev Lock amounts must be whole centavos.
+    /// @dev 0xd589c94e
+    error AmountNotCentavo();
+    /// @dev No attestor addresses provided as argument.
+    /// @dev 0x87a15126
+    error NoAttestors();
     /// @dev Address doesn't exist in a MerkleTree.
     /// @dev Address not allowed as relayer.
     /// @dev 0x3b8474be
