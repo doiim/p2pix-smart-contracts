@@ -199,16 +199,15 @@ describe("P2PIX", () => {
     it("should allow owner to change reputation instance", async () => {
       const tx = await p2pix.setReputation(acc03.address);
       const newRep = await p2pix.reputation.staticCall();
-      const fail = p2pix
-        .connect(acc02)
-        .setReputation(owner.address);
 
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "ReputationUpdated")
         .withArgs(acc03.address);
       expect(newRep).to.eq(acc03.address);
-      await expect(fail).to.be.revertedWithCustomError(
+      await expect(
+        p2pix.connect(acc02).setReputation(owner.address),
+      ).to.be.revertedWithCustomError(
         p2pix,
         P2PixErrors.Unauthorized,
       );
@@ -218,16 +217,15 @@ describe("P2PIX", () => {
       const tx = await p2pix.setDefaultLockBlocks(magicVal);
       const newVal =
         await p2pix.defaultLockBlocks.staticCall();
-      const fail = p2pix
-        .connect(acc02)
-        .setDefaultLockBlocks(0);
 
       expect(tx).to.be.ok;
       await expect(tx)
         .to.emit(p2pix, "LockBlocksUpdated")
         .withArgs(magicVal);
       expect(newVal).to.eq(magicVal);
-      await expect(fail).to.be.revertedWithCustomError(
+      await expect(
+        p2pix.connect(acc02).setDefaultLockBlocks(0),
+      ).to.be.revertedWithCustomError(
         p2pix,
         P2PixErrors.Unauthorized,
       );
@@ -250,12 +248,6 @@ describe("P2PIX", () => {
       );
       const removed =
         await p2pix.validAttestors.staticCall(bob);
-      const fail = p2pix
-        .connect(acc03)
-        .setValidAttestors(
-          [owner.address, acc02.address],
-          [true, true],
-        );
 
       expect(tx).to.be.ok;
       expect(added1).to.eq(true);
@@ -267,7 +259,14 @@ describe("P2PIX", () => {
       await expect(tx2)
         .to.emit(p2pix, "ValidAttestorsUpdated")
         .withArgs([bob], [false]);
-      await expect(fail).to.be.revertedWithCustomError(
+      await expect(
+        p2pix
+          .connect(acc03)
+          .setValidAttestors(
+            [owner.address, acc02.address],
+            [true, true],
+          ),
+      ).to.be.revertedWithCustomError(
         p2pix,
         P2PixErrors.Unauthorized,
       );
