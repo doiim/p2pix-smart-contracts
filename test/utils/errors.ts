@@ -1,5 +1,4 @@
 export enum P2PixErrors {
-  DepositAlreadyExists = "DepositAlreadyExists",
   OnlySeller = "OnlySeller",
   NotExpired = "NotExpired",
   LoopOverflow = "LoopOverflow",
@@ -8,7 +7,7 @@ export enum P2PixErrors {
   AlreadyReleased = "AlreadyReleased",
   TxAlreadyUsed = "TxAlreadyUsed",
   InvalidSigner = "InvalidSigner",
-  UNAUTHORIZED = "UNAUTHORIZED",
+  Unauthorized = "Unauthorized",
   TokenDenied = "TokenDenied",
   NoTokens = "NoTokens",
   LengthMismatch = "LengthMismatch",

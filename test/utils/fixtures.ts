@@ -1,5 +1,5 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, Signer } from "ethers";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { Signer } from "ethers";
 import { ethers } from "hardhat";
 import keccak256 from "keccak256";
 import { MerkleTree } from "merkletreejs";
@@ -12,54 +12,7 @@ import {
   Reputation,
 } from "../../src/types";
 
-// exported interfaces
-export interface Deploys {
-  signers: string[];
-  p2pix: string;
-  token: string;
-}
-
-export interface Lock {
-  sellerKey: BigNumber;
-  counter: BigNumber;
-  relayerPremium: BigNumber;
-  amount: BigNumber;
-  expirationBlock: BigNumber;
-  pixTarget: BigNumber;
-  buyerAddress: string;
-  relayerTarget: string;
-  relayerAddress: string;
-  token: string;
-}
-
-export interface Call {
-  target: string;
-  callData: string;
-}
-
-export interface Result {
-  success: boolean;
-  returnData: string;
-}
-
-export interface P2pixFixture {
-  p2pix: P2PIX;
-  erc20: MockToken;
-  proof: string[];
-  merkleRoot: string;
-}
-
-export interface RepFixture {
-  reputation: Reputation;
-}
-
-export interface MtcFixture {
-  multicall: Multicall;
-}
-
-type P2PixAndReputation = P2pixFixture &
-  RepFixture &
-  MtcFixture;
+import { Call, RepFixture, P2PixAndReputation, DepositArgs, LockArgs, ReleaseArgs } from "./interfaces";
 
 // exported constants
 export const getSignerAddrs = (
@@ -69,16 +22,16 @@ export const getSignerAddrs = (
   return addrs.slice(0, amount).map(({ address }) => address);
 };
 
-export const getBnFrom = (nums: number[]): BigNumber[] => {
-  const bns = nums.map(num => ethers.BigNumber.from(num));
+export const getBnFrom = (nums: number[]): BigInt[] => {
+  const bns = nums.map(num => BigInt(num));
   return bns;
 };
 
 export const getLockData = (
   addr: string,
-  locks: BigNumber[][],
+  locks: BigInt[][],
 ): Call[] => {
-  const iface = new ethers.utils.Interface(
+  const iface = new ethers.Interface(
     P2PIX__factory.abi,
   );
   return locks.map(lock => ({
@@ -118,13 +71,8 @@ export const curve = (x: number): number => {
 
 // exported async functions
 export async function repFixture(): Promise<RepFixture> {
-  const Reputation = await ethers.getContractFactory(
-    "Reputation",
-  );
-  const reputation =
-    (await Reputation.deploy()) as Reputation;
-
-  return { reputation };
+  const reputation = await ethers.deployContract("Reputation");
+  return { reputation: await reputation.waitForDeployment()  };
 }
 
 export async function p2pixFixture(): Promise<P2PixAndReputation> {
@@ -133,30 +81,21 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
     await ethers.getSigners(),
   );
 
-  const Reputation = await ethers.getContractFactory(
-    "Reputation",
-  );
-  const reputation =
-    (await Reputation.deploy()) as Reputation;
+  const reputation = await ethers.deployContract("Reputation");
 
-  const ERC20 = await ethers.getContractFactory("MockToken");
-  const erc20 = (await ERC20.deploy(
-    ethers.utils.parseEther("20000000"), // 20M
-  )) as MockToken;
+  const erc20 = await ethers.deployContract("MockToken", [
+    ethers.parseEther("20000000") // 20M
+  ]) as MockToken;
 
-  const P2PIX = await ethers.getContractFactory("P2PIX");
-  const p2pix = (await P2PIX.deploy(
+  const p2pix = await ethers.deployContract("P2PIX", [
     10,
     validSigners,
-    reputation.address,
-    [erc20.address],
+    reputation.target,
+    [erc20.target],
     [true],
-  )) as P2PIX;
+  ]);
 
-  const Multicall = await ethers.getContractFactory(
-    "Multicall",
-  );
-  const multicall = (await Multicall.deploy()) as Multicall;
+  const multicall = await ethers.deployContract("Multicall");
 
   const signers = await ethers.getSigners();
   const whitelisted = signers.slice(0, 2);
@@ -172,10 +111,10 @@ export async function p2pixFixture(): Promise<P2PixAndReputation> {
   );
 
   return {
-    multicall,
-    reputation,
-    erc20,
-    p2pix,
+    multicall: await multicall.waitForDeployment(),
+    reputation: await reputation.waitForDeployment(),
+    erc20: await erc20.waitForDeployment(),
+    p2pix: await p2pix.waitForDeployment(),
     merkleRoot,
     proof,
   };

@@ -1,10 +1,8 @@
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
+import "@nomicfoundation/hardhat-ethers";
 import * as fs from "fs";
 import { ethers, network } from "hardhat";
-import hre from "hardhat";
 
-import { Deploys } from "../test/utils/fixtures";
+import { Deploys } from "../test/utils/interfaces";
 
 let deploysJson: Deploys;
 
@@ -23,32 +21,24 @@ const main = async () => {
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying contracts with ${deployer.address}`);
 
-  const Reputation = await ethers.getContractFactory(
-    "Reputation",
-  );
-  const Multicall = await ethers.getContractFactory(
-    "Multicall",
-  );
-  const reputation = await Reputation.deploy();
-  await reputation.deployed();
-  const mutlicall = await Multicall.deploy();
-  await mutlicall.deployed();
-
-  const P2PIX = await ethers.getContractFactory("P2PIX");
-  const p2pix = await P2PIX.deploy(
+  let reputation = await ethers.deployContract("Reputation");
+  let multicall = await ethers.deployContract("Multicall");
+  let p2pix = await ethers.deployContract("P2PIX", [
     10,
     deploysJson.signers,
-    reputation.address,
+    reputation.target,
     [deploysJson.token],
     [true],
-  );
-  await p2pix.deployed();
+  ]);
 
-  deploysJson.p2pix = p2pix.address;
-  console.log("🚀 P2PIX Deployed:", p2pix.address);
-  console.log("🌠 Reputation Deployed:", reputation.address);
-  console.log("🛰 Multicall Deployed:", mutlicall.address);
-  await p2pix.deployTransaction.wait(6);
+  reputation = await reputation.waitForDeployment();
+  multicall = await multicall.waitForDeployment();
+  p2pix = await p2pix.waitForDeployment();
+
+  deploysJson.p2pix = await p2pix.getAddress();
+  console.log("🚀 P2PIX Deployed:", await p2pix.getAddress());
+  console.log("🌠 Reputation Deployed:", await reputation.getAddress());
+  console.log("🛰 Multicall Deployed:", await multicall.getAddress());
 
   fs.writeFileSync(
     `./deploys/${network.name}.json`,
@@ -57,24 +47,24 @@ const main = async () => {
 
   /* UNCOMMENT WHEN DEPLOYING TO MAINNET/PUBLIC TESTNETS */
   //verify
-  await hre.run("verify:verify", {
-    address: p2pix.address,
-    constructorArguments: [
-      10,
-      deploysJson.signers,
-      reputation.address,
-      [deploysJson.token],
-      [true],
-    ],
-  });
-  await hre.run("verify:verify", {
-    address: reputation.address,
-    constructorArguments: [],
-  });
-  await hre.run("verify:verify", {
-    address: mutlicall.address,
-    constructorArguments: [],
-  });
+  // await hre.run("verify:verify", {
+  //   address: p2pix.address,
+  //   constructorArguments: [
+  //     10,
+  //     deploysJson.signers,
+  //     reputation.address,
+  //     [deploysJson.token],
+  //     [true],
+  //   ],
+  // });
+  // await hre.run("verify:verify", {
+  //   address: reputation.address,
+  //   constructorArguments: [],
+  // });
+  // await hre.run("verify:verify", {
+  //   address: mutlicall.address,
+  //   constructorArguments: [],
+  // });
 };
 
 main()

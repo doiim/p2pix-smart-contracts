@@ -1,13 +1,34 @@
-# ReentrancyGuard
+# Solidity API
 
-_z0r0z.ethModified from Seaport (https://github.com/ProjectOpenSea/seaport/blob/main/contracts/lib/ReentrancyGuard.sol)Modified from Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/utils/ReentrancyGuard.sol)_
+## ReentrancyGuard
 
 Reentrancy protection for smart contracts.
-
-## Errors
 
 ### Reentrancy
 
 ```solidity
 error Reentrancy()
 ```
+
+### nonReentrant
+
+```solidity
+modifier nonReentrant()
+```
+
+### setReentrancyGuard
+
+```solidity
+function setReentrancyGuard() internal virtual
+```
+
+_Check guard sentinel value and set it._
+
+### clearReentrancyGuard
+
+```solidity
+function clearReentrancyGuard() internal virtual
+```
+
+_Unset sentinel value._
+

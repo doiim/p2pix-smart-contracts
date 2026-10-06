@@ -1,24 +1,17 @@
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-toolbox";
 import { config as dotenvConfig } from "dotenv";
-import "hardhat-tracer";
 import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
+import "hardhat-contract-sizer";
 import { resolve } from "path";
+import "solidity-docgen";
 
 dotenvConfig({ path: resolve(__dirname, "./.env") });
 
 const mnemonic: string | undefined = process.env.MNEMONIC;
 if (!mnemonic) {
   throw new Error("Please set your MNEMONIC in a .env file");
-}
-
-const infuraApiKey: string | undefined =
-  process.env.INFURA_API_KEY;
-if (!infuraApiKey) {
-  throw new Error(
-    "Please set your INFURA_API_KEY in a .env file",
-  );
 }
 
 const alchemyApiKey: string | undefined =
@@ -33,25 +26,16 @@ const chainIds = {
   // "{INSERT_NAME}": {INSERT_ID},
   hardhat: 31337,
   mainnet: 1,
-  sepolia: 11155111,
-  goerli: 5,
+  "eth-sepolia": 11155111,
   "polygon-mumbai": 80001,
+  rootstock:30,
+  "rootstock-testnet":31,
 };
 
 function getChainConfig(
   chain: keyof typeof chainIds,
 ): NetworkUserConfig {
-  let jsonRpcUrl: string;
-  switch (chain) {
-    case "polygon-mumbai":
-      jsonRpcUrl =
-        "https://polygon-mumbai.g.alchemy.com/v2/" +
-        alchemyApiKey;
-      break;
-    default:
-      jsonRpcUrl =
-        "https://" + chain + ".infura.io/v3/" + infuraApiKey;
-  }
+  let jsonRpcUrl = "https://" + chain + ".g.alchemy.com/v2/" + alchemyApiKey;
   return {
     // Comment out for default hardhat account settings
     accounts: {
@@ -74,23 +58,13 @@ const config: HardhatUserConfig = {
       goerli: process.env.ETHERSCAN_API_KEY || "",
       polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
     },
-    // customChains: [
-    //   {
-    //     // network: {INSERT_NAME},
-    //     // chainId: {INSERT_ID},
-    //     // urls: {
-    //       // apiURL:
-    //         // "{INSERT_URL}",
-    //       // browserURL: "{INSERT_URL}",
-    //     // },
-    //   },
-    // ],
   },
   gasReporter: {
     enabled: !!(
       process.env.REPORT_GAS &&
       process.env.REPORT_GAS != "false"
     ),
+    offline: true,
     showTimeSpent: true,
     showMethodSig: true,
     token: "ETH",
@@ -110,9 +84,10 @@ const config: HardhatUserConfig = {
     },
     // network: getChainConfig("{INSERT_NAME}"),
     mainnet: getChainConfig("mainnet"),
-    goerli: getChainConfig("goerli"),
-    sepolia: getChainConfig("sepolia"),
-    "polygon-mumbai": getChainConfig("polygon-mumbai"),
+    sepolia: getChainConfig("eth-sepolia"),
+    mumbai: getChainConfig("polygon-mumbai"),
+    rootstock: getChainConfig("rootstock"),
+    rsktestnet: getChainConfig("rootstock-testnet"),
   },
   paths: {
     artifacts: "./artifacts",
@@ -121,23 +96,34 @@ const config: HardhatUserConfig = {
     tests: "./test",
   },
   solidity: {
-    version: "0.8.9",
+    version: "0.8.28",
     settings: {
-      // viaIR: true,
-      metadata: {
-        bytecodeHash: "none",
-      },
+      viaIR: true,
+      evmVersion: "cancun",
       optimizer: {
         enabled: true,
-        // max val = 4_294_967_295
         runs: 20_000,
+        details: {
+          deduplicate: true,
+          cse: true,
+          constantOptimizer: true,
+          peephole: true,
+          jumpdestRemover: true,
+          yul: true,
+          yulDetails: {
+            stackAllocation: true,
+          },
+        },
       },
     },
   },
   typechain: {
     outDir: "src/types",
-    target: "ethers-v5",
+    target: "ethers-v6",
   },
+  docgen: {
+    pages: "files",
+  }
 };
 
 export default config;

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity ^0.8.19;
 
 import { IReputation } from "./lib/interfaces/IReputation.sol";
-import { Owned } from "./lib/auth/Owned.sol";
 
-contract Reputation is IReputation, Owned(msg.sender) {
+contract Reputation is IReputation {
     /// @dev Asymptote numerator constant value for the `limiter` fx.
     uint256 public constant maxLimit = 1e6;
     /// @dev Denominator's constant operand for the `limiter` fx.
@@ -13,7 +12,7 @@ contract Reputation is IReputation, Owned(msg.sender) {
     // prettier-ignore
     // solhint-disable no-inline-assembly
     // solhint-disable-next-line no-empty-blocks
-    constructor(/*  */) {/*  */}
+    constructor(/*  */) payable {/*  */}
 
     function limiter(
         uint256 _userCredit
